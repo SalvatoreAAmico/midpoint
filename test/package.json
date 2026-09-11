@@ -1,0 +1,6 @@
+{
+  "name": "midpoint-tests",
+  "private": true,
+  "type": "module",
+  "devDependencies": { "playwright": "^1.56.0", "leaflet": "^1.9.4" }
+}

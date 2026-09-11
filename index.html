@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1115">
+<title>Midpoint — find a fair place to meet</title>
+<meta name="description" content="Add up to 4 people, pick what you're in the mood for, and get meetup spots ranked by how fair they are for everyone.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div id="map"></div>
+
+  <main id="sheet">
+    <div class="grabber"></div>
+
+    <h1>Midpoint</h1>
+    <p class="tagline">A fair place to meet, for everybody.</p>
+
+    <h2>Who's coming</h2>
+    <div id="people"></div>
+    <button id="addPerson">+ Add person</button>
+    <p class="hint">Up to 4. Tap <b>Locate</b> for your own spot, or type a neighborhood, address, or city.</p>
+
+    <h2>What are you in the mood for</h2>
+    <div class="chips" id="cats"></div>
+
+    <h2>Filters</h2>
+    <div class="filters">
+      <button class="chip" id="openNow">Open now</button>
+      <select id="price">
+        <option value="">Any price</option>
+        <option value="1">$ and under</option>
+        <option value="2">$$ and under</option>
+        <option value="3">$$$ and under</option>
+      </select>
+      <select id="mode">
+        <option value="drive">Drive time</option>
+        <option value="straight">Straight line</option>
+      </select>
+    </div>
+
+    <button id="find">Find meetup spots</button>
+    <button id="share">Copy invite link</button>
+    <div id="log"></div>
+
+    <div id="results"></div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="app.js"></script>
+</body>
+</html>
