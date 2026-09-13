@@ -11,11 +11,24 @@
 
 'use strict';
 
+/* Spend guards. The free tier cannot bill you — it throttles instead — but a
+   runaway poll could still burn the month's egress and take the app down, so
+   the client caps itself in four ways:
+     1. a hard floor on the interval, so no bug can poll faster than this
+     2. polling pauses entirely while the tab is hidden
+     3. only one request is ever in flight
+     4. failures back off, and a session auto-ends after MAX_SESSION_MS
+   Rough cost at these settings: 4 people for an hour is ~3.6 MB of a 5 GB
+   monthly allowance, so roughly 1,400 hour-long meetups before it matters. */
 const POLL_MS = 4000;
+const POLL_FLOOR_MS = 2000;
+const MAX_BACKOFF_MS = 60000;
+const MAX_SESSION_MS = 2 * 60 * 60 * 1000;   // auto-leave after 2 hours
 
 const Sync = {
   url: '', key: '', code: null, me: null,
   timer: null, onState: null, failures: 0,
+  inFlight: false, startedAt: 0, requests: 0, paused: false,
 
   get configured() { return !!(this.url && this.key); },
   get live() { return !!this.code; },
@@ -23,10 +36,12 @@ const Sync = {
   init(cfg) {
     this.url = (cfg?.supabaseUrl || '').replace(/\/+$/, '');
     this.key = cfg?.supabaseAnonKey || '';
+    if (this.configured && typeof document !== 'undefined') this.watchVisibility();
     return this.configured;
   },
 
   async rpc(fn, args) {
+    this.requests++;
     const res = await fetch(`${this.url}/rest/v1/rpc/${fn}`, {
       method: 'POST',
       headers: {
@@ -83,29 +98,64 @@ const Sync = {
   },
 
   async poll() {
-    if (!this.live) return;
+    if (!this.live || this.paused) return;
+    // Never stack requests: a slow network must not queue up a backlog.
+    if (this.inFlight) return;
+
+    if (Date.now() - this.startedAt > MAX_SESSION_MS) {
+      this.onState?.(null, new Error('Session ended after 2 hours. Tap Go live to start a new one.'));
+      this.leave();
+      return;
+    }
+
+    this.inFlight = true;
     try {
       const state = await this.rpc('mp_state', { p_code: this.code });
+      if (this.failures) this.schedule(POLL_MS);   // recovered: back to normal cadence
       this.failures = 0;
       this.onState?.(state);
     } catch (e) {
-      // Tolerate a couple of blips (tunnel, sleeping phone) before giving up.
-      if (++this.failures >= 3) { this.onState?.(null, e); this.stop(); }
+      // Tolerate a couple of blips (tunnel, sleeping phone) before giving up,
+      // and slow down in between rather than hammering a failing server.
+      if (++this.failures >= 5) { this.onState?.(null, e); this.stop(); }
+      else this.schedule(Math.min(POLL_MS * 2 ** this.failures, MAX_BACKOFF_MS));
+    } finally {
+      this.inFlight = false;
     }
+  },
+
+  schedule(ms) {
+    if (this.timer) clearInterval(this.timer);
+    this.timer = setInterval(() => this.poll(), Math.max(POLL_FLOOR_MS, ms));
   },
 
   start() {
     this.stop();
+    this.startedAt = Date.now();
     this.poll();
-    this.timer = setInterval(() => this.poll(), POLL_MS);
+    this.schedule(POLL_MS);
   },
 
-  stop() { if (this.timer) { clearInterval(this.timer); this.timer = null; } },
+  stop() {
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    this.inFlight = false;
+  },
+
+  /* A backgrounded tab costs requests for updates nobody is looking at, so
+     stop entirely while hidden and refresh once on the way back. */
+  watchVisibility() {
+    document.addEventListener('visibilitychange', () => {
+      this.paused = document.hidden;
+      if (!this.live) return;
+      if (document.hidden) { if (this.timer) { clearInterval(this.timer); this.timer = null; } }
+      else { this.poll(); this.schedule(POLL_MS); }
+    });
+  },
 
   async leave() {
     if (!this.live) return;
     const { code, me } = this;
-    this.stop(); this.code = null; this.me = null; this.failures = 0;
+    this.stop(); this.code = null; this.me = null; this.failures = 0; this.startedAt = 0;
     await this.rpc('mp_leave', { p_code: code, p_participant: me }).catch(() => {});
   },
 

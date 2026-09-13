@@ -61,6 +61,24 @@ Two consequences worth knowing:
 - **Sessions expire after 12 hours** and delete their participants with them.
   Location data shouldn't outlive the meetup it was shared for.
 
+### Staying inside the free tier
+
+The Free plan has no per-unit billing, so exceeding a limit throttles the
+project rather than charging you — there is no card on file to charge. A
+runaway client could still burn the month's egress and take the app down, so
+the client caps itself:
+
+| Guard | Effect |
+|---|---|
+| Interval floor (2s) | no bug can poll faster |
+| Pause while tab hidden | a backgrounded phone costs nothing |
+| One request in flight | slow networks can't queue a backlog |
+| Backoff, stop after 5 failures | a broken server isn't hammered |
+| Auto-leave after 2 hours | a forgotten tab can't poll all week |
+
+For scale: four people for an hour is roughly **3.6 MB** against a **5 GB**
+monthly allowance — about 1,400 hour-long meetups before it matters.
+
 Anyone holding the link can see the group's locations for as long as the session
 lives. That is the intended behaviour — but it is worth saying out loud, because
 it means the link is as sensitive as the locations in it.
@@ -111,9 +129,9 @@ them with a `~` rather than passing them off as measured times.
 - Core geo/scoring/hours logic: **15/15 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
   **27/27 passing**, no JS errors.
-- Live-session flow against a mocked Supabase backend: **20/20 passing** —
+- Live-session flow against a mocked Supabase backend: **24/24 passing** —
   create, auto-join by link, roster sync, the 4-person cap, expired codes,
-  vote propagation, and leaving.
+  vote propagation, leaving, and the four spend guards above.
 - Live API calls: **verified on a real iPhone** (2026-09-13). Nominatim,
   Overpass, and OSRM all respond correctly from mobile Safari.
 

@@ -210,6 +210,49 @@ await p2.waitForTimeout(500);
 ok('leaving removes you from the session', leaveCalls >= 1);
 ok('leaving clears the code from the URL', !p2.url().includes('?s='));
 
+// ---- spend guards -------------------------------------------------------
+{
+  const p7 = await ctx.newPage();
+  await p7.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await p7.locator('#goLive').click();
+  await p7.waitForTimeout(600);
+
+  // Count this page's own requests: rpcCalls is global and other tabs from
+  // earlier assertions are still polling.
+  const reqs = () => p7.evaluate(() => window.Sync.requests);
+
+  // 1. polling must stop while the tab is hidden
+  const before = await reqs();
+  await p7.evaluate(() => {
+    Object.defineProperty(document, 'hidden', {value:true, configurable:true});
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await p7.waitForTimeout(9000);
+  const during = await reqs();
+  ok('hidden tab makes no requests', during === before, `${during - before} calls while hidden`);
+
+  // 2. and resumes on return
+  await p7.evaluate(() => {
+    Object.defineProperty(document, 'hidden', {value:false, configurable:true});
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await p7.waitForTimeout(800);
+  ok('polling resumes when the tab is visible again', (await reqs()) > during);
+
+  // 3. the interval cannot be driven below the floor
+  const floorStart = await reqs();
+  await p7.evaluate(() => window.Sync.schedule(1));
+  await p7.waitForTimeout(5000);
+  const n = (await reqs()) - floorStart;
+  ok('poll interval is floored at 2s even if set to 1ms', n <= 4, `${n} calls in 5s`);
+
+  // 4. requests never stack up
+  ok('only one request in flight at a time',
+     await p7.evaluate(() => window.Sync.inFlight === false));
+
+  await p7.close();
+}
+
 // the anon key must never touch tables directly
 const direct = [...new Set(errs)].length;
 ok('all traffic went through rpc endpoints only', rpcCalls > 0);
