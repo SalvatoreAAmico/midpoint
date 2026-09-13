@@ -1,7 +1,7 @@
 import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
-src = src.replace(/document\.addEventListener\([\s\S]*$/,'');
+src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
 src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');

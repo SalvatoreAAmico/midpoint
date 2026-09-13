@@ -31,7 +31,41 @@ makes it fair — it demotes a venue that's 5 minutes from one person and 40 fro
 another, even though its average looks fine. Tune `SPREAD_WEIGHT` in `app.js`
 to trade "convenient for most" against "equal for all".
 
-## How multi-user works without a server
+## Live sessions (optional)
+
+Tap **Go live** and the app creates a session with a 10-character code. Anyone
+opening the link joins automatically; everyone's pin, name, and votes update in
+place, roughly every 4 seconds. Capped at 4 people, enforced server-side.
+
+Setup is in `supabase/schema.sql` — paste it into the Supabase SQL editor, then
+put your project URL and **anon** key into `config.js`. Leave `config.js` blank
+and the app behaves exactly as below, with no backend at all.
+
+### Why the database is locked down the way it is
+
+The browser carries a public anon key, so anything that key can reach directly
+is readable by anyone who views source. Sharing live coordinates that way would
+let a stranger dump every session's locations with one query.
+
+So the tables have row-level security enabled and **no policies whatsoever** —
+the anon role cannot read or write them at all. Every operation goes through a
+`security definer` function that demands the session's secret code, which makes
+enumeration impossible: without a code you get nothing.
+
+Two consequences worth knowing:
+
+- **Updates poll instead of streaming.** Supabase Realtime needs table-level
+  read access to push changes, which is exactly what this model forbids. A
+  4-second poll trades a little latency for not exposing the tables. For four
+  people picking a coffee shop, that's the right trade.
+- **Sessions expire after 12 hours** and delete their participants with them.
+  Location data shouldn't outlive the meetup it was shared for.
+
+Anyone holding the link can see the group's locations for as long as the session
+lives. That is the intended behaviour — but it is worth saying out loud, because
+it means the link is as sensitive as the locations in it.
+
+## How the no-backend mode works
 
 The entire session — people, coordinates, activity choices, and votes — is
 base64-encoded into the **URL hash**. Share the link, your friend opens it, taps
@@ -77,14 +111,17 @@ them with a `~` rather than passing them off as measured times.
 - Core geo/scoring/hours logic: **15/15 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
   **27/27 passing**, no JS errors.
+- Live-session flow against a mocked Supabase backend: **20/20 passing** —
+  create, auto-join by link, roster sync, the 4-person cap, expired codes,
+  vote propagation, and leaving.
 - Live API calls: **verified on a real iPhone** (2026-09-13). Nominatim,
   Overpass, and OSRM all respond correctly from mobile Safari.
 
 ## Roadmap
 
-**Phase 2 — real sync (Supabase free tier)**
-Accounts, live presence, and push when friends are nearby. This is the point where
-the app stops being a calculator and starts being social.
+**Phase 2 — real sync (Supabase free tier)** — *done, pending live verification*
+Live sessions are implemented. Still open: accounts, and push when friends are
+nearby (which needs native iOS).
 
 **Phase 3 — native iOS**
 - Business logic (scoring, tag mapping, API calls) ports ~1:1 — roughly 25–30% of the code.
@@ -106,6 +143,9 @@ the app stops being a calculator and starts being social.
 
 ```
 index.html            app shell
+config.js             Supabase URL + anon key (blank = no backend)
+sync.js               live session client
+supabase/schema.sql   database setup — run once in the SQL editor
 styles.css            styling (dark, mobile-first, iOS safe-area aware)
 app.js                all logic — geo, APIs, scoring, rendering
 manifest.webmanifest  PWA manifest (Add to Home Screen)

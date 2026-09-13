@@ -37,8 +37,11 @@ const state = {
   me: null,         // this device's person id, so votes attribute correctly
   results: [],
   center: null,
-  estimated: false
+  estimated: false,
+  liveErr: ''
 };
+
+const isLive = () => window.Sync?.live;
 
 /* ------------------------------------------------------------------ utils */
 
@@ -375,10 +378,12 @@ function renderPeople() {
         <div class="status ${p.status?.startsWith('!') ? 'err' : p.lat != null ? 'ok' : ''}">${
           esc(p.status?.replace(/^!/, '') || (p.lat != null ? 'Location set' : ''))}</div>
       </div>
-      ${state.people.length > 1 ? '<button class="rm" title="Remove">&times;</button>' : ''}`;
+      ${state.people.length > 1 && !isLive() ? '<button class="rm" title="Remove">&times;</button>' : ''}`;
 
     row.querySelector('.nm').addEventListener('input', e => {
-      p.name = e.target.value; syncURL();
+      p.name = e.target.value;
+      syncURL();
+      if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
     });
 
     const lc = row.querySelector('.lc');
@@ -393,11 +398,13 @@ function renderPeople() {
       } catch (e) {
         p.status = '!Lookup failed: ' + e.message;
       }
+      if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
       refresh();
     });
 
     row.querySelector('.loc').addEventListener('click', () => locate(p));
     row.querySelector('.rm')?.addEventListener('click', () => {
+      if (isLive()) return;   // in a live session people join and leave themselves
       state.people = state.people.filter(x => x.id !== p.id);
       refresh();
     });
@@ -405,7 +412,7 @@ function renderPeople() {
     host.appendChild(row);
   });
 
-  $('#addPerson').disabled = state.people.length >= MAX_PEOPLE;
+  $('#addPerson').disabled = state.people.length >= MAX_PEOPLE || isLive();
 }
 
 function locate(p) {
@@ -415,7 +422,8 @@ function locate(p) {
     pos => {
       p.lat = pos.coords.latitude; p.lon = pos.coords.longitude;
       p.label = 'My location'; p.status = 'Using your current location';
-      state.me = p.id;
+      if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
+      else state.me = p.id;
       refresh();
     },
     err => {
@@ -426,6 +434,58 @@ function locate(p) {
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
   );
+}
+
+function renderLive() {
+  const bar = $('#liveBar');
+  if (!window.Sync?.configured) { bar.hidden = true; return; }
+  bar.hidden = false;
+  const live = isLive();
+  $('#goLive').hidden = live;
+  $('#joinLive').hidden = live;
+  $('#liveOn').hidden = !live;
+  if (live) $('#liveCode').textContent = Sync.code;
+  $('#liveNote').textContent = state.liveErr
+    || (live ? 'Everyone in this session sees each other move. Expires in 12 hours.'
+             : 'Start a live session and friends join by link — no copying state back and forth.');
+  $('#liveNote').className = 'hint' + (state.liveErr ? ' err' : '');
+}
+
+/* In live mode the server owns the roster, so a poll replaces state.people.
+   The one exception is the row you are editing: overwriting your own name
+   mid-keystroke would fight your typing. */
+function applyRemote(remote, err) {
+  if (err || !remote) {
+    state.liveErr = err ? err.message : 'Lost contact with the session.';
+    renderLive();
+    return;
+  }
+  state.liveErr = '';
+  const editing = document.activeElement?.closest?.('.person');
+  const mineIdx = state.people.findIndex(p => p.id === Sync.me);
+
+  state.people = (remote.people || []).slice(0, MAX_PEOPLE).map((p, i) => {
+    const mine = p.id === Sync.me;
+    const prev = state.people.find(x => x.id === p.id);
+    const keepLocal = mine && editing && i === mineIdx;
+    return {
+      id: p.id,
+      name: keepLocal && prev ? prev.name : (p.name || ''),
+      lat: p.lat, lon: p.lon,
+      label: prev?.label || (p.lat != null ? 'Shared location' : ''),
+      status: p.lat != null ? (mine ? 'You' : 'Joined') : 'Waiting for location…'
+    };
+  });
+  state.me = Sync.me;
+
+  state.votes = {};
+  for (const v of (remote.votes || [])) {
+    (state.votes[v.venue_key] ||= {})[v.participant_id] = v.dir;
+  }
+  if (Array.isArray(remote.cats) && remote.cats.length) state.cats = remote.cats;
+
+  renderPeople(); renderCats(); renderLive(); drawMap();
+  if (state.results.length) renderResults();
 }
 
 function renderCats() {
@@ -441,6 +501,7 @@ function renderCats() {
         : [...state.cats, k];
       if (!state.cats.length) state.cats = [k];
       renderCats(); syncURL();
+      if (isLive()) Sync.prefs(state.cats, null);
     });
     host.appendChild(b);
   }
@@ -524,6 +585,7 @@ function vote(key, dir) {
   else state.votes[key][state.me] = dir;
   if (!Object.keys(state.votes[key]).length) delete state.votes[key];
   syncURL();
+  if (isLive()) Sync.vote(key, state.votes[key]?.[state.me] ?? 0);
   renderResults(key);
 }
 
@@ -613,6 +675,7 @@ function boot() {
   drawMap();
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
+  wireLive();
   $('#find').addEventListener('click', search);
 
   $('#openNow').addEventListener('click', e => {
@@ -625,7 +688,7 @@ function boot() {
 
   $('#share').addEventListener('click', async () => {
     syncURL();
-    const url = location.href;
+    const url = isLive() ? Sync.shareURL() : location.href;
     try {
       if (navigator.share) await navigator.share({ title: 'Midpoint', url });
       else { await navigator.clipboard.writeText(url); log('Invite link copied.'); }
@@ -636,5 +699,72 @@ function boot() {
     log('Session loaded. Tap Locate on your row to add yourself.');
   }
 }
+
+function myRow() {
+  return state.people.find(p => p.id === Sync.me) || state.people[0];
+}
+
+function wireLive() {
+  if (!window.Sync?.init(window.MIDPOINT_CONFIG)) { renderLive(); return; }
+  Sync.onState = applyRemote;
+
+  $('#goLive').addEventListener('click', async () => {
+    const me = myRow();
+    $('#goLive').disabled = true;
+    try {
+      await Sync.create(me?.name || '', me?.lat ?? null, me?.lon ?? null);
+      state.liveErr = '';
+      history.replaceState(null, '', `?s=${Sync.code}`);
+      log('Live session started — send the link to your friends.');
+    } catch (e) {
+      state.liveErr = e.message;
+    }
+    $('#goLive').disabled = false;
+    renderLive();
+  });
+
+  $('#joinLive').addEventListener('click', async () => {
+    const code = prompt('Session code?');
+    if (code) await joinSession(code.trim().toLowerCase());
+  });
+
+  $('#endLive').addEventListener('click', async () => {
+    await Sync.leave();
+    history.replaceState(null, '', location.pathname);
+    state.people = state.people.filter(p => p.id === state.me);
+    if (!state.people.length) addPerson();
+    log('Left the session.');
+    refresh(); renderLive();
+  });
+
+  // Auto-join when opened from a shared link.
+  const code = new URLSearchParams(location.search).get('s');
+  if (code) joinSession(code.trim().toLowerCase(), true);
+  renderLive();
+}
+
+async function joinSession(code, fromLink) {
+  const me = myRow();
+  try {
+    await Sync.join(code, me?.name || '', me?.lat ?? null, me?.lon ?? null);
+    state.liveErr = '';
+    history.replaceState(null, '', `?s=${code}`);
+    log(fromLink
+      ? 'Joined the session — tap Locate to add yourself to the map.'
+      : 'Joined the session.');
+  } catch (e) {
+    state.liveErr = e.message;
+  }
+  renderLive();
+}
+
+// Best-effort tidy-up so a closed tab does not leave a ghost pin behind.
+window.addEventListener('pagehide', () => {
+  if (isLive() && navigator.sendBeacon) {
+    navigator.sendBeacon(`${Sync.url}/rest/v1/rpc/mp_leave?apikey=${encodeURIComponent(Sync.key)}`,
+      new Blob([JSON.stringify({ p_code: Sync.code, p_participant: Sync.me })],
+               { type: 'application/json' }));
+  }
+});
 
 document.addEventListener('DOMContentLoaded', boot);

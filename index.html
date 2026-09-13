@@ -23,6 +23,19 @@
     <h1>Midpoint</h1>
     <p class="tagline">A fair place to meet, for everybody.</p>
 
+    <div id="liveBar" hidden>
+      <div class="live-row">
+        <button class="mini accent" id="goLive">⚡ Go live</button>
+        <button class="mini" id="joinLive">Join with code</button>
+        <span id="liveOn" hidden>
+          <span class="pill good">Live</span>
+          <code id="liveCode"></code>
+          <button class="mini" id="endLive">Leave</button>
+        </span>
+      </div>
+      <p class="hint" id="liveNote"></p>
+    </div>
+
     <h2>Who's coming</h2>
     <div id="people"></div>
     <button id="addPerson">+ Add person</button>
@@ -56,6 +69,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="config.js"></script>
+<script src="sync.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

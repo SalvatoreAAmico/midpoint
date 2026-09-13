@@ -139,3 +139,16 @@ select{
 .leaflet-control-attribution{background:rgba(15,17,21,.8)!important;color:#6b7487!important}
 .leaflet-control-attribution a{color:#8fa3bf!important}
 .pin{border-radius:99px;border:2px solid #0f1115;box-shadow:0 1px 4px rgba(0,0,0,.6)}
+
+/* ---------- live session ---------- */
+#liveBar{margin-top:14px;padding:10px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:var(--r)}
+.live-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.live-row .mini{padding:7px 12px}
+.mini.accent{border-color:var(--accent);color:var(--accent)}
+#liveOn{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+#liveCode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;
+  letter-spacing:.06em;color:var(--ink);background:#0f1218;border:1px solid var(--line);
+  border-radius:7px;padding:5px 9px;user-select:all}
+#liveBar .hint{margin-top:8px}
+#liveBar .hint.err{color:var(--bad)}
