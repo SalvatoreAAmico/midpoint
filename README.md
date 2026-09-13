@@ -77,8 +77,8 @@ them with a `~` rather than passing them off as measured times.
 - Core geo/scoring/hours logic: **15/15 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
   **27/27 passing**, no JS errors.
-- Live API calls: **not yet verified end-to-end** — the dev sandbox blocks
-  outbound requests to these hosts. First real browser run is the acceptance test.
+- Live API calls: **verified on a real iPhone** (2026-09-13). Nominatim,
+  Overpass, and OSRM all respond correctly from mobile Safari.
 
 ## Roadmap
 
