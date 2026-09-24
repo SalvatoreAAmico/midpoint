@@ -212,6 +212,16 @@ what a Swift app would and would not buy us.
 - Split-the-difference for *repeat* meetups: track who traveled farthest last time
   and bias the next pick toward them.
 
+## Design
+
+The visual language is documented in `docs/design-system.md` and is normative:
+if the app and that document disagree, the app is wrong. In short — a wayfinding
+instrument, not a social app: warm neutrals rather than the cold blue-grey of
+generated interfaces, Fraunces for the two or three display moments, Archivo for
+everything functional, JetBrains Mono for every number, one accent that means
+"the decision", and eight route colours for the people. Emoji mark categories,
+which is content, and appear nowhere in the interface chrome.
+
 ## Files
 
 ```
@@ -219,7 +229,8 @@ index.html            app shell
 config.js             Supabase URL + anon key (blank = no backend)
 sync.js               live session client
 supabase/schema.sql   database setup — run once in the SQL editor
-styles.css            styling (dark, mobile-first, iOS safe-area aware)
+styles.css            the design system, as tokens and components
+docs/design-system.md the normative reference for all of the above
 app.js                all logic — geo, APIs, scoring, rendering
 manifest.webmanifest  PWA manifest (Add to Home Screen)
 icon.svg              app icon

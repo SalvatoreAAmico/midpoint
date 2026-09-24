@@ -6,8 +6,11 @@
 
 const MAX_PEOPLE = 8;
 const MAX_VENUES = 25;            // also caps the OSRM matrix URL length
-const COLORS = ['#4f9cf9', '#3fbf7f', '#f0b429', '#ef5f5f',
-                '#a78bfa', '#2dd4bf', '#f472b6', '#fb923c'];
+/* Route colours, drawn as transit lines are: separable at a 10px dot and
+   harmonious as a set. The first four are maximally distinct, since most
+   groups are two to four people. See docs/design-system.md. */
+const COLORS = ['#E4572E', '#2E6F9E', '#3F7D5C', '#C98A26',
+                '#7B5EA7', '#1F8A8A', '#C05286', '#6E7A3A'];
 /* Fallback speeds in m/s when the routing service is unavailable. Walking
    includes a detour factor: streets are not straight lines. */
 const SPEED = { drive: 13.4, walk: 1.05 };
@@ -592,7 +595,7 @@ function initMap() {
 function circleIcon(color, size, ring) {
   return L.divIcon({
     className: '',
-    html: `<div class="pin" style="width:${size}px;height:${size}px;background:${color};${ring ? 'border-color:#e8ecf3' : ''}"></div>`,
+    html: `<div class="pin${ring ? ' mid' : ''}" style="width:${size}px;height:${size}px;background:${color}"></div>`,
     iconSize: [size, size], iconAnchor: [size / 2, size / 2]
   });
 }
@@ -611,14 +614,14 @@ function drawMap(selectedKey) {
   });
 
   if (state.center) {
-    L.marker([state.center.lat, state.center.lon], { icon: circleIcon('#e8ecf3', 12, true) })
+    L.marker([state.center.lat, state.center.lon], { icon: circleIcon('transparent', 14, true) })
       .bindPopup('Midpoint').addTo(layer);
     pts.push([state.center.lat, state.center.lon]);
   }
 
   state.results.slice(0, 10).forEach(v => {
     const sel = v.key === selectedKey;
-    L.marker([v.lat, v.lon], { icon: circleIcon(sel ? '#4f9cf9' : '#8a93a5', sel ? 14 : 9) })
+    L.marker([v.lat, v.lon], { icon: circleIcon(sel ? '#E4572E' : '#6F675C', sel ? 14 : 9) })
       .bindPopup(esc(v.name)).addTo(layer);
     if (sel) pts.push([v.lat, v.lon]);
   });
@@ -813,17 +816,16 @@ function locateAsync(p, timeout = 10000) {
         resolve(p);
 
         // Name the place after resolving, so the pin is not held up by it.
-        reverseGeocode(p.lat, p.lon).then(name => {
-          if (!name || p.label !== 'Locating…') return;   // user has since typed
-          p.label = name; p.status = 'You are near ' + name;
-          renderPeople();
-          syncURL();
-        }).catch(() => {
-          if (p.label === 'Locating…') {
-            p.label = 'My location'; p.status = 'Using your current location';
-            renderPeople();
-          }
-        });
+        const settle = (label, status) => {
+          if (p.label !== 'Locating…') return;            // user has since typed
+          p.label = label; p.status = status;
+          renderPeople(); syncURL();
+        };
+        reverseGeocode(p.lat, p.lon)
+          .then(name => name
+            ? settle(name, 'You are near ' + name)
+            : settle('My location', 'Using your current location'))
+          .catch(() => settle('My location', 'Using your current location'));
       },
       err => {
         if (err.code === 1) { state.geoBlocked = true; renderGeoHelp(); }
@@ -969,7 +971,7 @@ function renderCats() {
   const lucky = document.createElement('button');
   lucky.className = 'chip lucky' + (state.lucky ? ' on' : '');
   lucky.id = 'lucky';
-  lucky.textContent = state.lucky ? '🎲 Re-roll' : '🎲 Feeling lucky';
+  lucky.textContent = state.lucky ? 'Re-roll' : 'Surprise us';
   lucky.addEventListener('click', rollLucky);
   host.appendChild(lucky);
 }
@@ -1109,8 +1111,8 @@ function renderResults(selectedKey) {
   if (win) {
     const b = document.createElement('div');
     b.className = 'winner';
-    b.innerHTML = `<b>🎉 ${esc(win.name)}</b>`
-      + `<p>Everyone has voted — ${tally(win.key).up} for.</p>`
+    b.innerHTML = `<b>${esc(win.name)}</b>`
+      + `<p>Everyone has voted. ${tally(win.key).up} in favour.</p>`
       + `<a class="maplink" target="_blank" rel="noopener"
             href="${esc(mapsUrl(win))}">Directions in ${esc(mapsLabel())} ↗</a>`;
     host.appendChild(b);
@@ -1154,11 +1156,11 @@ function renderResults(selectedKey) {
         </div>`).join('')}
       </div>
       <div class="vactions">
-        <button class="vote up ${myVote > 0 ? 'on' : ''}" title="Up for it">👍</button>
-        <button class="vote down ${myVote < 0 ? 'on' : ''}" title="Rule it out">👎</button>
+        <button class="vote up ${myVote > 0 ? 'on' : ''}" title="Up for it">Yes</button>
+        <button class="vote down ${myVote < 0 ? 'on' : ''}" title="Rule it out">No</button>
         <a class="maplink" target="_blank" rel="noopener"
            href="${esc(mapsUrl(v))}">Directions ↗</a>
-        <span class="tally">${t.up}👍 ${t.down}👎</span>
+        <span class="tally">${t.up}&nbsp;yes&nbsp;&nbsp;${t.down}&nbsp;no</span>
       </div>`;
 
     card.addEventListener('click', e => {
@@ -1273,7 +1275,7 @@ async function search() {
       const pool = state.results.slice(0, LUCKY_POOL);
       state.results = shuffle(pool).concat(state.results.slice(LUCKY_POOL));
       const picked = state.cats.map(c => CATS[c]?.label.replace(/^\S+\s/, '')).join(', ');
-      log(`🎲 ${picked} — shuffled from the ${pool.length} fairest. Tap Re-roll for another.`);
+      log(`${picked} — shuffled from the ${pool.length} fairest. Re-roll for another.`);
     }
     else if (chainsHidden === -1)
       log(`Only chains near this midpoint — showing them anyway.`);

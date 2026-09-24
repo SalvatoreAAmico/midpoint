@@ -152,6 +152,40 @@ await page.locator('#noChains').click();
 await page.locator('#find').click();
 await page.waitForTimeout(900);
 
+// ---- hidden means hidden ------------------------------------------------
+ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
+  ['#catResults','#geoHelp','#outlier','#whenTime','#liveBar']
+    .filter(sel => { const e=document.querySelector(sel);
+      return e && e.hasAttribute('hidden') && getComputedStyle(e).display !== 'none'; })
+    .join(',') === ''), await page.evaluate(() =>
+  ['#catResults','#geoHelp','#outlier','#whenTime','#liveBar']
+    .filter(sel => { const e=document.querySelector(sel);
+      return e && e.hasAttribute('hidden') && getComputedStyle(e).display !== 'none'; }).join(',')));
+
+// ---- the located row always settles on a real label ---------------------
+{
+  const odd = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,
+    hasTouch:true, permissions:['geolocation'], geolocation:{latitude:41.9,longitude:-87.63}});
+  await odd.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await odd.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  // a reverse lookup that returns nothing usable
+  await odd.route('**/nominatim.openstreetmap.org/**', r =>
+    r.fulfill({status:200, contentType:'application/json', body:'[]'}));
+  const po = await odd.newPage();
+  await po.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await po.locator('.person').nth(0).locator('.loc').click();
+  await po.waitForTimeout(1200);
+  ok('an unusable reverse lookup still settles the field',
+     (await po.locator('.person').nth(0).locator('.lc').inputValue()) === 'My location',
+     await po.locator('.person').nth(0).locator('.lc').inputValue());
+  ok('and never strands it on "Locating…"',
+     !(await po.locator('.person').nth(0).locator('.lc').inputValue()).includes('Locating'));
+  await odd.close();
+}
+
 // ---- blocked location ---------------------------------------------------
 ok('no blocked-location help when location works', await page.locator('#geoHelp').isHidden());
 {
@@ -345,7 +379,7 @@ const beforeCats = await page.locator('.chip.on').allTextContents();
 await page.locator('#lucky').click();
 await page.waitForSelector('.venue', {timeout:8000});
 await page.waitForTimeout(400);
-const afterCats = (await page.locator('.chip.on').allTextContents()).filter(t=>!t.includes('🎲')&&!t.includes('Independent'));
+const afterCats = (await page.locator('.chip.on').allTextContents()).filter(t=>!t.includes('Surprise')&&!t.includes('Re-roll')&&!t.includes('Independent'));
 ok('a roll selects 3 activity types', afterCats.length === 3, afterCats.join('|'));
 ok('lucky chip switches to Re-roll',
    (await page.locator('#lucky').textContent()).includes('Re-roll'));
@@ -368,7 +402,7 @@ ok('lucky picks are still drawn from fair spots',
 // picking a category by hand leaves lucky mode
 await page.locator('.chip', {hasText:'Coffee'}).first().click();
 ok('manual category choice exits lucky mode',
-   (await page.locator('#lucky').textContent()).includes('Feeling lucky'));
+   (await page.locator('#lucky').textContent()).includes('Surprise us'));
 
 // a midpoint surrounded only by chains must still return something
 {
@@ -423,7 +457,7 @@ const firstName = await page.locator('.venue').first().locator('.vname').textCon
 await page.locator('.venue').first().locator('.vote.up').click();
 await page.waitForTimeout(150);
 ok('vote registers in tally',
-   (await page.locator('.venue').first().locator('.tally').textContent()).trim().startsWith('1👍'));
+   (await page.locator('.venue').first().locator('.tally').textContent()).replace(/\u00a0/g,' ').trim().startsWith('1 yes'));
 ok('vote button shows active state',
    await page.locator('.venue').first().locator('.vote.up').getAttribute('class').then(c=>c.includes('on')));
 
