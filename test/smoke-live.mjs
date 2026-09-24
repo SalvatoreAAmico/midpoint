@@ -166,12 +166,32 @@ await p2.waitForTimeout(700);
 
 ok('second device auto-joined from the link', db.sessions.get('abc1234567').people.length === 2);
 ok('joiner sees live state', await p2.locator('#liveOn').isVisible());
+// The bug a real user hit: joining by link left them invisible on the map.
+ok('joining by link shares location without being asked',
+   db.sessions.get('abc1234567').people[1].lat != null,
+   JSON.stringify(db.sessions.get('abc1234567').people[1]));
+await p2.waitForTimeout(4600);   // let a poll reconcile ids with the server
+ok('no "share my location" prompt once located',
+   await p2.locator('#shareLoc').isHidden());
 
-await p2.locator('.person').nth(1).locator('.nm').fill('Dana');
+// The bug a real user hit: typing a name while polls arrive wiped it.
+// Type slowly, so at least one 4s poll lands mid-word.
+// the remembered name carries into the join, so clear before typing
+await p2.locator('.person').nth(1).locator('.nm').fill('');
+await p2.locator('.person').nth(1).locator('.nm').click();
+await p2.locator('.person').nth(1).locator('.nm').pressSequentially('Dana', {delay:900});
+ok('name survives typing across a poll',
+   (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana',
+   await p2.locator('.person').nth(1).locator('.nm').inputValue());
+ok('the field still has focus after a poll',
+   await p2.evaluate(() => document.activeElement?.classList.contains('nm')));
+await p2.waitForTimeout(5200);
+ok('name still intact a full poll later',
+   (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana',
+   await p2.locator('.person').nth(1).locator('.nm').inputValue());
+await p2.locator('.person').nth(1).locator('.nm').blur();
 await p2.waitForTimeout(300);
-ok('a joiner without a location is flagged, not silently absent',
-   (await page.locator('.person').nth(1).locator('.status').textContent()).includes('no location'),
-   await page.locator('.person').nth(1).locator('.status').textContent());
+
 ok('joiner name pushed to server',
    db.sessions.get('abc1234567').people[1].name === 'Dana',
    JSON.stringify(db.sessions.get('abc1234567').people[1]));
@@ -229,6 +249,43 @@ await p2.locator('#endLive').click();
 await p2.waitForTimeout(500);
 ok('leaving removes you from the session', leaveCalls >= 1);
 ok('leaving clears the code from the URL', !p2.url().includes('?s='));
+
+// ---- a joiner who refuses location gets an obvious way back -------------
+{
+  const denied = await browser.newContext({viewport:{width:390,height:844},
+    isMobile:true, hasTouch:true});   // no geolocation permission granted
+  await denied.route('**/unpkg.com/leaflet**', r => {
+    const u = r.request().url();
+    r.fulfill({status:200, contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body: fs.readFileSync(path.join(LEAFLET, u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});
+  });
+  await denied.route('**/tile.openstreetmap.org/**', r => r.fulfill({status:200,
+    contentType:'image/png', body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==','base64')}));
+  await denied.route('**/config.js', r => r.fulfill({status:200, contentType:'text/javascript',
+    body:"window.MIDPOINT_CONFIG={supabaseUrl:'https://fake.supabase.co',supabaseAnonKey:'anon-test-key'};"}));
+  await denied.route('**/rest/v1/rpc/**', async r => {
+    const fn = r.request().url().split('/rpc/')[1].split('?')[0];
+    const a = JSON.parse(r.request().postData() || '{}');
+    const S = db.sessions.get(a.p_code);
+    if (fn === 'mp_join') { S.people.push({id:'p-denied', name:a.p_name||'', lat:a.p_lat, lon:a.p_lon});
+      return r.fulfill({status:200, contentType:'application/json', body:JSON.stringify({participant_id:'p-denied'})}); }
+    if (fn === 'mp_state') return r.fulfill({status:200, contentType:'application/json', body:JSON.stringify(S)});
+    return r.fulfill({status:204, body:''});
+  });
+  const pd = await denied.newPage();
+  await pd.goto('http://localhost:8099/?s=abc1234567', {waitUntil:'networkidle'});
+  await pd.waitForTimeout(1500);
+  ok('the button appears immediately, not only after the prompt times out',
+     await pd.locator('#shareLoc').isVisible());
+  ok('and the message names it right away',
+     (await pd.locator('#log').textContent()).toLowerCase().includes('share my location'),
+     await pd.locator('#log').textContent());
+  await pd.waitForTimeout(6500);   // the 6s auto-attempt gives up
+  ok('after the attempt gives up, the button is still the way forward',
+     await pd.locator('#shareLoc').isVisible());
+  await denied.close();
+  db.sessions.get('abc1234567').people = db.sessions.get('abc1234567').people.filter(p=>p.id!=='p-denied');
+}
 
 // ---- tap the code to copy it -------------------------------------------
 {

@@ -164,3 +164,7 @@ select{
 .chip.lucky{border-style:dashed}
 .chip.lucky.on{background:var(--warn);border-color:var(--warn);
   border-style:solid;color:#2a1f05;font-weight:700}
+
+#shareLoc{width:100%;margin-top:10px;background:var(--accent);color:var(--accent-ink);
+  border:none;border-radius:var(--r);padding:13px;font-size:15px;font-weight:700}
+#shareLoc:active{filter:brightness(.92)}

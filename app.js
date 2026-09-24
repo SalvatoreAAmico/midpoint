@@ -435,8 +435,20 @@ function addPerson(name) {
   return p;
 }
 
+/* A poll every 4 seconds must not rebuild these rows: recreating an <input>
+   the user is typing in drops focus, closes the keyboard, and loses the
+   characters typed since the last render. So rebuild only when the roster
+   itself changes, and otherwise patch values in place — never touching a
+   field that currently has focus. */
 function renderPeople() {
   const host = $('#people');
+  const signature = state.people.map(p => p.id).join(',') + '|' + state.people.length;
+
+  if (host.dataset.sig === signature && host.children.length === state.people.length) {
+    patchPeople();
+    return;
+  }
+  host.dataset.sig = signature;
   host.innerHTML = '';
 
   state.people.forEach((p, i) => {
@@ -492,9 +504,28 @@ function renderPeople() {
   $('#addPerson').disabled = state.people.length >= MAX_PEOPLE || isLive();
 }
 
+function patchPeople() {
+  const rows = $('#people').children;
+  state.people.forEach((p, i) => {
+    const row = rows[i];
+    if (!row) return;
+    const nm = row.querySelector('.nm');
+    const lc = row.querySelector('.lc');
+    // Leave any field the user is in alone, whatever the server says.
+    if (nm && document.activeElement !== nm && nm.value !== p.name) nm.value = p.name;
+    if (lc && document.activeElement !== lc && lc.value !== (p.label || '')) lc.value = p.label || '';
+    const st = row.querySelector('.status');
+    if (st) {
+      const text = p.status?.replace(/^!/, '') || (p.lat != null ? 'Location set' : '');
+      if (st.textContent !== text) st.textContent = text;
+      st.className = 'status ' + (p.status?.startsWith('!') ? 'err' : p.lat != null ? 'ok' : '');
+    }
+  });
+}
+
 function locate(p) { return locateAsync(p).catch(() => {}); }
 
-function locateAsync(p) {
+function locateAsync(p, timeout = 10000) {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       p.status = '!This browser has no location support';
@@ -516,7 +547,7 @@ function locateAsync(p) {
           : 'Could not get location — type a place instead');
         renderPeople(); reject(err);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout, maximumAge: 60000 }
     );
   });
 }
@@ -530,6 +561,9 @@ function renderLive() {
   $('#joinLive').hidden = live;
   $('#liveOn').hidden = !live;
   if (live && !$('#liveCode').dataset.copied) $('#liveCode').textContent = Sync.code;
+  const mine = state.people.find(p => p.id === Sync.me);
+  $('#shareLoc').hidden = !(live && mine && mine.lat == null);
+
   $('#liveNote').textContent = state.liveErr
     || (live ? 'Everyone in this session sees each other move. Expires in 12 hours.'
              : 'Start a live session and friends join by link — no copying state back and forth.');
@@ -546,16 +580,19 @@ function applyRemote(remote, err) {
     return;
   }
   state.liveErr = '';
-  const editing = document.activeElement?.closest?.('.person');
-  const mineIdx = state.people.findIndex(p => p.id === Sync.me);
+  // Whatever is being typed right now wins over anything the server returns.
+  const focusedRow = document.activeElement?.closest?.('.person');
+  const focusedId = focusedRow ? state.people[[...$('#people').children].indexOf(focusedRow)]?.id : null;
 
-  state.people = (remote.people || []).slice(0, MAX_PEOPLE).map((p, i) => {
+  state.people = (remote.people || []).slice(0, MAX_PEOPLE).map(p => {
     const mine = p.id === Sync.me;
     const prev = state.people.find(x => x.id === p.id);
-    const keepLocal = mine && editing && i === mineIdx;
+    const keepLocal = prev && p.id === focusedId;
     return {
       id: p.id,
-      name: keepLocal && prev ? prev.name : (p.name || ''),
+      // Also keep a local name the server has not echoed yet: the push is in
+      // flight, and accepting the stale empty value would wipe it.
+      name: (keepLocal || (mine && prev?.name && !p.name)) ? prev.name : (p.name || ''),
       lat: p.lat, lon: p.lon,
       label: prev?.label || (p.lat != null ? 'Shared location' : ''),
       status: p.lat != null
@@ -887,6 +924,19 @@ function wireLive() {
 
   $('#liveCode').addEventListener('click', () => copyCode());
 
+  $('#shareLoc').addEventListener('click', async () => {
+    const me = myRow();
+    if (!me) return;
+    try {
+      await locateAsync(me);
+      await Sync.push(me.name, me.lat, me.lon);
+      log('You are on the map.');
+    } catch {
+      log('Location is blocked for this site. Allow it in Safari settings, or type a place above.');
+    }
+    renderLive();
+  });
+
   $('#endLive').addEventListener('click', async () => {
     await Sync.leave();
     history.replaceState(null, '', location.pathname);
@@ -940,16 +990,35 @@ async function copyCode() {
 async function joinSession(code, fromLink) {
   const me = myRow();
   try {
-    await Sync.join(code, me?.name || '', me?.lat ?? null, me?.lon ?? null);
+    await Sync.join(code, me?.name || savedName() || '', me?.lat ?? null, me?.lon ?? null);
     state.liveErr = '';
     history.replaceState(null, '', `?s=${code}`);
-    log(fromLink
-      ? 'Joined the session — tap Locate to add yourself to the map.'
-      : 'Joined the session.');
+
+    // Joining is the same promise as going live — that you land on the map.
+    // Without this the joiner sits in the session invisibly, waiting to notice
+    // a Locate button they have no reason to look for.
+    if (me && me.lat == null) {
+      // Show the manual button straight away rather than only after the
+      // automatic attempt fails — a dismissed prompt otherwise looks like a
+      // dead end for several seconds.
+      renderPeople(); renderLive();
+      log('Joined. Sharing your location, or tap “Share my location”…', true);
+      try {
+        await locateAsync(me, 6000);
+        await Sync.push(me.name, me.lat, me.lon);
+        log('You are on the map.');
+      } catch {
+        // Declined or unavailable: the Share my location button takes over.
+        log('Joined. Tap “Share my location” so the others can see you.');
+      }
+    } else {
+      log('Joined the session.');
+      if (me) await Sync.push(me.name, me.lat, me.lon);
+    }
   } catch (e) {
     state.liveErr = e.message;
   }
-  renderLive();
+  renderPeople(); renderLive();
 }
 
 // Best-effort tidy-up so a closed tab does not leave a ghost pin behind.

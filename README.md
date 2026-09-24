@@ -54,8 +54,10 @@ session with a 10-character code. Seeing your own pin is the confirmation that
 it worked, before anyone else joins. Tap the code to copy it, though the invite
 link is the easier way to share since it joins people automatically.
 
-Anyone in a session who has not shared a location is shown as such, so a sparse
-map reads as "Dana hasn't tapped Locate" rather than as a broken app. Anyone
+Joining by link asks for location the same way going live does, so opening an
+invite puts you on the map without hunting for a button. If the prompt is
+dismissed, a **Share my location** button is there from the moment you join
+rather than appearing only after the attempt gives up. Anyone
 opening the link joins automatically; everyone's pin, name, and votes update in
 place, roughly every 4 seconds. Capped at 4 people, enforced server-side.
 
@@ -162,7 +164,7 @@ fallback, not a setting — there is no reason a user would choose worse numbers
   **48/48 passing**, no JS errors.
 - Schema against a real Postgres as the `anon` role: **18/18 passing** —
   the full session flow, the cap, expiry, and the access restrictions above.
-- Live-session flow against a mocked Supabase backend: **32/32 passing** —
+- Live-session flow against a mocked Supabase backend: **39/39 passing** —
   create, auto-join by link, roster sync, the 4-person cap, expired codes,
   vote propagation, leaving, and the four spend guards above.
 - Live API calls: **verified on a real iPhone** (2026-09-13). Nominatim,
