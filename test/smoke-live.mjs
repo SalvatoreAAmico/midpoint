@@ -69,7 +69,7 @@ await ctx.route('**/router.project-osrm.org/**', r => { calls.osrm++;
 const db = { sessions: new Map() };
 let rpcCalls = 0, leaveCalls = 0;
 
-await ctx.route('**/rest/v1/rpc/**', async r => {
+const rpcHandler = async r => {
   rpcCalls++;
   const fn = r.request().url().split('/rpc/')[1].split('?')[0];
   const a = JSON.parse(r.request().postData() || '{}');
@@ -108,12 +108,54 @@ await ctx.route('**/rest/v1/rpc/**', async r => {
     return send(null, 204);
   }
   return send({message:'unknown '+fn}, 400);
-});
+};
+await ctx.route('**/rest/v1/rpc/**', rpcHandler);
 
 // Point the page at the fake backend by serving a test config.js. Injecting
 // the global earlier would be overwritten by the real config.js on load.
 await ctx.route('**/config.js', r => r.fulfill({status:200, contentType:'text/javascript',
   body:"window.MIDPOINT_CONFIG={supabaseUrl:'https://fake.supabase.co',supabaseAnonKey:'anon-test-key'};"}));
+
+/* A second browser context = a second device: its own localStorage, so it has
+   its own identity. Two tabs in ONE browser deliberately resume as the same
+   person, which is why the joiner needs a real context of its own here. */
+async function newDevice(opts = {}) {
+  const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true,
+    permissions: opts.noGeo ? [] : ['geolocation'],
+    geolocation: opts.noGeo ? undefined : {latitude:41.7943, longitude:-87.5907}});
+  await c.route('**/unpkg.com/leaflet**', r => {
+    const u = r.request().url();
+    r.fulfill({status:200, contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body: fs.readFileSync(path.join(LEAFLET, u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});
+  });
+  await c.route('**/tile.openstreetmap.org/**', r => { calls.tiles++;
+    r.fulfill({status:200, contentType:'image/png',
+      body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')});
+  });
+  await c.route('**/nominatim.openstreetmap.org/**', r => { calls.nominatim++;
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get('q')||'').toLowerCase().trim();
+    const hit = PLACES[q];
+    r.fulfill({status:200, contentType:'application/json',
+               body: JSON.stringify(hit ? [{lat:String(hit.lat), lon:String(hit.lon), display_name:hit.display_name}] : [])});
+  });
+  await c.route('**/api/interpreter', r => { calls.overpass++;
+    r.fulfill({status:200, contentType:'application/json', body: JSON.stringify({elements:
+      VENUES.map((v,i)=>({type:'node', id:1000+i, lat:v[1], lon:v[2], tags:{name:v[0], ...v[3]}}))})});
+  });
+  await c.route('**/router.project-osrm.org/**', r => { calls.osrm++;
+    const u = new URL(r.request().url());
+    const coords = u.pathname.split('/').pop().split(';');
+    const nSrc = u.searchParams.get('sources').split(';').length;
+    const dests = u.searchParams.get('destinations').split(';').map(i=>coords[+i]);
+    r.fulfill({status:200, contentType:'application/json', body: JSON.stringify({code:'Ok',
+      durations: Array.from({length:nSrc}, (_,pi) =>
+        dests.map(cc => { const v = byCoord.get(cc); return v ? (v[4][pi] ?? v[4][0]) : 999; }))})});
+  });
+  await c.route('**/config.js', r => r.fulfill({status:200, contentType:'text/javascript',
+    body:"window.MIDPOINT_CONFIG={supabaseUrl:'https://fake.supabase.co',supabaseAnonKey:'anon-test-key'};"}));
+  await c.route('**/rest/v1/rpc/**', rpcHandler);
+  return c;
+}
 
 const errs = [];
 const page = await ctx.newPage();
@@ -159,7 +201,8 @@ ok('host name reached the server',
    JSON.stringify(db.sessions.get('abc1234567').people[0]));
 
 // a second person opens the shared link
-const p2 = await ctx.newPage();
+const ctx2 = await newDevice();
+const p2 = await ctx2.newPage();
 p2.on('pageerror', e => errs.push('P2 PAGEERROR: '+e.message));
 await p2.goto('http://localhost:8099/?s=abc1234567', {waitUntil:'networkidle'});
 await p2.waitForTimeout(700);
@@ -206,13 +249,13 @@ ok('Add person disabled during a live session', await page.locator('#addPerson')
 
 // session cap enforced server-side
 for (const pid of ['x1','x2','x3','x4','x5','x6']) db.sessions.get('abc1234567').people.push({id:pid,name:pid,lat:41.8,lon:-87.6});
-const p5 = await ctx.newPage();
+const ctx5 = await newDevice(); const p5 = await ctx5.newPage();
 await p5.goto('http://localhost:8099/?s=abc1234567', {waitUntil:'networkidle'});
 await p5.waitForTimeout(600);
 ok('9th person is refused with a clear message',
    (await p5.locator('#liveNote').textContent()).includes('already has 8'),
    await p5.locator('#liveNote').textContent());
-await p5.close();
+await p5.close(); await ctx5.close();
 db.sessions.get('abc1234567').people = db.sessions.get('abc1234567').people.filter(p=>!p.id.startsWith('x'));
 // let the host poll the injected people back out before searching
 await page.waitForTimeout(4600);
@@ -221,13 +264,13 @@ ok('host roster shrinks back after others leave',
    'rows=' + await page.locator('.person').count());
 
 // bad code
-const p6 = await ctx.newPage();
+const ctx6 = await newDevice(); const p6 = await ctx6.newPage();
 await p6.goto('http://localhost:8099/?s=deadbeef99', {waitUntil:'networkidle'});
 await p6.waitForTimeout(500);
 ok('unknown session code explained, not crashed',
    (await p6.locator('#liveNote').textContent()).toLowerCase().includes('expired'),
    await p6.locator('#liveNote').textContent());
-await p6.close();
+await p6.close(); await ctx6.close();
 
 // votes sync between devices
 await page.locator('#find').click();
@@ -243,6 +286,29 @@ await p2.waitForTimeout(5000);
 const tally = await p2.locator('.venue').first().locator('.tally').textContent();
 ok("host's vote reaches the other device within one poll cycle",
    tally.trim().startsWith('1'), tally);
+
+// ---- refreshing must not clone you -------------------------------------
+{
+  const before = db.sessions.get('abc1234567').people.length;
+  for (let i = 0; i < 3; i++) {
+    await p2.reload({waitUntil:'networkidle'});
+    await p2.waitForTimeout(900);
+  }
+  const after = db.sessions.get('abc1234567').people.length;
+  ok('refreshing a shared link does not add duplicates',
+     after === before, `before=${before} after=${after}`);
+  ok('and you are still the same participant',
+     (await p2.evaluate(() => window.Sync.me)) === 'p-1',
+     'Sync.me=' + await p2.evaluate(() => window.Sync.me)
+     + ' stored=' + await p2.evaluate(() => localStorage.getItem('midpoint.session'))
+     + ' people=' + JSON.stringify(db.sessions.get('abc1234567').people.map(x=>x.id)));
+  ok('the session is recognised as resumed',
+     (await p2.locator('#log').textContent()).includes('Back in the session'),
+     await p2.locator('#log').textContent());
+  ok('your name survives the refresh',
+     (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana',
+     await p2.locator('.person').nth(1).locator('.nm').inputValue());
+}
 
 // leaving
 await p2.locator('#endLive').click();

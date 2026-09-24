@@ -1139,6 +1139,17 @@ async function copyCode() {
 async function joinSession(code, fromLink) {
   const me = myRow();
   try {
+    // Refreshing a shared link must not add another copy of you.
+    const resumed = await Sync.resume(code).catch(() => null);
+    if (resumed) {
+      state.liveErr = '';
+      history.replaceState(null, '', `?s=${code}`);
+      applyRemote(resumed);
+      log('Back in the session.');
+      renderLive();
+      return;
+    }
+
     await Sync.join(code, me?.name || savedName() || '', me?.lat ?? null, me?.lon ?? null);
     state.liveErr = '';
     history.replaceState(null, '', `?s=${code}`);
@@ -1170,13 +1181,9 @@ async function joinSession(code, fromLink) {
   renderPeople(); renderLive();
 }
 
-// Best-effort tidy-up so a closed tab does not leave a ghost pin behind.
-window.addEventListener('pagehide', () => {
-  if (isLive() && navigator.sendBeacon) {
-    navigator.sendBeacon(`${Sync.url}/rest/v1/rpc/mp_leave?apikey=${encodeURIComponent(Sync.key)}`,
-      new Blob([JSON.stringify({ p_code: Sync.code, p_participant: Sync.me })],
-               { type: 'application/json' }));
-  }
-});
+/* There is deliberately no pagehide cleanup. On iOS that event also fires when
+   the page is merely backgrounded — switching apps to reply to a text would
+   silently remove you from the meetup. Leaving is explicit, and sessions expire
+   after 12 hours regardless. */
 
 document.addEventListener('DOMContentLoaded', boot);

@@ -25,6 +25,8 @@ const POLL_FLOOR_MS = 2000;
 const MAX_BACKOFF_MS = 60000;
 const MAX_SESSION_MS = 2 * 60 * 60 * 1000;   // auto-leave after 2 hours
 
+const STORE_KEY = 'midpoint.session';
+
 const Sync = {
   url: '', key: '', code: null, me: null,
   timer: null, onState: null, failures: 0,
@@ -61,9 +63,38 @@ const Sync = {
     return res.status === 204 ? null : res.json();
   },
 
+  /* Who you already are in a session, kept across reloads. Without this,
+     refreshing a shared link joins again and again, filling the session with
+     copies of one person. */
+  remember() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ code: this.code, me: this.me })); }
+    catch { /* private browsing */ }
+  },
+  recall(code) {
+    try {
+      const v = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+      return v && v.code === code && v.me ? v.me : null;
+    } catch { return null; }
+  },
+  forget() { try { localStorage.removeItem(STORE_KEY); } catch {} },
+
+  /* Rejoin as yourself if the session still knows you. Returns the remote
+     state on success, or null if you are not in it (left, expired, or a
+     session this device never joined). */
+  async resume(code) {
+    const me = this.recall(code);
+    if (!me) return null;
+    const state = await this.rpc('mp_state', { p_code: code });
+    if (!(state.people || []).some(p => p.id === me)) return null;
+    this.code = code; this.me = me;
+    this.start();
+    return state;
+  },
+
   async create(name, lat, lon) {
     const r = await this.rpc('mp_create', { p_name: name || '', p_lat: lat, p_lon: lon });
     this.code = r.code; this.me = r.participant_id;
+    this.remember();
     this.start();
     return r;
   },
@@ -72,6 +103,7 @@ const Sync = {
     const r = await this.rpc('mp_join',
       { p_code: code, p_name: name || '', p_lat: lat, p_lon: lon });
     this.code = code.toLowerCase(); this.me = r.participant_id;
+    this.remember();
     this.start();
     return r;
   },
@@ -155,7 +187,8 @@ const Sync = {
   async leave() {
     if (!this.live) return;
     const { code, me } = this;
-    this.stop(); this.code = null; this.me = null; this.failures = 0; this.startedAt = 0;
+    this.stop(); this.forget();
+    this.code = null; this.me = null; this.failures = 0; this.startedAt = 0;
     await this.rpc('mp_leave', { p_code: code, p_participant: me }).catch(() => {});
   },
 
