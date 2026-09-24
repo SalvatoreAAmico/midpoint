@@ -153,7 +153,10 @@ select{
 #liveOn{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 #liveCode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;
   letter-spacing:.06em;color:var(--ink);background:#0f1218;border:1px solid var(--line);
-  border-radius:7px;padding:5px 9px;user-select:all}
+  border-radius:7px;padding:5px 9px;user-select:all;cursor:pointer}
+#liveCode:active{border-color:var(--accent)}
+#liveCode[data-copied]{color:var(--good);border-color:var(--good);
+  font-family:inherit;letter-spacing:0}
 #liveBar .hint{margin-top:8px}
 #liveBar .hint.err{color:var(--bad)}
 

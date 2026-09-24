@@ -48,7 +48,14 @@ to trade "convenient for most" against "equal for all".
 
 ## Live sessions (optional)
 
-Tap **Go live** and the app creates a session with a 10-character code. Anyone
+Tap **Go live** and the app puts you on the map first — filling in your name
+(remembered from last time) and asking for your location — then creates a
+session with a 10-character code. Seeing your own pin is the confirmation that
+it worked, before anyone else joins. Tap the code to copy it, though the invite
+link is the easier way to share since it joins people automatically.
+
+Anyone in a session who has not shared a location is shown as such, so a sparse
+map reads as "Dana hasn't tapped Locate" rather than as a broken app. Anyone
 opening the link joins automatically; everyone's pin, name, and votes update in
 place, roughly every 4 seconds. Capped at 4 people, enforced server-side.
 
@@ -155,7 +162,7 @@ fallback, not a setting — there is no reason a user would choose worse numbers
   **48/48 passing**, no JS errors.
 - Schema against a real Postgres as the `anon` role: **18/18 passing** —
   the full session flow, the cap, expiry, and the access restrictions above.
-- Live-session flow against a mocked Supabase backend: **24/24 passing** —
+- Live-session flow against a mocked Supabase backend: **32/32 passing** —
   create, auto-join by link, roster sync, the 4-person cap, expired codes,
   vote propagation, leaving, and the four spend guards above.
 - Live API calls: **verified on a real iPhone** (2026-09-13). Nominatim,

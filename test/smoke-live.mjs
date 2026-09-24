@@ -31,7 +31,8 @@ const byCoord = new Map(VENUES.map(v=>[`${v[2].toFixed(5)},${v[1].toFixed(5)}`, 
 let calls = {nominatim:0, overpass:0, osrm:0, tiles:0};
 
 const browser = await chromium.launch({ ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
-const ctx = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+const ctx = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true,
+  permissions:['geolocation'], geolocation:{latitude:41.9088, longitude:-87.6796}});
 
 await ctx.route('**/unpkg.com/leaflet**', r => {
   const u = r.request().url();
@@ -127,19 +128,35 @@ await page.goto('http://localhost:8099/', {waitUntil:'networkidle'});
 ok('live bar appears when Supabase is configured', await page.locator('#liveBar').isVisible());
 ok('starts in non-live mode', await page.locator('#goLive').isVisible());
 
-// host starts a session
-await page.locator('.person').nth(0).locator('.nm').fill('Sal');
-await page.locator('.person').nth(0).locator('.lc').fill('Wicker Park, Chicago');
-await page.locator('.person').nth(0).locator('.lc').press('Tab');
-await page.waitForTimeout(300);
+// host starts a session WITHOUT setting anything first: Go live should fill
+// in both name and location so the map proves it worked before anyone joins.
 await page.locator('#goLive').click();
-await page.waitForTimeout(600);
+await page.waitForTimeout(1200);
+
+ok('Go live fills in a name when none was typed',
+   (await page.locator('.person').nth(0).locator('.nm').inputValue()).length > 0,
+   await page.locator('.person').nth(0).locator('.nm').inputValue());
+ok('Go live locates you without being asked',
+   db.sessions.get('abc1234567').people[0].lat != null,
+   JSON.stringify(db.sessions.get('abc1234567').people[0]));
+ok('your own row says you are on the map',
+   (await page.locator('.person').nth(0).locator('.status').textContent()).includes('You'),
+   await page.locator('.person').nth(0).locator('.status').textContent());
+ok('log confirms you are on the map',
+   (await page.locator('#log').textContent()).includes('on the map'),
+   await page.locator('#log').textContent());
+
+// now give the host a recognisable name for the rest of the run
+await page.locator('.person').nth(0).locator('.nm').fill('Sal');
+await page.waitForTimeout(300);
 
 ok('session code shown after going live',
    (await page.locator('#liveCode').textContent()).length === 10);
 ok('URL carries the session code', page.url().includes('?s=abc1234567'));
 ok('Go live button hidden while live', await page.locator('#goLive').isHidden());
-ok('host location reached the server', db.sessions.get('abc1234567').people[0].lat != null);
+ok('host name reached the server',
+   db.sessions.get('abc1234567').people[0].name === 'Sal',
+   JSON.stringify(db.sessions.get('abc1234567').people[0]));
 
 // a second person opens the shared link
 const p2 = await ctx.newPage();
@@ -152,6 +169,9 @@ ok('joiner sees live state', await p2.locator('#liveOn').isVisible());
 
 await p2.locator('.person').nth(1).locator('.nm').fill('Dana');
 await p2.waitForTimeout(300);
+ok('a joiner without a location is flagged, not silently absent',
+   (await page.locator('.person').nth(1).locator('.status').textContent()).includes('no location'),
+   await page.locator('.person').nth(1).locator('.status').textContent());
 ok('joiner name pushed to server',
    db.sessions.get('abc1234567').people[1].name === 'Dana',
    JSON.stringify(db.sessions.get('abc1234567').people[1]));
@@ -209,6 +229,29 @@ await p2.locator('#endLive').click();
 await p2.waitForTimeout(500);
 ok('leaving removes you from the session', leaveCalls >= 1);
 ok('leaving clears the code from the URL', !p2.url().includes('?s='));
+
+// ---- tap the code to copy it -------------------------------------------
+{
+  // Headless Chromium has no real clipboard permission, so capture the write.
+  await page.evaluate(() => {
+    window.__copied = null;
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: t => { window.__copied = t; return Promise.resolve(); } }
+    });
+  });
+  const shown = await page.locator('#liveCode').textContent();
+  await page.locator('#liveCode').click();
+  await page.waitForTimeout(150);
+  ok('tapping the code copies it', await page.evaluate(() => window.__copied) === shown,
+     `copied=${await page.evaluate(() => window.__copied)} shown=${shown}`);
+  ok('tapping confirms with a Copied! label',
+     (await page.locator('#liveCode').textContent()).includes('Copied'));
+  await page.waitForTimeout(1400);
+  ok('the code returns after the confirmation',
+     (await page.locator('#liveCode').textContent()) === shown,
+     await page.locator('#liveCode').textContent());
+}
 
 // ---- spend guards -------------------------------------------------------
 {

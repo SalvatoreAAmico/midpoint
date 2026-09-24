@@ -70,6 +70,13 @@ const state = {
 
 const isLive = () => window.Sync?.live;
 
+/* Browsers deliberately do not expose the device name, so the best we can do
+   is remember what you called yourself last time. Storage can throw in private
+   browsing, so every access is guarded. */
+const NAME_KEY = 'midpoint.name';
+const savedName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
+const saveName  = n => { try { n ? localStorage.setItem(NAME_KEY, n) : localStorage.removeItem(NAME_KEY); } catch {} };
+
 /* ------------------------------------------------------------------ utils */
 
 const $ = s => document.querySelector(s);
@@ -451,6 +458,7 @@ function renderPeople() {
 
     row.querySelector('.nm').addEventListener('input', e => {
       p.name = e.target.value;
+      if (i === 0 || p.id === Sync.me) saveName(p.name.trim());
       syncURL();
       if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
     });
@@ -484,25 +492,33 @@ function renderPeople() {
   $('#addPerson').disabled = state.people.length >= MAX_PEOPLE || isLive();
 }
 
-function locate(p) {
-  if (!navigator.geolocation) { p.status = '!This browser has no location support'; renderPeople(); return; }
-  p.status = 'Getting your location…'; renderPeople();
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      p.lat = pos.coords.latitude; p.lon = pos.coords.longitude;
-      p.label = 'My location'; p.status = 'Using your current location';
-      if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
-      else state.me = p.id;
-      refresh();
-    },
-    err => {
-      p.status = '!' + (err.code === 1
-        ? 'Location permission denied — type a place instead'
-        : 'Could not get location — type a place instead');
-      renderPeople();
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-  );
+function locate(p) { return locateAsync(p).catch(() => {}); }
+
+function locateAsync(p) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      p.status = '!This browser has no location support';
+      renderPeople(); reject(new Error('unsupported')); return;
+    }
+    p.status = 'Getting your location…'; renderPeople();
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        p.lat = pos.coords.latitude; p.lon = pos.coords.longitude;
+        p.label = 'My location'; p.status = 'Using your current location';
+        if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
+        else state.me = p.id;
+        refresh();
+        resolve(p);
+      },
+      err => {
+        p.status = '!' + (err.code === 1
+          ? 'Location permission denied — type a place instead'
+          : 'Could not get location — type a place instead');
+        renderPeople(); reject(err);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
 }
 
 function renderLive() {
@@ -513,7 +529,7 @@ function renderLive() {
   $('#goLive').hidden = live;
   $('#joinLive').hidden = live;
   $('#liveOn').hidden = !live;
-  if (live) $('#liveCode').textContent = Sync.code;
+  if (live && !$('#liveCode').dataset.copied) $('#liveCode').textContent = Sync.code;
   $('#liveNote').textContent = state.liveErr
     || (live ? 'Everyone in this session sees each other move. Expires in 12 hours.'
              : 'Start a live session and friends join by link — no copying state back and forth.');
@@ -542,7 +558,9 @@ function applyRemote(remote, err) {
       name: keepLocal && prev ? prev.name : (p.name || ''),
       lat: p.lat, lon: p.lon,
       label: prev?.label || (p.lat != null ? 'Shared location' : ''),
-      status: p.lat != null ? (mine ? 'You' : 'Joined') : 'Waiting for location…'
+      status: p.lat != null
+        ? (mine ? 'You — on the map' : 'On the map')
+        : (mine ? 'Tap Locate to add yourself' : 'Joined, no location shared yet')
     };
   });
   state.me = Sync.me;
@@ -779,7 +797,7 @@ function boot() {
 
   const restored = location.hash.length > 1 && decodeState(location.hash.slice(1));
   if (!restored || !state.people.length) {
-    addPerson(); addPerson();
+    addPerson(savedName()); addPerson();
   }
   if (!state.me) state.me = state.people[0].id;
 
@@ -838,11 +856,23 @@ function wireLive() {
   $('#goLive').addEventListener('click', async () => {
     const me = myRow();
     $('#goLive').disabled = true;
+
+    // Put yourself on the map before anyone joins: an empty map after tapping
+    // Go live reads as a failure, even though the session was created fine.
+    if (me && !me.name.trim()) { me.name = savedName() || 'Me'; renderPeople(); }
+    if (me && me.lat == null) {
+      log('Getting your location…', true);
+      try { await locateAsync(me); }
+      catch { /* denied or unavailable — go live anyway, the row says why */ }
+    }
+
     try {
-      await Sync.create(me?.name || '', me?.lat ?? null, me?.lon ?? null);
+      await Sync.create(me?.name || 'Me', me?.lat ?? null, me?.lon ?? null);
       state.liveErr = '';
       history.replaceState(null, '', `?s=${Sync.code}`);
-      log('Live session started — send the link to your friends.');
+      log(me?.lat != null
+        ? 'You are on the map. Send the invite link to your friends.'
+        : 'Live session started — tap Locate to put yourself on the map.');
     } catch (e) {
       state.liveErr = e.message;
     }
@@ -854,6 +884,8 @@ function wireLive() {
     const code = prompt('Session code?');
     if (code) await joinSession(code.trim().toLowerCase());
   });
+
+  $('#liveCode').addEventListener('click', () => copyCode());
 
   $('#endLive').addEventListener('click', async () => {
     await Sync.leave();
@@ -868,6 +900,41 @@ function wireLive() {
   const code = new URLSearchParams(location.search).get('s');
   if (code) joinSession(code.trim().toLowerCase(), true);
   renderLive();
+}
+
+/* Tapping the code copies it. The clipboard API needs a secure context and
+   can still be refused, so fall back to a selection-based copy and, failing
+   both, leave the text selected for a manual copy. */
+async function copyCode() {
+  const el = $('#liveCode');
+  if (!Sync.code) return;
+  let done = false;
+  try {
+    await navigator.clipboard.writeText(Sync.code);
+    done = true;
+  } catch {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = Sync.code;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-100px';
+      document.body.appendChild(ta);
+      ta.select();
+      done = document.execCommand('copy');
+      ta.remove();
+    } catch { /* fall through to selecting the text */ }
+  }
+  if (done) {
+    el.dataset.copied = '1';
+    el.textContent = 'Copied!';
+    clearTimeout(copyCode._t);
+    copyCode._t = setTimeout(() => {
+      delete el.dataset.copied;
+      el.textContent = Sync.code || '';
+    }, 1200);
+  } else {
+    getSelection()?.selectAllChildren(el);
+  }
 }
 
 async function joinSession(code, fromLink) {
