@@ -67,10 +67,46 @@ check the third section: several things that *feel* native-only aren't.
 call it 25–30%. The UI is a rewrite: HTML/CSS → SwiftUI, Leaflet → MapKit,
 Geolocation → CoreLocation, localStorage → SwiftData.
 
-## 5. The honest trigger
+## 5. Decision: we are building the app
 
-Do not port because the web version feels like a compromise. Port when a
-specific person wants a specific thing on this list — most likely background
-location or push — and the web version is genuinely blocking them.
+Taken deliberately, not by default. The reasoning: an icon on the home screen
+is a standing invitation where a URL has to be remembered; App Store presence
+does real trust work for an app asking for someone's location; and the two
+features that make this habitual — push and background location — are native
+only.
 
-Until then, section 3 is where the value is.
+### What "a functional version" means here
+
+The web version is already functional. What it is not yet is *worth
+reopening*, and that is the gap the port must not paper over. An icon creates
+the opportunity for a habit; a reason to return creates the habit. An app
+opened twice gets deleted, and a deleted app is worse than a bookmark.
+
+So the bar for starting Swift is not "does it work" but "would someone open it
+again next week".
+
+### Pre-port checklist
+
+Do these on the web, where iteration is minutes rather than an App Store
+review cycle:
+
+- [ ] **Used for one real meetup with a real friend.** Still not done. Every
+      technical unknown is now closed; the product unknown is entirely open.
+      If the suggestions are not good, a native shell does not save them.
+- [ ] **Saved groups.** The cheapest reason to return: open the app, tap
+      "Tuesday Crew", done. Local storage, no account, no backend.
+- [ ] **Something worth returning *to*.** Recurring hangouts, a history of
+      where you have been, a veto list — any of it. Without one of these there
+      is nothing for a notification to say.
+- [ ] **A second real meetup, using the saved group.** Proof the loop closes.
+
+### Then the port, cheapest path first
+
+1. **TestFlight before the App Store.** Up to 10,000 testers, no full review.
+   A real icon on a real home screen, which is the actual habit hypothesis,
+   without waiting on review. This is the cheap experiment.
+2. **Port the logic first** — scoring, tag mapping, API calls are near 1:1.
+3. **Ship without background location initially.** It is the most-rejected
+   permission; get approved, then add it in an update with usage data to
+   justify it.
+4. **App Store listing** once TestFlight users are actually reopening it.
