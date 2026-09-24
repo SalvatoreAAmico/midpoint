@@ -53,12 +53,16 @@ opening the link joins automatically; everyone's pin, name, and votes update in
 place, roughly every 4 seconds. Capped at 4 people, enforced server-side.
 
 Setup is in `supabase/schema.sql` — paste it into the Supabase SQL editor, then
-put your project URL and **anon** key into `config.js`. Leave `config.js` blank
-and the app behaves exactly as below, with no backend at all.
+put your project URL and client key into `config.js`. That key is the
+**Publishable** key (`sb_publishable_…`) on projects created since late 2025, or
+the legacy **anon public** key on older ones; both work, and neither is a secret.
+The **Secret** / `service_role` key must never go here — it bypasses every
+protection described below. Leave `config.js` blank and the app behaves exactly
+as below, with no backend at all.
 
 ### Why the database is locked down the way it is
 
-The browser carries a public anon key, so anything that key can reach directly
+The browser carries a public client key, so anything that key can reach directly
 is readable by anyone who views source. Sharing live coordinates that way would
 let a stranger dump every session's locations with one query.
 
