@@ -9,7 +9,11 @@ const MAX_VENUES = 25;            // also caps the OSRM matrix URL length
 /* Route colours, drawn as transit lines are: separable at a 10px dot and
    harmonious as a set. The first four are maximally distinct, since most
    groups are two to four people. See docs/design-system.md. */
-const COLORS = ['#E8624A', '#2E7DB4', '#E0A32E', '#8465C4',
+/* Route colours: the eight people. The first is the brand green, because the
+   first row is almost always you and you are the anchor of your own session.
+   It sits deeper than the accent so a person is still never mistaken for a
+   decision, and no other green appears in the set. */
+const COLORS = ['#3FB37A', '#2E7DB4', '#E0A32E', '#8465C4',
                 '#189C9C', '#D45C93', '#A2714A', '#4E5BC4'];
 /* Fallback speeds in m/s when the routing service is unavailable. Walking
    includes a detour factor: streets are not straight lines. */

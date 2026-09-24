@@ -191,7 +191,7 @@ rather than neon, which is the warmth the palette depends on.
 
 | # | Hex | Name |
 |---|---|---|
-| 1 | `#E8624A` | Coral |
+| 1 | `#3FB37A` | Green |
 | 2 | `#2E7DB4` | Ocean |
 | 3 | `#E0A32E` | Amber |
 | 4 | `#8465C4` | Violet |
@@ -200,8 +200,9 @@ rather than neon, which is the warmth the palette depends on.
 | 7 | `#A2714A` | Sienna |
 | 8 | `#4E5BC4` | Indigo |
 
-No mid-green appears among them: with a green accent, a green person would be
-confusable with the decision.
+The first is the brand green: the first row is almost always you, and you are
+the anchor of your own session. It sits deeper than the accent so a person is
+never mistaken for a decision, and no other green appears in the set.
 
 Order matters: the first four must be maximally separable, since most groups
 are two to four people.

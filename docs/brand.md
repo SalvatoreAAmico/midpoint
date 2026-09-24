@@ -174,13 +174,15 @@ harmonious as a set. Muted rather than neon — the warmth is the point.
 
 | # | Hex | Name | | # | Hex | Name |
 |---|---|---|---|---|---|---|
-| 1 | `#E8624A` | Coral | | 5 | `#189C9C` | Teal |
+| 1 | `#3FB37A` | Green | | 5 | `#189C9C` | Teal |
 | 2 | `#2E7DB4` | Ocean | | 6 | `#D45C93` | Rose |
 | 3 | `#E0A32E` | Amber | | 7 | `#A2714A` | Sienna |
 | 4 | `#8465C4` | Violet | | 8 | `#4E5BC4` | Indigo |
 
-No mid-green appears among them, so no person can be mistaken for the
-decision.
+The first is the brand green, because the first row is almost always you and
+you are the anchor of your own session. It sits deeper than the accent, so a
+person is still not mistaken for a decision, and no other green appears in the
+set.
 
 Assigned in order. The first four are maximally separable because most groups
 are two to four people. **A route colour never means anything but a person** —
