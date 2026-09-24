@@ -24,3 +24,18 @@ Set `CHROME_PATH` if Playwright's bundled browser isn't installed.
 **These mocks prove the app's own logic, not the live APIs.** Nominatim,
 Overpass, and OSRM are only exercised for real when the app runs in a
 browser with network access.
+
+## Schema — the real database
+
+```
+bash test/schema.sh
+```
+Runs `supabase/schema.sql` against a live Postgres and exercises every `mp_*`
+function **as the `anon` role**, the same role the browser's key maps to.
+18 assertions: the full create/join/state/vote/leave flow, the 8-person cap,
+expiry and cascade delete, code uniqueness, and — most importantly — that anon
+**cannot** read the tables directly or reach the internal helpers.
+
+This is the suite that would have caught both bugs the mocked tests missed:
+`gen_random_bytes` being invisible under `search_path = public`, and Postgres
+granting EXECUTE on new functions to PUBLIC by default.

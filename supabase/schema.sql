@@ -12,8 +12,6 @@
 -- Sessions self-destruct after 12 hours. Location data should not outlive the
 -- meetup it was shared for.
 
-create extension if not exists pgcrypto;
-
 -- ---------------------------------------------------------------- tables
 
 create table if not exists public.sessions (
@@ -109,8 +107,12 @@ declare v_code text; v_id uuid; v_pid uuid;
 begin
   perform public.mp_gc();
   loop
-    -- 10 hex chars ~ 40 bits. Enough that codes cannot be guessed in bulk.
-    v_code := encode(gen_random_bytes(5), 'hex');
+    -- 10 hex chars ~ 40 random bits: enough that codes cannot be guessed in
+    -- bulk. Derived from gen_random_uuid(), which is core Postgres, rather
+    -- than pgcrypto's gen_random_bytes: Supabase installs extensions into a
+    -- separate `extensions` schema, so a function pinned to search_path
+    -- = public cannot see them.
+    v_code := substr(replace(gen_random_uuid()::text, '-', ''), 1, 10);
     exit when not exists (select 1 from public.sessions where code = v_code);
   end loop;
   insert into public.sessions(code) values (v_code) returning id into v_id;
@@ -190,7 +192,12 @@ end $$;
 -- ---------------------------------------------------------------- grants
 
 revoke all on public.sessions, public.participants, public.votes from anon, authenticated;
-revoke all on function public.mp_gc(), public.mp_session(text) from anon, authenticated;
+
+-- Postgres grants EXECUTE on a new function to PUBLIC by default, and PUBLIC
+-- includes anon. Revoking from anon alone leaves that default in place, so the
+-- internal helpers must be revoked from PUBLIC explicitly.
+revoke all on function public.mp_gc()             from public, anon, authenticated;
+revoke all on function public.mp_session(text)    from public, anon, authenticated;
 
 grant execute on function public.mp_state(text)                     to anon, authenticated;
 grant execute on function public.mp_create(text, double precision, double precision) to anon, authenticated;
