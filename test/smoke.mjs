@@ -323,6 +323,67 @@ for (const t of ['Pizza','Sushi']) {
 }
 await page.waitForTimeout(150);
 
+// ---- saved groups -------------------------------------------------------
+{
+  ok('the save prompt appears once there are people worth saving',
+     await page.locator('#saveGroup').count() === 1);
+
+  await page.locator('#saveGroup').click();
+  await page.waitForTimeout(200);
+  ok('it suggests a name from the people',
+     (await page.locator('.g-name').inputValue()) === 'Sal, Dana',
+     await page.locator('.g-name').inputValue());
+
+  await page.locator('.g-name').fill('Tuesday crew');
+  await page.locator('.g-ok').click();
+  await page.waitForTimeout(250);
+  ok('the group appears as a chip',
+     (await page.locator('.group-chip .g-load').textContent()).includes('Tuesday crew'));
+  ok('and shows how many people are in it',
+     (await page.locator('.group-chip .g-n').textContent()).trim() === '2');
+  ok('it survives in storage',
+     (await page.evaluate(() => JSON.parse(localStorage.getItem('midpoint.groups')))).length === 1);
+
+  // wipe the roster, then bring it back with one tap
+  await page.locator('.person').nth(0).locator('.nm').fill('');
+  await page.locator('.person').nth(0).locator('.lc').fill('');
+  await page.locator('.person').nth(0).locator('.lc').press('Tab');
+  await page.waitForTimeout(400);
+  await page.locator('.group-chip .g-load').click();
+  await page.waitForTimeout(400);
+  ok('loading restores the names',
+     (await page.locator('.person .nm').evaluateAll(e=>e.map(x=>x.value))).join() === 'Sal,Dana',
+     (await page.locator('.person .nm').evaluateAll(e=>e.map(x=>x.value))).join());
+  ok('and the places',
+     (await page.locator('.person').nth(0).locator('.lc').inputValue()).includes('Wicker Park'),
+     await page.locator('.person').nth(0).locator('.lc').inputValue());
+  ok('and it can search straight away',
+     await page.evaluate(() => !document.querySelector('#find').disabled));
+
+  // saving the same name twice replaces rather than duplicates
+  await page.locator('#saveGroup').click();
+  await page.waitForTimeout(150);
+  await page.locator('.g-name').fill('tuesday crew');
+  await page.locator('.g-ok').click();
+  await page.waitForTimeout(250);
+  ok('re-saving the same name replaces it',
+     await page.locator('.group-chip').count() === 1,
+     String(await page.locator('.group-chip').count()));
+
+  // cancelling leaves nothing behind
+  await page.locator('#saveGroup').click();
+  await page.waitForTimeout(150);
+  await page.locator('.g-cancel').click();
+  await page.waitForTimeout(200);
+  ok('cancelling adds no group', await page.locator('.group-chip').count() === 1);
+
+  await page.locator('.group-chip .g-del').click();
+  await page.waitForTimeout(250);
+  ok('deleting removes it', await page.locator('.group-chip').count() === 0);
+  ok('and clears it from storage',
+     (await page.evaluate(() => JSON.parse(localStorage.getItem('midpoint.groups')))).length === 0);
+}
+
 // ---- browse everything by tapping the empty search box ------------------
 await page.locator('#catSearch').click();
 await page.waitForTimeout(250);

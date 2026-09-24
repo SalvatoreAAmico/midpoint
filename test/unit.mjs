@@ -2,7 +2,7 @@ import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
 src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
-src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED};\n';
+src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED,groupFromPeople,suggestGroupName};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');
 
@@ -174,6 +174,34 @@ ok('every catalogue tag compiles to a filter',
      walk[0].mean > drive[0].mean * 5, `${drive[0].mean.toFixed(0)}s vs ${walk[0].mean.toFixed(0)}s`);
   ok('walking speed is a believable pace (3-6 km/h)',
      m.SPEED.walk*3.6 > 3 && m.SPEED.walk*3.6 < 6, (m.SPEED.walk*3.6).toFixed(1)+' km/h');
+}
+
+// ---- saved groups --------------------------------------------------------
+{
+  const people=[
+    {id:'a',name:'Sal',label:'Wicker Park',lat:41.9,lon:-87.68,flex:false,status:'x'},
+    {id:'b',name:'Ravi',label:'Hyde Park',lat:41.79,lon:-87.59,flex:true,status:'y'},
+    {id:'c',name:'',label:'',lat:null,lon:null,flex:false,status:''}
+  ];
+  const g=m.groupFromPeople('Tuesday crew', people);
+  ok('a group keeps only people worth restoring', g.people.length===2, String(g.people.length));
+  ok('it keeps names, places and coordinates',
+     g.people[0].name==='Sal' && g.people[0].label==='Wicker Park' && g.people[0].lat===41.9);
+  ok('it keeps who volunteered to travel', g.people[1].flex===true);
+  ok('it drops transient status', !('status' in g.people[0]));
+  ok('it drops ids, so a group can be loaded twice', !('id' in g.people[0]));
+  ok('the group itself gets an id', !!g.id);
+  ok('long names are trimmed',
+     m.groupFromPeople('x'.repeat(80), people).name.length===40);
+
+  ok('a suggested name lists the people', m.suggestGroupName(people)==='Sal, Ravi',
+     m.suggestGroupName(people));
+  const many=[{name:'A'},{name:'B'},{name:'C'},{name:'D'}];
+  ok('and summarises when there are many', m.suggestGroupName(many)==='A, B +2',
+     m.suggestGroupName(many));
+  ok('no names gives no suggestion', m.suggestGroupName([{name:''},{name:'  '}])==='');
+  ok('a group of unnamed people with locations still saves',
+     m.groupFromPeople('x',[{name:'',lat:1,lon:2}]).people.length===1);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

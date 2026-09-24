@@ -105,8 +105,7 @@ review cycle:
 - [ ] **Used for one real meetup with a real friend.** Still not done. Every
       technical unknown is now closed; the product unknown is entirely open.
       If the suggestions are not good, a native shell does not save them.
-- [ ] **Saved groups.** The cheapest reason to return: open the app, tap
-      "Tuesday Crew", done. Local storage, no account, no backend.
+- [x] ~~**Saved groups.**~~ Done. Open the app, tap the group, everyone is back.
 - [ ] **Something worth returning *to*.** Recurring hangouts, a history of
       where you have been, a veto list — any of it. Without one of these there
       is nothing for a notification to say.

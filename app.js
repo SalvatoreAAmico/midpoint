@@ -195,6 +195,46 @@ const isLive = () => window.Sync?.live;
    is remember what you called yourself last time. Storage can throw in private
    browsing, so every access is guarded. */
 const NAME_KEY = 'midpoint.name';
+const GROUPS_KEY = 'midpoint.groups';
+const MAX_GROUPS = 12;
+
+/* Saved groups. The commonest real use is the same handful of people over and
+   over, and retyping them every time is the reason nobody opens an app twice.
+   Deliberately local: this needs no account, no backend and no permission, so
+   it works for everyone immediately. */
+function loadGroups() {
+  try {
+    const v = JSON.parse(localStorage.getItem(GROUPS_KEY) || '[]');
+    return Array.isArray(v) ? v.filter(g => g && g.name && Array.isArray(g.people)) : [];
+  } catch { return []; }
+}
+
+function storeGroups(list) {
+  try { localStorage.setItem(GROUPS_KEY, JSON.stringify(list.slice(0, MAX_GROUPS))); }
+  catch { /* private browsing, or full */ }
+}
+
+/* Only what is worth restoring. Ids are regenerated on load so a group can be
+   loaded twice, or loaded into a session that already has people. */
+function groupFromPeople(name, people) {
+  return {
+    id: uid(),
+    name: name.trim().slice(0, 40),
+    people: people
+      .filter(p => p.name?.trim() || p.lat != null)
+      .map(p => ({ name: p.name || '', label: p.label || '',
+                   lat: p.lat ?? null, lon: p.lon ?? null, flex: !!p.flex }))
+      .slice(0, MAX_PEOPLE)
+  };
+}
+
+/* A name you would recognise in a list, from the people in it. */
+function suggestGroupName(people) {
+  const names = people.map(p => p.name?.trim()).filter(Boolean);
+  if (!names.length) return '';
+  if (names.length <= 3) return names.join(', ');
+  return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
+}
 const savedName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
 const saveName  = n => { try { n ? localStorage.setItem(NAME_KEY, n) : localStorage.removeItem(NAME_KEY); } catch {} };
 
@@ -665,7 +705,8 @@ function renderPeople() {
 
   if (host.dataset.sig === signature && host.children.length === state.people.length) {
     patchPeople();
-    return;
+    renderGroups();   // must run on the patch path too, or the save button
+    return;           // never appears while someone is typing names in
   }
   host.dataset.sig = signature;
   host.innerHTML = '';
@@ -736,6 +777,87 @@ function renderPeople() {
   });
 
   $('#addPerson').disabled = state.people.length >= MAX_PEOPLE || isLive();
+  renderGroups();
+}
+
+function renderGroups() {
+  const host = $('#groups');
+  if (!host) return;
+  const groups = loadGroups();
+  const saveable = state.people.filter(p => p.name?.trim() || p.lat != null).length >= 2;
+
+  host.innerHTML = '';
+  host.hidden = !groups.length && !saveable;
+
+  for (const g of groups) {
+    const chip = document.createElement('div');
+    chip.className = 'group-chip';
+    chip.innerHTML =
+      `<button class="g-load">${esc(g.name)}<span class="g-n">${g.people.length}</span></button>`
+      + `<button class="g-del" aria-label="Delete ${esc(g.name)}">&times;</button>`;
+    chip.querySelector('.g-load').addEventListener('click', () => applyGroup(g));
+    chip.querySelector('.g-del').addEventListener('click', () => {
+      storeGroups(loadGroups().filter(x => x.id !== g.id));
+      renderGroups();
+    });
+    host.appendChild(chip);
+  }
+
+  if (saveable) {
+    const b = document.createElement('button');
+    b.className = 'chip g-save';
+    b.id = 'saveGroup';
+    b.textContent = groups.length ? 'Save this group' : 'Save these people as a group';
+    b.addEventListener('click', beginSaveGroup);
+    host.appendChild(b);
+  }
+}
+
+function beginSaveGroup() {
+  const host = $('#groups');
+  const form = document.createElement('div');
+  form.className = 'g-form';
+  form.innerHTML =
+    `<input type="text" class="g-name" maxlength="40" placeholder="Name this group"
+            value="${esc(suggestGroupName(state.people))}">`
+    + `<button class="mini accent g-ok">Save</button>`
+    + `<button class="mini g-cancel">Cancel</button>`;
+  host.replaceChildren(form);
+
+  const input = form.querySelector('.g-name');
+  input.focus(); input.select();
+
+  const save = () => {
+    const name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    const groups = loadGroups().filter(g => g.name.toLowerCase() !== name.toLowerCase());
+    storeGroups([groupFromPeople(name, state.people), ...groups]);
+    renderGroups();
+    log(`Saved “${name}”. Tap it next time instead of typing everyone in.`);
+  };
+  form.querySelector('.g-ok').addEventListener('click', save);
+  form.querySelector('.g-cancel').addEventListener('click', renderGroups);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); save(); }
+    if (e.key === 'Escape') renderGroups();
+  });
+}
+
+function applyGroup(g) {
+  if (isLive()) {
+    log('People join a live session themselves — leave it first to load a group.');
+    return;
+  }
+  state.people = g.people.map(p => ({
+    id: uid(), name: p.name || '', label: p.label || '',
+    lat: p.lat ?? null, lon: p.lon ?? null, flex: !!p.flex,
+    status: p.lat != null ? (p.label || 'Location set') : 'Tap Locate, or type a place'
+  }));
+  if (!state.people.length) addPerson();
+  state.me = state.people[0].id;
+  $('#people').dataset.sig = '';          // roster changed wholesale
+  refresh();
+  log(`Loaded “${g.name}”. Check everyone is still in the right place.`);
 }
 
 function patchPeople() {

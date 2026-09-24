@@ -30,6 +30,12 @@ long-tail wants resolve *upward*: "axe throwing" offers bars instead of
 offering nothing. Only categories dense enough in OSM to return results are
 listed. See `docs/osm-categories.md`.
 
+**Saved groups** keep the people you meet most often. Save the current set
+under a name, tap it next time, and everyone is back with their places already
+filled in. Stored on the device: no account, no backend, nothing to sign up
+for. This is the feature that gives the app a reason to be reopened, which
+nothing else in it did.
+
 **🎲 Feeling lucky** picks three activity types at random and shuffles the
 results, for when nobody can decide. It shuffles *within the twelve fairest*
 spots rather than across everything: a random pick that is forty minutes from
