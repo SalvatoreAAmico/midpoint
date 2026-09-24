@@ -8,6 +8,11 @@ const MAX_PEOPLE = 8;
 const MAX_VENUES = 25;            // also caps the OSRM matrix URL length
 const COLORS = ['#4f9cf9', '#3fbf7f', '#f0b429', '#ef5f5f',
                 '#a78bfa', '#2dd4bf', '#f472b6', '#fb923c'];
+/* Fallback speeds in m/s when the routing service is unavailable. Walking
+   includes a detour factor: streets are not straight lines. */
+const SPEED = { drive: 13.4, walk: 1.05 };
+const MAX_RADIUS = { drive: 20000, walk: 2500 };
+
 const LUCKY_CATS = 3;    // how many activity types a roll picks
 const LUCKY_POOL = 12;   // shuffle within this many of the fairest spots
 
@@ -16,7 +21,7 @@ const OVERPASS = [
   'https://overpass.kumi.systems/api/interpreter'
 ];
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
-const OSRM = 'https://router.project-osrm.org/table/v1/driving/';
+const OSRM = 'https://router.project-osrm.org/table/v1/';
 
 /* Category catalogue. See docs/osm-categories.md for why these tags and not
    others. Rules that shaped it:
@@ -147,6 +152,7 @@ const state = {
   people: [],
   cats: ['coffee'],
   lucky: false,
+  travel: 'drive',    // 'drive' | 'walk'
   when: '',           // '' any time | 'now' | '0'-'6' weekday
   whenTime: '19:00',
   noChains: true,     // on by default: the midpoint Starbucks is a bad answer
@@ -324,8 +330,9 @@ function priceLevel(tags) {
 function encodeState() {
   const payload = {
     p: state.people.map(p => [p.id, p.name, p.lat == null ? null : +p.lat.toFixed(5),
-                              p.lon == null ? null : +p.lon.toFixed(5), p.label || '']),
-    c: state.cats, w: state.when, wt: state.whenTime, r: state.maxPrice,
+                              p.lon == null ? null : +p.lon.toFixed(5), p.label || '',
+                              p.flex ? 1 : 0]),
+    c: state.cats, tv: state.travel, w: state.when, wt: state.whenTime, r: state.maxPrice,
     v: state.votes, l: state.lucky ? 1 : 0, n: state.noChains ? 1 : 0
   };
   const json = JSON.stringify(payload);
@@ -338,12 +345,14 @@ function decodeState(hash) {
     const b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
     const d = JSON.parse(decodeURIComponent(escape(atob(b64))));
     state.people = (d.p || []).slice(0, MAX_PEOPLE).map(a => ({
-      id: a[0], name: a[1] || '', lat: a[2], lon: a[3], label: a[4] || '', status: ''
+      id: a[0], name: a[1] || '', lat: a[2], lon: a[3], label: a[4] || '',
+      flex: !!a[5], status: ''
     }));
     state.cats    = Array.isArray(d.c) && d.c.length ? d.c : ['coffee'];
     // `o` is the old open-now boolean from links made before this control.
     state.when     = d.w !== undefined ? String(d.w) : (d.o ? 'now' : '');
     state.whenTime = d.wt || '19:00';
+    state.travel = d.tv === 'walk' ? 'walk' : 'drive';
     state.maxPrice = d.r || '';
     state.lucky   = !!d.l;
     // Absent in links made before this filter existed; default it on.
@@ -360,6 +369,28 @@ function syncURL() {
 /* ------------------------------------------------------------- geocoding */
 
 const geoCache = new Map();
+const revCache = new Map();
+
+/* Coordinates -> a name a human recognises. "My location" tells you nothing
+   about where you actually are, which matters when several people are
+   comparing rows. zoom=14 lands on neighbourhood rather than street or city. */
+async function reverseGeocode(lat, lon) {
+  const key = lat.toFixed(4) + ',' + lon.toFixed(4);
+  if (revCache.has(key)) return revCache.get(key);
+  const url = `${NOMINATIM.replace('/search', '/reverse')}`
+    + `?format=jsonv2&zoom=14&lat=${lat}&lon=${lon}`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error('Reverse geocoder ' + res.status);
+  const d = await res.json();
+  const a = d.address || {};
+  const local = a.neighbourhood || a.suburb || a.quarter || a.city_district
+             || a.village || a.town || a.city || a.county;
+  const wider = a.city || a.town || a.state;
+  const out = [local, wider !== local ? wider : null].filter(Boolean).join(', ')
+           || (d.display_name || '').split(',').slice(0, 2).join(',').trim();
+  revCache.set(key, out);
+  return out;
+}
 
 async function geocode(q) {
   const key = q.trim().toLowerCase();
@@ -442,12 +473,12 @@ async function fetchVenues(center, radiusM) {
 /* One /table request returns every person x every venue travel time.
    4 people x 25 venues = 100 durations for a single HTTP call. */
 
-async function driveTimes(people, venues) {
+async function driveTimes(people, venues, profile = 'driving') {
   const coords = [...people, ...venues]
     .map(p => `${p.lon.toFixed(5)},${p.lat.toFixed(5)}`).join(';');
   const sources = people.map((_, i) => i).join(';');
   const dests = venues.map((_, i) => i + people.length).join(';');
-  const url = `${OSRM}${coords}?sources=${sources}&destinations=${dests}&annotations=duration`;
+  const url = `${OSRM}${profile}/${coords}?sources=${sources}&destinations=${dests}&annotations=duration`;
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
@@ -465,18 +496,45 @@ async function driveTimes(people, venues) {
    what stops one person always eating the whole drive. */
 
 const SPREAD_WEIGHT = 0.9;
+const FLEX_WEIGHT = 0.35;   // how much someone who volunteered still counts
 
-function scoreVenues(venues, people, matrix) {
+/* Lower is better. The average keeps the spot central; the spread penalty is
+   what stops one person absorbing the whole journey.
+
+   Anyone who has said they don't mind travelling counts less in the average
+   and is left out of the spread entirely. Without that, a single person far
+   from the rest drags the whole group toward them — technically equal, and
+   a trade nobody would choose: seven people each going an hour out of their
+   way to save one person an hour. */
+function scoreVenues(venues, people, matrix, speed = SPEED.drive) {
+  const w = people.map(p => (p.flex ? FLEX_WEIGHT : 1));
+  const wSum = w.reduce((a, b) => a + b, 0);
+  const fixed = people.map((p, i) => i).filter(i => !people[i].flex);
+
   return venues.map((v, vi) => {
-    const costs = people.map((p, pi) => {
-      if (matrix) return matrix[pi][vi];
-      return haversine(p, v) / 13.4;                    // ~30 mph fallback estimate
-    });
+    const costs = people.map((p, pi) =>
+      matrix ? matrix[pi][vi] : haversine(p, v) / speed);
     if (costs.some(c => c == null || !Number.isFinite(c))) return null;
-    const mean = costs.reduce((a, b) => a + b, 0) / costs.length;
-    const spread = Math.max(...costs) - Math.min(...costs);
+
+    const mean = costs.reduce((a, b, i) => a + b * w[i], 0) / wSum;
+    // Spread over the people who did not volunteer; with fewer than two of
+    // them there is no fairness question left to answer.
+    const pool = fixed.length >= 2 ? fixed.map(i => costs[i]) : costs;
+    const spread = Math.max(...pool) - Math.min(...pool);
     return { ...v, costs, mean, spread, score: mean + SPREAD_WEIGHT * spread };
   }).filter(Boolean).sort((a, b) => a.score - b.score);
+}
+
+/* Someone far enough from everyone else that no single spot can serve them.
+   Compared against the median distance so one outlier cannot hide another. */
+function findOutliers(people) {
+  const located = people.filter(p => p.lat != null);
+  if (located.length < 3) return [];
+  const c = centroid(located);
+  const d = located.map(p => haversine(p, c));
+  const sorted = [...d].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)] || 1;
+  return located.filter((p, i) => d[i] > Math.max(3 * median, 25000) && !p.flex);
 }
 
 /* ------------------------------------------------------------------ map */
@@ -535,7 +593,8 @@ function drawMap(selectedKey) {
 
 function addPerson(name) {
   if (state.people.length >= MAX_PEOPLE) return;
-  const p = { id: uid(), name: name || '', lat: null, lon: null, label: '', status: '' };
+  const p = { id: uid(), name: name || '', lat: null, lon: null, label: '',
+              flex: false, status: '' };
   state.people.push(p);
   return p;
 }
@@ -569,6 +628,9 @@ function renderPeople() {
                  value="${esc(p.label)}">
           <button class="mini loc">Locate</button>
         </div>
+        <button class="flex-toggle${p.flex ? ' on' : ''}">
+          ${p.flex ? '✓ Happy to travel further' : 'I can travel further'}
+        </button>
         <div class="status ${p.status?.startsWith('!') ? 'err' : p.lat != null ? 'ok' : ''}">${
           esc(p.status?.replace(/^!/, '') || (p.lat != null ? 'Location set' : ''))}</div>
       </div>
@@ -598,6 +660,11 @@ function renderPeople() {
     });
 
     row.querySelector('.loc').addEventListener('click', () => locate(p));
+    row.querySelector('.flex-toggle').addEventListener('click', () => {
+      p.flex = !p.flex;
+      renderPeople(); syncURL();
+      if (state.results.length) search();
+    });
     row.querySelector('.rm')?.addEventListener('click', () => {
       if (isLive()) return;   // in a live session people join and leave themselves
       state.people = state.people.filter(x => x.id !== p.id);
@@ -642,6 +709,30 @@ async function checkGeoPermission() {
   } catch { /* Permissions API unavailable: we find out on first attempt */ }
 }
 
+/* Say it plainly when one person is too far for any spot to serve, and offer
+   the two honest choices rather than silently picking one. */
+function renderOutliers(located) {
+  const el = $('#outlier');
+  if (!el) return;
+  const far = findOutliers(located);
+  if (!far.length) { el.hidden = true; return; }
+  el.hidden = false;
+  const names = far.map(p => p.name?.trim() || 'Someone').join(' and ');
+  el.innerHTML =
+    `<b>${esc(names)} ${far.length > 1 ? 'are' : 'is'} far from everyone else.</b>`
+    + `<p>Meeting in the middle would send the rest of the group a long way out. `
+    + `You can keep it equal, or let ${esc(names)} take the longer trip.</p>`
+    + `<div class="outlier-actions">
+         <button class="mini" id="outlierFlex">Let ${esc(names)} travel further</button>
+         <button class="mini" id="outlierEqual">Keep it equal for everyone</button>
+       </div>`;
+  $('#outlierFlex').addEventListener('click', () => {
+    for (const p of far) p.flex = true;
+    renderPeople(); syncURL(); search();
+  });
+  $('#outlierEqual').addEventListener('click', () => { el.hidden = true; });
+}
+
 function renderGeoHelp() {
   const el = $('#geoHelp');
   if (!el) return;
@@ -660,11 +751,25 @@ function locateAsync(p, timeout = 10000) {
     navigator.geolocation.getCurrentPosition(
       pos => {
         p.lat = pos.coords.latitude; p.lon = pos.coords.longitude;
-        p.label = 'My location'; p.status = 'Using your current location';
+        p.label = 'Locating…'; p.status = 'Found you — naming the area…';
+        if (!p.name.trim()) p.name = savedName() || '';
         if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
         else state.me = p.id;
         refresh();
         resolve(p);
+
+        // Name the place after resolving, so the pin is not held up by it.
+        reverseGeocode(p.lat, p.lon).then(name => {
+          if (!name || p.label !== 'Locating…') return;   // user has since typed
+          p.label = name; p.status = 'You are near ' + name;
+          renderPeople();
+          syncURL();
+        }).catch(() => {
+          if (p.label === 'Locating…') {
+            p.label = 'My location'; p.status = 'Using your current location';
+            renderPeople();
+          }
+        });
       },
       err => {
         if (err.code === 1) { state.geoBlocked = true; renderGeoHelp(); }
@@ -725,6 +830,7 @@ function applyRemote(remote, err) {
       name: (keepLocal || (mine && prev?.name && !p.name)) ? prev.name : (p.name || ''),
       lat: p.lat, lon: p.lon,
       label: prev?.label || (p.lat != null ? 'Shared location' : ''),
+      flex: prev?.flex || false,
       status: p.lat != null
         ? (mine ? 'You — on the map' : 'On the map')
         : (mine ? 'Tap Locate to add yourself' : 'Joined, no location shared yet')
@@ -920,8 +1026,10 @@ async function search() {
     const center = centroid(located);
     state.center = center;
 
+    const walking = state.travel === 'walk';
     const maxFromCenter = Math.max(...located.map(p => haversine(p, center)), 0);
-    const radius = Math.min(20000, Math.max(1500, maxFromCenter * 0.45));
+    const radius = Math.min(MAX_RADIUS[state.travel],
+                            Math.max(walking ? 600 : 1500, maxFromCenter * 0.45));
 
     log('Searching OpenStreetMap near the midpoint…', true);
     let venues = await fetchVenues(center, radius);
@@ -949,20 +1057,21 @@ async function search() {
     }
 
     // Pre-trim by straight-line fairness so the matrix call stays small.
-    venues = scoreVenues(venues, located, null).slice(0, MAX_VENUES);
+    venues = scoreVenues(venues, located, null, SPEED[state.travel]).slice(0, MAX_VENUES);
 
     let matrix = null;
-    log(`Getting drive times for ${located.length} × ${venues.length} pairs…`, true);
+    log(`Getting ${walking ? 'walking' : 'drive'} times for ${located.length} × ${venues.length} pairs…`, true);
     try {
-      matrix = await driveTimes(located, venues);
+      matrix = await driveTimes(located, venues, walking ? 'foot' : 'driving');
     } catch {
       // Not a user-visible mode: distance stands in for time until OSRM returns,
       // and every figure is marked "~" so an estimate never reads as measured.
-      log('Drive-time service unavailable — showing distance-based estimates.');
+      log(`${walking ? 'Walking' : 'Drive'}-time service unavailable — showing distance-based estimates.`);
     }
 
-    state.results = scoreVenues(venues, located, matrix);
+    state.results = scoreVenues(venues, located, matrix, SPEED[state.travel]);
     state.estimated = !matrix;
+    renderOutliers(located);
 
     if (state.lucky) {
       // Shuffle within the fairest handful rather than across everything:
@@ -975,7 +1084,7 @@ async function search() {
     else if (chainsHidden === -1)
       log(`Only chains near this midpoint — showing them anyway.`);
     else if (matrix)
-      log(`${state.results.length} spots, ranked by real drive time.`
+      log(`${state.results.length} spots, ranked by real ${walking ? 'walking' : 'drive'} time.`
           + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : ''));
     else { /* fallback message already set */ }
 
@@ -1007,6 +1116,7 @@ function boot() {
   if (!state.me) state.me = state.people[0].id;
 
   $('#noChains').classList.toggle('on', state.noChains);
+  $('#travel').value = state.travel;
   $('#whenDay').value = state.when;
   $('#whenTime').value = state.whenTime;
   $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
@@ -1018,6 +1128,12 @@ function boot() {
   checkGeoPermission();
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
+
+  $('#travel').addEventListener('change', e => {
+    state.travel = e.target.value;
+    syncURL();
+    if (state.results.length) search();
+  });
 
   $('#catSearch').addEventListener('input', e => renderCatSearch(e.target.value));
   $('#catSearch').addEventListener('keydown', e => {

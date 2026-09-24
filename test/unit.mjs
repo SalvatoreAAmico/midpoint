@@ -2,7 +2,7 @@ import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
 src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
-src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS};\n';
+src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');
 
@@ -108,6 +108,61 @@ ok('ANDed cuisine tag compiles',
    m.tagFilter('amenity=restaurant&cuisine~pizza'));
 ok('every catalogue tag compiles to a filter',
    m.CATALOG.every(c => c.tags.every(t => m.tagFilter(t).startsWith('['))));
+
+// ---- the outlier problem -------------------------------------------------
+{
+  const cluster = [
+    {lat:41.878,lon:-87.630},{lat:41.895,lon:-87.650},{lat:41.860,lon:-87.615},
+    {lat:41.885,lon:-87.660},{lat:41.870,lon:-87.640},{lat:41.900,lon:-87.625},
+    {lat:41.865,lon:-87.655}
+  ];
+  const far = {lat:42.500,lon:-88.500, name:'Mike'};
+  const all = [...cluster, far];
+  const c = m.centroid(cluster);
+  const venues = [0,0.1,0.25,0.5,0.75,1].map(t => ({
+    key:'v'+t, name:(t*100)+'%',
+    lat:c.lat+(far.lat-c.lat)*t, lon:c.lon+(far.lon-c.lon)*t }));
+
+  ok('a genuinely distant person is detected',
+     m.findOutliers(all).length===1 && m.findOutliers(all)[0].name==='Mike');
+  ok('a normally spread group flags nobody', m.findOutliers(cluster).length===0);
+  ok('fewer than three people never flags anyone',
+     m.findOutliers([cluster[0], far]).length===0);
+
+  const equal = m.scoreVenues(venues, all, null);
+  ok('equal mode still drags the group out (the honest trade-off)',
+     equal[0].name === '50%', equal[0].name);
+
+  const flexed = m.scoreVenues(venues, [...cluster, {...far, flex:true}], null);
+  ok('marking the far person flexible keeps the meetup in town',
+     flexed[0].name === '0%', flexed[0].name);
+
+  const localsAvg = r => r[0].costs.slice(0,7).reduce((a,b)=>a+b,0)/7/60;
+  const saved = localsAvg(equal) - localsAvg(flexed);
+  ok(`each of the 7 saves ~${saved.toFixed(0)} min when he volunteers`, saved > 45,
+     saved.toFixed(0));
+  ok('a flagged person is no longer flagged once flexible',
+     m.findOutliers([...cluster, {...far, flex:true}]).length===0);
+  ok('the far person still gets a real travel time shown',
+     flexed[0].costs[7] > 0 && Number.isFinite(flexed[0].costs[7]));
+
+  // flexibility must not wreck an evenly spread group
+  const evenFlex = m.scoreVenues(venues, cluster.map((p,i)=>({...p, flex:i===0})), null);
+  ok('one volunteer in an even group does not distort the pick',
+     evenFlex[0].name === '0%', evenFlex[0].name);
+}
+
+// ---- walking vs driving --------------------------------------------------
+{
+  const people=[{lat:41.880,lon:-87.630},{lat:41.890,lon:-87.640}];
+  const v=[{key:'a',name:'A',lat:41.885,lon:-87.635}];
+  const drive = m.scoreVenues(v, people, null, m.SPEED.drive);
+  const walk  = m.scoreVenues(v, people, null, m.SPEED.walk);
+  ok('walking takes longer than driving over the same distance',
+     walk[0].mean > drive[0].mean * 5, `${drive[0].mean.toFixed(0)}s vs ${walk[0].mean.toFixed(0)}s`);
+  ok('walking speed is a believable pace (3-6 km/h)',
+     m.SPEED.walk*3.6 > 3 && m.SPEED.walk*3.6 < 6, (m.SPEED.walk*3.6).toFixed(1)+' km/h');
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

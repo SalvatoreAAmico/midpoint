@@ -54,6 +54,18 @@ check the third section: several things that *feel* native-only aren't.
 - [ ] **Better suggestions, fairness tuning, filters.** All algorithm work —
       platform-independent, and the most valuable work available.
 
+## 3b. Known gaps, not native-related
+
+- [ ] **Transit times.** No free transit-routing API worth using; needs a
+      self-hosted OpenTripPlanner. This is the real reason the app is US-shaped:
+      driving is a fair default in most US metros and a poor one in European
+      cities. Walking mode covers dense areas in the meantime.
+- [ ] **Chain detection is US-centric** beyond the `brand` tag. A London user
+      would see Pret and Greggs offered as independents.
+- [ ] **Parking.** `amenity=parking` is densely mapped; showing nearby parking
+      for a chosen venue is cheap and has no native dependency. Worth doing when
+      driving mode is the common case.
+
 ## 4. What going native actually costs
 
 | | |

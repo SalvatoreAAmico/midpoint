@@ -38,6 +38,18 @@ one person would defeat the entire premise. Re-roll never repeats the same set.
 **When** filters by opening hours at a chosen day and time, not just right now —
 so you can plan Friday evening on a Tuesday.
 
+**Driving or walking** changes the routing profile, the search radius (nobody
+walks 20 km) and the fallback speed. If the walking profile is unavailable the
+app estimates from distance and marks every figure `~`.
+
+**One person far from everyone else** is detected and named rather than quietly
+absorbed. Meeting "in the middle" of a lopsided group is equal but absurd — in a
+worked example, seven people each travel an hour further to save one person an
+hour. So the app offers both readings: keep it equal, or let the distant person
+take the longer trip. Anyone can also volunteer at any time with **I can travel
+further**, which drops them out of the fairness spread and reduces their weight
+in the average.
+
 Every suggestion shows a **fairness breakdown**: a bar per person with their
 individual travel time, so the group can see at a glance if one person is eating
 the whole trip.
@@ -45,7 +57,7 @@ the whole trip.
 ## Scoring
 
 ```
-score = mean(travel time) + 0.9 × (max travel time − min travel time)
+score = weighted mean(travel time) + 0.9 × (spread across non-volunteers)
 ```
 
 Lower wins. The mean term keeps the spot central; the **spread penalty** is what
@@ -166,7 +178,7 @@ fallback, not a setting — there is no reason a user would choose worse numbers
 
 ## Testing status
 
-- Core geo/scoring/hours/chain/shuffle/search logic: **48/48 unit tests passing**.
+- Core geo/scoring/hours/chain/shuffle/search/outlier logic: **59/59 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
   **67/67 passing**, no JS errors, including the blocked-location recovery path.
 - Schema against a real Postgres as the `anon` role: **18/18 passing** —
