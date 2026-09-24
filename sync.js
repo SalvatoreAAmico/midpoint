@@ -29,7 +29,8 @@ const STORE_KEY = 'midpoint.session';
 
 const Sync = {
   url: '', key: '', code: null, me: null,
-  timer: null, onState: null, failures: 0,
+  timer: null, onState: null, onWriteError: null, failures: 0,
+  writeFailed: false, needsMigration: false,
   inFlight: false, startedAt: 0, requests: 0, paused: false,
 
   get configured() { return !!(this.url && this.key); },
@@ -91,9 +92,24 @@ const Sync = {
     return state;
   },
 
+  /* PostgREST reports an unknown signature as PGRST202. The label column is
+     added by supabase/fix-002; until that has been run, fall back to the
+     original argument list so the app keeps working rather than failing
+     silently on every write. */
+  async rpcCompat(fn, withLabel, withoutLabel) {
+    try {
+      return await this.rpc(fn, withLabel);
+    } catch (e) {
+      if (!/PGRST202|Could not find the function|does not exist/i.test(e.message)) throw e;
+      this.needsMigration = true;
+      return await this.rpc(fn, withoutLabel);
+    }
+  },
+
   async create(name, label, lat, lon) {
-    const r = await this.rpc('mp_create',
-      { p_name: name || '', p_label: label || '', p_lat: lat, p_lon: lon });
+    const r = await this.rpcCompat('mp_create',
+      { p_name: name || '', p_label: label || '', p_lat: lat, p_lon: lon },
+      { p_name: name || '', p_lat: lat, p_lon: lon });
     this.code = r.code; this.me = r.participant_id;
     this.remember();
     this.start();
@@ -101,8 +117,9 @@ const Sync = {
   },
 
   async join(code, name, label, lat, lon) {
-    const r = await this.rpc('mp_join',
-      { p_code: code, p_name: name || '', p_label: label || '', p_lat: lat, p_lon: lon });
+    const r = await this.rpcCompat('mp_join',
+      { p_code: code, p_name: name || '', p_label: label || '', p_lat: lat, p_lon: lon },
+      { p_code: code, p_name: name || '', p_lat: lat, p_lon: lon });
     this.code = code.toLowerCase(); this.me = r.participant_id;
     this.remember();
     this.start();
@@ -113,11 +130,19 @@ const Sync = {
      label, and on reload the person's own typed location looked lost. */
   push(name, label, lat, lon) {
     if (!this.live) return Promise.resolve();
-    return this.rpc('mp_update', {
-      p_code: this.code, p_participant: this.me,
-      p_name: name || '', p_label: label || '',
-      p_lat: lat ?? null, p_lon: lon ?? null
-    }).catch(() => {});
+    return this.rpcCompat('mp_update',
+      { p_code: this.code, p_participant: this.me,
+        p_name: name || '', p_label: label || '',
+        p_lat: lat ?? null, p_lon: lon ?? null },
+      { p_code: this.code, p_participant: this.me,
+        p_name: name || '', p_lat: lat ?? null, p_lon: lon ?? null }
+    ).then(() => { this.writeFailed = false; })
+     .catch(e => {
+       // Swallowing this meant everything typed after going live vanished on
+       // reload, with nothing on screen to say so.
+       this.writeFailed = true;
+       this.onWriteError?.(e);
+     });
   },
 
   prefs(cats, filters) {

@@ -161,6 +161,16 @@ green while the interface stays quiet, because the brand is carried by the mark
 rather than worn by every surface. Three attempts failed by making the whole
 interface wear the brand.
 
+| **Palette** | Natural: greens and blues, easy on the eyes | "natural colors light green and blues. Nature I like it" |
+| **Character** | Efficient, modern, clean, minimal — the qualities of the mark | "base our brands design around that" |
+
+The mark is the reference point for everything else: whatever is added should
+be as spare as it is. Neutrals now carry a trace of green at the same lightness
+and separation as the palette that read cleanest, so the ground feels natural
+without being tinted. Route colours are drawn from things that are actually
+those colours — fern, lake, teal, heather, moss, sand, clay, slate — with
+greens and blues leading.
+
 Still open: light mode, typography, everything in the sections above.
 
 ---

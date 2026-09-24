@@ -319,6 +319,54 @@ const tally = await p2.locator('.venue').first().locator('.tally').textContent()
 ok("host's vote reaches the other device within one poll cycle",
    tally.trim().startsWith('1'), tally);
 
+// ---- a name typed after going live must survive a refresh --------------
+{
+  await p2.locator('.person').nth(1).locator('.nm').fill('Dana Renamed');
+  await p2.waitForTimeout(600);
+  ok('a later rename reaches the server',
+     db.sessions.get('abc1234567').people[1].name === 'Dana Renamed',
+     JSON.stringify(db.sessions.get('abc1234567').people[1]));
+  await p2.reload({waitUntil:'networkidle'});
+  await p2.waitForTimeout(1000);
+  ok('and survives a refresh',
+     (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana Renamed',
+     await p2.locator('.person').nth(1).locator('.nm').inputValue());
+  await p2.locator('.person').nth(1).locator('.nm').fill('Dana');
+  await p2.waitForTimeout(500);
+}
+
+// ---- the URL carries both the session and the local state --------------
+{
+  const u = await p2.evaluate(() => location.href);
+  ok('the session code survives a state write', u.includes('?s=abc1234567'), u);
+  ok('and the hash survives alongside it', u.includes('#'), u);
+}
+
+// ---- a server that predates the label migration still works ------------
+{
+  const old = await newDevice();
+  await old.route('**/rest/v1/rpc/**', async r => {
+    const fn = r.request().url().split('/rpc/')[1].split('?')[0];
+    const a = JSON.parse(r.request().postData() || '{}');
+    // Reject the new signature the way PostgREST does before fix-002.
+    if ('p_label' in a) return r.fulfill({status:404, contentType:'application/json',
+      body: JSON.stringify({code:'PGRST202', message:'Could not find the function'})});
+    return rpcHandler(r);
+  });
+  const po = await old.newPage();
+  await po.goto('http://localhost:8099/?s=abc1234567', {waitUntil:'networkidle'});
+  await po.waitForTimeout(1500);
+  ok('an un-migrated server still lets someone join',
+     db.sessions.get('abc1234567').people.some(x => x.id !== 'p-host' && x.id !== 'p-1'),
+     JSON.stringify(db.sessions.get('abc1234567').people.map(x=>x.id)));
+  ok('and the app does not report a write failure for it',
+     !(await po.locator('#liveNote').textContent()).includes('Could not save'),
+     await po.locator('#liveNote').textContent());
+  await old.close();
+  db.sessions.get('abc1234567').people =
+    db.sessions.get('abc1234567').people.filter(x => x.id === 'p-host' || x.id === 'p-1');
+}
+
 // ---- refreshing must not clone you -------------------------------------
 {
   const before = db.sessions.get('abc1234567').people.length;

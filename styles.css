@@ -1,6 +1,6 @@
 :root{
-  --bg:#0f1115; --panel:#171a21; --panel-2:#1e222b; --line:#2a2f3a;
-  --ink:#e8ecf3; --muted:#9aa4b5; --dim:#6b7487;
+  --bg:#0F1211; --panel:#171B18; --panel-2:#1E2320; --line:#2A322C;
+  --ink:#E9EFEA; --muted:#9BA89F; --dim:#6E7A72;
   /* The brand green, at a value that reads on a dark ground. "Good" is the
      accent: a second green would be indistinguishable from it. */
   --accent:#4FC98A; --accent-ink:#06170F;

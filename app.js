@@ -9,12 +9,13 @@ const MAX_VENUES = 25;            // also caps the OSRM matrix URL length
 /* Route colours, drawn as transit lines are: separable at a 10px dot and
    harmonious as a set. The first four are maximally distinct, since most
    groups are two to four people. See docs/design-system.md. */
-/* Route colours: the eight people. The first is the brand green, because the
-   first row is almost always you and you are the anchor of your own session.
-   It sits deeper than the accent so a person is still never mistaken for a
-   decision, and no other green appears in the set. */
-const COLORS = ['#3FB37A', '#2E7DB4', '#E0A32E', '#8465C4',
-                '#189C9C', '#D45C93', '#A2714A', '#4E5BC4'];
+/* Route colours: the eight people, drawn from things that are actually those
+   colours — fern, lake, teal, heather, moss, sand, clay, slate. Greens and
+   blues lead, which is where the palette lives; the warm ones exist because
+   eight people still have to be told apart at a 10px dot. The first is the
+   brand green: the first row is almost always you. */
+const COLORS = ['#4FB07A', '#3E8FC4', '#2FA5A5', '#9A86C4',
+                '#7E9B4E', '#D9A85C', '#C7715A', '#6F87A8'];
 /* Fallback speeds in m/s when the routing service is unavailable. Walking
    includes a detour factor: streets are not straight lines. */
 const SPEED = { drive: 13.4, walk: 1.05 };
@@ -407,8 +408,17 @@ function decodeState(hash) {
   } catch { return false; }
 }
 
+/* The session code lives in the query string and local state in the hash.
+   Writing one must not drop the other: `#state` alone discards ?s=, and
+   `?s=code` alone discards the hash. */
 function syncURL() {
-  history.replaceState(null, '', '#' + encodeState());
+  history.replaceState(null, '',
+    location.pathname + location.search + '#' + encodeState());
+}
+
+function setSessionParam(code) {
+  const search = code ? `?s=${encodeURIComponent(code)}` : '';
+  history.replaceState(null, '', location.pathname + search + location.hash);
 }
 
 /* ------------------------------------------------------------- geocoding */
@@ -625,7 +635,7 @@ function drawMap(selectedKey) {
 
   state.results.slice(0, 10).forEach(v => {
     const sel = v.key === selectedKey;
-    L.marker([v.lat, v.lon], { icon: circleIcon(sel ? '#2F6F4F' : '#8B958E', sel ? 14 : 9) })
+    L.marker([v.lat, v.lon], { icon: circleIcon(sel ? '#4FC98A' : '#7C8880', sel ? 14 : 9) })
       .bindPopup(esc(v.name)).addTo(layer);
     if (sel) pts.push([v.lat, v.lon]);
   });
@@ -1412,6 +1422,12 @@ function myRow() {
 function wireLive() {
   if (!window.Sync?.init(window.MIDPOINT_CONFIG)) { renderLive(); return; }
   Sync.onState = applyRemote;
+  Sync.onWriteError = () => {
+    state.liveErr = Sync.needsMigration
+      ? 'Live session is out of date — run supabase/fix-002 to save names and places.'
+      : 'Could not save that change. Check your connection.';
+    renderLive();
+  };
 
   $('#goLive').addEventListener('click', async () => {
     const me = myRow();
@@ -1429,7 +1445,7 @@ function wireLive() {
     try {
       await Sync.create(me?.name || 'Me', me?.label || '', me?.lat ?? null, me?.lon ?? null);
       state.liveErr = '';
-      history.replaceState(null, '', `?s=${Sync.code}`);
+      setSessionParam(Sync.code);
       log(me?.lat != null
         ? 'You are on the map. Send the invite link to your friends.'
         : 'Live session started — tap Locate to put yourself on the map.');
@@ -1462,7 +1478,7 @@ function wireLive() {
 
   $('#endLive').addEventListener('click', async () => {
     await Sync.leave();
-    history.replaceState(null, '', location.pathname);
+    setSessionParam(null);
     state.people = state.people.filter(p => p.id === state.me);
     if (!state.people.length) addPerson();
     log('Left the session.');
@@ -1517,7 +1533,7 @@ async function joinSession(code, fromLink) {
     const resumed = await Sync.resume(code).catch(() => null);
     if (resumed) {
       state.liveErr = '';
-      history.replaceState(null, '', `?s=${code}`);
+      setSessionParam(code);
       applyRemote(resumed);
       log('Back in the session.');
       renderLive();
@@ -1526,7 +1542,7 @@ async function joinSession(code, fromLink) {
 
     await Sync.join(code, me?.name || savedName() || '', me?.label || '', me?.lat ?? null, me?.lon ?? null);
     state.liveErr = '';
-    history.replaceState(null, '', `?s=${code}`);
+    setSessionParam(code);
 
     // Joining is the same promise as going live — that you land on the map.
     // Without this the joiner sits in the session invisibly, waiting to notice
