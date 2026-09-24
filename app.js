@@ -157,7 +157,8 @@ const state = {
   results: [],
   center: null,
   estimated: false,
-  liveErr: ''
+  liveErr: '',
+  geoBlocked: false
 };
 
 const isLive = () => window.Sync?.live;
@@ -557,9 +558,10 @@ function renderPeople() {
 
   state.people.forEach((p, i) => {
     const row = document.createElement('div');
-    row.className = 'person';
+    row.className = 'person' + (p.id === state.me ? ' me' : '');
     row.innerHTML = `
       <span class="dot" style="background:${COLORS[i % COLORS.length]}"></span>
+      ${p.id === state.me ? '<span class="you-tag">You</span>' : ''}
       <div class="fields">
         <input type="text" class="nm" placeholder="Name" value="${esc(p.name)}">
         <div class="loc-row">
@@ -627,6 +629,25 @@ function patchPeople() {
   });
 }
 
+/* iOS never re-prompts once location is denied: every later call fails
+   instantly with no dialog. So check the standing state up front and say what
+   to do, instead of showing the same dead-end error over and over. */
+async function checkGeoPermission() {
+  try {
+    const st = await navigator.permissions?.query({ name: 'geolocation' });
+    if (!st) return;
+    const apply = () => { state.geoBlocked = st.state === 'denied'; renderGeoHelp(); };
+    apply();
+    st.onchange = apply;                 // fires if they fix it in Settings
+  } catch { /* Permissions API unavailable: we find out on first attempt */ }
+}
+
+function renderGeoHelp() {
+  const el = $('#geoHelp');
+  if (!el) return;
+  el.hidden = !state.geoBlocked;
+}
+
 function locate(p) { return locateAsync(p).catch(() => {}); }
 
 function locateAsync(p, timeout = 10000) {
@@ -646,10 +667,15 @@ function locateAsync(p, timeout = 10000) {
         resolve(p);
       },
       err => {
+        if (err.code === 1) { state.geoBlocked = true; renderGeoHelp(); }
         p.status = '!' + (err.code === 1
-          ? 'Location permission denied — type a place instead'
-          : 'Could not get location — type a place instead');
-        renderPeople(); reject(err);
+          ? 'Location blocked — type a neighborhood here instead'
+          : 'Could not get location — type a neighborhood here instead');
+        renderPeople();
+        // Point them at the box that still works.
+        const row = [...$('#people').children][state.people.indexOf(p)];
+        row?.querySelector('.lc')?.focus();
+        reject(err);
       },
       { enableHighAccuracy: true, timeout, maximumAge: 60000 }
     );
@@ -989,6 +1015,7 @@ function boot() {
   renderPeople();
   renderCats();
   drawMap();
+  checkGeoPermission();
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
 

@@ -168,10 +168,10 @@ fallback, not a setting — there is no reason a user would choose worse numbers
 
 - Core geo/scoring/hours/chain/shuffle/search logic: **48/48 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
-  **60/60 passing**, no JS errors.
+  **67/67 passing**, no JS errors, including the blocked-location recovery path.
 - Schema against a real Postgres as the `anon` role: **18/18 passing** —
   the full session flow, the cap, expiry, and the access restrictions above.
-- Live-session flow against a mocked Supabase backend: **39/39 passing** —
+- Live-session flow against a mocked Supabase backend: **43/43 passing** —
   create, auto-join by link, roster sync, the 4-person cap, expired codes,
   vote propagation, leaving, and the four spend guards above.
 - Live API calls: **verified on a real iPhone** (2026-09-13). Nominatim,

@@ -152,6 +152,54 @@ await page.locator('#noChains').click();
 await page.locator('#find').click();
 await page.waitForTimeout(900);
 
+// ---- blocked location ---------------------------------------------------
+ok('no blocked-location help when location works', await page.locator('#geoHelp').isHidden());
+{
+  // Simulate iOS after a refusal: the call fails instantly with code 1.
+  const blocked = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+  await blocked.route('**/unpkg.com/leaflet**', r => {
+    const u = r.request().url();
+    r.fulfill({status:200, contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body: fs.readFileSync(path.join(LEAFLET, u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});
+  });
+  await blocked.route('**/tile.openstreetmap.org/**', r => r.fulfill({status:200,
+    contentType:'image/png', body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  await blocked.route('**/nominatim.openstreetmap.org/**', r => {
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get('q')||'').toLowerCase().trim();
+    const hit = PLACES[q];
+    r.fulfill({status:200, contentType:'application/json',
+      body: JSON.stringify(hit ? [{lat:String(hit.lat), lon:String(hit.lon), display_name:hit.display_name}] : [])});
+  });
+  await blocked.addInitScript(() => {
+    navigator.geolocation.getCurrentPosition = (_ok, err) =>
+      err({ code: 1, message: 'User denied Geolocation' });
+  });
+  const pb = await blocked.newPage();
+  await pb.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await pb.locator('.person').nth(0).locator('.loc').click();
+  await pb.waitForTimeout(400);
+
+  ok('a refusal shows the recovery instructions', await pb.locator('#geoHelp').isVisible());
+  ok('instructions name the aA button, not clearing all data',
+     (await pb.locator('#geoHelp').textContent()).includes('aA'));
+  ok('and say typing a place works instead',
+     (await pb.locator('#geoHelp').textContent()).toLowerCase().includes('type a neighborhood'));
+  ok('focus moves to the box that still works',
+     await pb.evaluate(() => document.activeElement?.classList.contains('lc')));
+  ok('the row status points at the same box',
+     (await pb.locator('.person').nth(0).locator('.status').textContent()).includes('type a neighborhood'),
+     await pb.locator('.person').nth(0).locator('.status').textContent());
+
+  // typing a place must still fully work while blocked
+  await pb.locator('.person').nth(0).locator('.lc').fill('Wicker Park, Chicago');
+  await pb.locator('.person').nth(0).locator('.lc').press('Tab');
+  await pb.waitForTimeout(600);
+  ok('typing a place works even with location blocked',
+     (await pb.locator('.person').nth(0).locator('.status').textContent()).includes('Wicker Park'),
+     await pb.locator('.person').nth(0).locator('.status').textContent());
+  await blocked.close();
+}
+
 // ---- category search ----------------------------------------------------
 ok('search box present', await page.locator('#catSearch').count()===1);
 ok('no results panel before typing', await page.locator('#catResults').isHidden());
