@@ -344,6 +344,12 @@ ok('tapping away closes the list', await page.locator('#catResults').isHidden())
 // ---- directions open in the chosen maps app -----------------------------
 {
   const link = () => page.locator('.venue').first().locator('.maplink');
+  ok('the maps preference is not in the filter row',
+     await page.locator('.filters #maps').count() === 0);
+  ok('and appears with the results, where directions are',
+     await page.locator('#mapsPref').isVisible());
+  ok('it is labelled, not a bare dropdown',
+     (await page.locator('#mapsPref label').textContent()).includes('Directions open in'));
   await page.selectOption('#maps', 'google');
   await page.waitForTimeout(200);
   ok('Google Maps selected gives a Google link',

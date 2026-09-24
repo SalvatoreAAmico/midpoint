@@ -1189,6 +1189,8 @@ function renderResults(selectedKey) {
     host.appendChild(v);
   }
 
+  $('#mapsPref').hidden = false;
+
   if (!isLive()) {
     const note = document.createElement('div');
     note.className = 'note';

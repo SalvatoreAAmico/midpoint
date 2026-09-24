@@ -238,3 +238,10 @@ input[type=time]{width:auto;font-size:14px;padding:8px 11px}
 
 /* The midpoint is a place, not a person: a ring, never a filled dot. */
 .pin.mid{background:transparent!important;border:3px solid var(--ink)}
+
+/* A preference, not a filter: it changes which app opens, never the results.
+   Grouping it with the filters made people read it as one. */
+#mapsPref{display:flex;align-items:center;gap:9px;margin-top:14px;
+  padding-top:14px;border-top:1px solid var(--line)}
+#mapsPref label{font-size:12.5px;color:var(--dim)}
+#mapsPref select{width:auto;padding:7px 10px;font-size:13px}
