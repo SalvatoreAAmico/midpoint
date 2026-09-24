@@ -5,11 +5,15 @@
 :root{
   /* Warm neutrals, hue 30-38. Cold blue-greys are banned: they are the
      default of every generated interface. */
-  --ground:#14120F; --surface:#1C1915; --raised:#24201B; --line:#332D26;
-  --ink:#F5F1EA;    --ink-2:#A9A093;   --ink-3:#6F675C;
+  /* Near-neutral with a trace of warmth, and real distance between levels.
+     The previous ramp sat within ten lightness points end to end, which read
+     as mud: no separation means no structure. */
+  --ground:#0C0C0D; --surface:#17171A; --raised:#202024; --line:#2E2E34;
+  --ink:#F4F3F1;    --ink-2:#A3A2A0;   --ink-3:#737270;
 
-  /* One accent. It means "the decision" and nothing else. */
-  --signal:#E4572E; --signal-ink:#1A0E08;
+  /* One accent, lightened for dark ground: a saturated mid-tone on a dark
+     field vibrates, which is tiring over a minute of use. */
+  --signal:#FF7A55; --signal-ink:#1A0A05;
   --agree:#3F7D5C;  --caution:#C98A26; --against:#A8382A;
 
   /* Route colours: the eight people, drawn as transit lines. */
@@ -20,7 +24,7 @@
   --r-pill:999px; --r-card:6px;
 
   --safe-b:env(safe-area-inset-bottom,0px);
-  --sans:'Archivo','Archivo Fallback',system-ui,sans-serif;
+  --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Archivo',system-ui,sans-serif;
   --serif:'Fraunces','Fraunces Fallback',Georgia,serif;
   --mono:'JetBrains Mono','JetBrains Mono Fallback',ui-monospace,monospace;
 }
@@ -29,9 +33,9 @@
    Light mode is not an afterthought. */
 @media (prefers-color-scheme: light){
   :root{
-    --ground:#F7F4EE; --surface:#FFFFFF; --raised:#F1ECE3; --line:#E0D8CB;
-    --ink:#1A1713;    --ink-2:#5E564C;   --ink-3:#8C8378;
-    --signal-ink:#FFF6F2;
+    --ground:#F2F1EF; --surface:#FFFFFF; --raised:#F7F6F4; --line:#E2E0DC;
+    --ink:#16161A;    --ink-2:#5A5A5E;   --ink-3:#8A8A8E;
+    --signal:#D1442A; --signal-ink:#FFF6F2;
   }
 }
 
@@ -60,15 +64,15 @@ button{font:inherit;color:inherit;cursor:pointer;font-family:var(--sans)}
   flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
   background:var(--surface);border-radius:18px 18px 0 0;
   margin-top:-18px;position:relative;z-index:400;
-  box-shadow:0 -10px 34px rgba(0,0,0,.32);      /* the only elevation */
+  box-shadow:0 -1px 0 var(--line);              /* a seam, not a drop shadow */
   padding:0 20px calc(32px + var(--safe-b));
 }
 .grabber{width:34px;height:4px;border-radius:var(--r-pill);background:var(--line);
   margin:10px auto 6px}
 
 h1{
-  display:flex;align-items:center;gap:11px;
-  font:500 34px/1.05 var(--serif);
+  display:flex;align-items:center;gap:10px;
+  font:500 29px/1.05 var(--serif);
   font-variation-settings:'SOFT' 20,'WONK' 1,'opsz' 40;
   margin:10px 0 2px;letter-spacing:-.01em;
 }
@@ -81,10 +85,12 @@ h2{
 
 /* ---------------------------------------------------------------- people */
 .person{
-  background:var(--raised);border-radius:var(--r-card);
-  padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;
+  padding:12px 0;display:flex;gap:11px;align-items:flex-start;
+  border-bottom:1px solid var(--line);
 }
-.person.me{box-shadow:inset 3px 0 0 var(--signal)}
+.person:first-child{padding-top:4px}
+.person:last-of-type{border-bottom:none}
+.person.me .you-tag{color:var(--signal)}
 .dot{width:10px;height:10px;border-radius:var(--r-pill);flex:0 0 auto;margin-top:13px}
 .you-tag{
   font:600 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;
@@ -93,20 +99,20 @@ h2{
 .person .fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
 
 input[type=text],input[type=search],input[type=time],select{
-  width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);
-  border-radius:var(--r-pill);padding:11px 14px;
+  width:100%;background:var(--raised);border:1px solid transparent;color:var(--ink);
+  border-radius:10px;padding:11px 13px;
   font:400 16px/1.2 var(--sans);   /* 16px minimum or iOS zooms on focus */
   outline:none;-webkit-appearance:none;appearance:none;
 }
 input:focus,select:focus{border-color:var(--signal)}
 input::placeholder{color:var(--ink-3)}
-select,input[type=time]{width:auto;padding:9px 13px;font-size:14px}
+select,input[type=time]{width:auto;padding:9px 12px;font-size:14px;border-radius:9px}
 
 .loc-row{display:flex;gap:7px}
 .loc-row input{flex:1}
 .mini{
-  background:none;border:1px solid var(--line);border-radius:var(--r-pill);
-  padding:9px 14px;color:var(--ink-2);font:500 13px/1 var(--sans);white-space:nowrap;
+  background:var(--raised);border:1px solid transparent;border-radius:10px;
+  padding:9px 14px;color:var(--ink);font:500 13px/1 var(--sans);white-space:nowrap;
   min-height:44px;
 }
 .mini:active{background:var(--raised)}
@@ -180,25 +186,28 @@ select,input[type=time]{width:auto;padding:9px 13px;font-size:14px}
 
 /* --------------------------------------------------------------- results */
 .venue{
-  background:var(--raised);border-radius:var(--r-card);
-  padding:14px;margin-bottom:8px;border:1px solid transparent;
+  padding:15px 0;border-bottom:1px solid var(--line);
 }
-.venue.sel{border-color:var(--line)}
-.venue.won{box-shadow:inset 3px 0 0 var(--agree)}
+.venue.sel .vname{color:var(--signal)}
+.venue.won{border-left:2px solid var(--agree);padding-left:12px}
 .venue.vetoed{opacity:.45}
 .venue.vetoed .vname{text-decoration:line-through}
 .vhead{display:flex;gap:10px;align-items:baseline}
 .rank{font:500 13px/1.2 var(--mono);color:var(--ink-3);flex:0 0 auto;
   font-variant-numeric:tabular-nums}
-.vname{font:600 15px/1.3 var(--sans);flex:1;min-width:0;overflow:hidden;
+.vname{font:600 16px/1.3 var(--sans);flex:1;min-width:0;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .vkind{font:600 11px/1.3 var(--sans);letter-spacing:.06em;text-transform:uppercase;
   color:var(--ink-3);flex:0 0 auto}
 .vmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .pill{
-  font:500 11.5px/1 var(--sans);color:var(--ink-2);
-  background:var(--surface);border-radius:var(--r-pill);padding:5px 9px;
+  font:500 11.5px/1 var(--sans);color:var(--ink-3);
+  background:none;padding:0;
 }
+.vmeta{gap:14px}
+.vmeta .pill + .pill{position:relative}
+.vmeta .pill + .pill::before{content:'';position:absolute;left:-8px;top:50%;
+  width:2px;height:2px;border-radius:99px;background:var(--line)}
 .pill.good{color:var(--agree)} .pill.warn{color:var(--caution)}
 .pill.bad{color:var(--against)}
 
@@ -206,15 +215,15 @@ select,input[type=time]{width:auto;padding:9px 13px;font-size:14px}
 .fairrow{display:flex;align-items:center;gap:9px}
 .fairrow .nm{width:64px;flex:0 0 auto;font:400 12px/1.2 var(--sans);color:var(--ink-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar{flex:1;height:6px;background:var(--surface);border-radius:var(--r-pill);overflow:hidden}
+.bar{flex:1;height:5px;background:var(--raised);border-radius:var(--r-pill);overflow:hidden}
 .bar > i{display:block;height:100%;border-radius:var(--r-pill)}
 .fairrow .tm{width:56px;text-align:right;flex:0 0 auto;
   font:500 12.5px/1.2 var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
 
 .vactions{display:flex;gap:7px;margin-top:12px;align-items:center}
 .vote{
-  background:var(--surface);border:1px solid transparent;border-radius:var(--r-pill);
-  padding:8px 14px;font-size:14px;min-height:40px;
+  background:var(--raised);border:1px solid transparent;border-radius:var(--r-pill);
+  padding:8px 15px;font-size:13.5px;min-height:38px;color:var(--ink-2);
 }
 .vote.up.on{border-color:var(--agree)}
 .vote.down.on{border-color:var(--against)}
@@ -256,7 +265,7 @@ select,input[type=time]{width:auto;padding:9px 13px;font-size:14px}
 .outlier-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 
 /* ----------------------------------------------------------- live session */
-#liveBar{margin-top:18px;padding:13px;background:var(--raised);border-radius:var(--r-card)}
+#liveBar{margin-top:18px;padding:14px 0 0;border-top:1px solid var(--line)}
 .live-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 #liveOn{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 #liveCode{

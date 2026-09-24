@@ -105,14 +105,19 @@ Why: 2026 has moved back toward expressive serif headlines, and Fraunces has
 genuine character without being a novelty face. Used at one or two points per
 screen, it does all the identity work.
 
-### Archivo — interface
-Grotesque drawn from signage and high-performance print, with a width axis.
-Exceptional at small sizes on dense screens, which is the whole app. Every
-label, button, input and body string.
+### The system font — interface
+`-apple-system` first, which is SF Pro on an iPhone, falling back to Archivo
+then the platform default. Every label, button, input and body string.
 
-Why: signage heritage is on-concept, and it holds up at 12px on a phone in
-sunlight, which `Inter` — now so ubiquitous it reads as a non-choice — does not
-do better.
+Why the reversal: the first version set the whole interface in Archivo, and the
+result was that the chrome competed with the content. Apple's oldest interface
+principle is *deference* — the interface gives way to what the user came for —
+and on iOS the system font is the most deferential type available, because it
+is the one the reader is not conscious of reading. The identity lives in the
+display face and the mark; it does not need to live in every button label.
+
+Archivo remains the fallback and the face for any non-Apple surface, so the
+system stays coherent off-platform.
 
 ### JetBrains Mono — data
 Every number: travel times, distances, vote tallies, session codes. Tabular by
@@ -127,10 +132,10 @@ A restrained ratio. Most of the app lives in two sizes; the rest is emphasis.
 |---|---|---|---|
 | `display` | 34 / 1.05 | Fraunces 500 | App name, the decision |
 | `title` | 21 / 1.2 | Fraunces 500 | Section moments, empty-state headlines |
-| `heading` | 15 / 1.3 | Archivo 600 | Venue names, person names |
-| `body` | 15 / 1.45 | Archivo 400 | Everything |
-| `label` | 13 / 1.35 | Archivo 500 | Buttons, chips, inputs |
-| `micro` | 11 / 1.3, +0.08em, uppercase | Archivo 600 | Section headers, tags |
+| `heading` | 16 / 1.3 | System 600 | Venue names, person names |
+| `body` | 15 / 1.45 | System 400 | Everything |
+| `label` | 13 / 1.35 | System 500 | Buttons, chips, inputs |
+| `micro` | 11 / 1.3, +0.08em, uppercase | System 600 | Section headers, tags |
 | `data` | 13 / 1.2 | JetBrains Mono 500 | Times, distances, codes |
 
 Rules:
@@ -145,13 +150,19 @@ Rules:
 
 | Token | Dark | Light | Use |
 |---|---|---|---|
-| `--ground` | `#14120F` | `#F7F4EE` | Page behind everything |
-| `--surface` | `#1C1915` | `#FFFFFF` | The sheet |
-| `--raised` | `#24201B` | `#F1ECE3` | Cards within the sheet |
-| `--line` | `#332D26` | `#E0D8CB` | Hairlines only |
-| `--ink` | `#F5F1EA` | `#1A1713` | Primary text |
-| `--ink-2` | `#A9A093` | `#5E564C` | Secondary text |
-| `--ink-3` | `#6F675C` | `#8C8378` | Tertiary, never below 12px |
+| `--ground` | `#0C0C0D` | `#F2F1EF` | Page behind everything |
+| `--surface` | `#17171A` | `#FFFFFF` | The sheet |
+| `--raised` | `#202024` | `#F7F6F4` | Fields and controls |
+| `--line` | `#2E2E34` | `#E2E0DC` | Hairlines — the main separator |
+| `--ink` | `#F4F3F1` | `#16161A` | Primary text |
+| `--ink-2` | `#A3A2A0` | `#5A5A5E` | Secondary text |
+| `--ink-3` | `#737270` | `#8A8A8E` | Tertiary, never below 12px |
+
+The first ramp was warm to the point of muddiness: its three dark levels sat
+within ten lightness points of one another, so nothing separated from anything
+and the screen read as sludge. These keep a trace of warmth and put real
+distance between levels, which is what makes structure visible without drawing
+a box around everything.
 
 Light mode is not an afterthought: this app is used outdoors, where a dark
 interface in sunlight is unreadable. Both modes ship.
@@ -160,7 +171,7 @@ interface in sunlight is unreadable. Both modes ship.
 
 | Token | Value | Meaning — and only this |
 |---|---|---|
-| `--signal` | `#E4572E` | The decision. The chosen spot, the primary action. |
+| `--signal` | `#FF7A55` dark / `#D1442A` light | The decision. The chosen spot, the primary action. Lighter on dark ground: a saturated mid-tone on a dark field vibrates, and vibration is tiring over a minute of use. |
 | `--agree` | `#3F7D5C` | Confirmed, on the map, open now. |
 | `--caution` | `#C98A26` | Needs attention: an outlier, unknown hours. |
 | `--against` | `#A8382A` | Ruled out, blocked, closed. |
@@ -203,9 +214,9 @@ object sliding over the map.
 **Space — a 4px base.** 4, 8, 12, 16, 24, 32, 48. Nothing between. Vertical
 rhythm in multiples of 4 throughout.
 
-**Depth — one elevation.** The sheet sits above the map with a single soft
-shadow. Nothing else casts a shadow, ever. Cards are separated by ground
-colour, not by elevation.
+**Depth — effectively none.** The sheet meets the map at a seam, not a drop
+shadow. Nothing casts a shadow. Separation is done with hairlines and the
+ground, which is cheaper to read and does not dirty the colours beneath it.
 
 **Borders — hairlines, sparingly.** `1px --line`. If a card is already on a
 different ground, it does not also get a border.
@@ -220,9 +231,11 @@ no exceptions.
 *not* with `--signal`. The accent belongs to the decision, and a row of eight
 accent chips devalues it.
 
-**Cards (venues).** `--r-card`, on `--raised`, no border, no shadow. Rank in
-mono at the left. Name in `heading`. Metadata in `micro`. Fairness bars use
-route colours at 6px.
+**Rows (venues, people).** Not cards. Separated by a hairline on the sheet's own
+ground, with no fill and no border. Filling every row was the single biggest
+mistake of the first version: it turned a list into a stack of objects and made
+the chrome louder than the content. Rank in mono at the left, name in
+`heading`, metadata in `micro` on one line with dot separators.
 
 **Inputs.** Pill, `--surface` ground, hairline border, `--signal` on focus.
 16px minimum font size, since anything smaller makes iOS Safari zoom on focus.

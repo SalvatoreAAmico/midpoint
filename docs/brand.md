@@ -12,8 +12,12 @@ friend.
 | `docs/design-system.md` | How the interface is built. Tokens, components, layout. |
 | `docs/osm-categories.md` | Which categories exist and why. |
 
-The split follows the convention used by Shopify Polaris and IBM Carbon: brand
-governs identity, the design system governs implementation. Where they overlap
+The split follows a convention common to published design systems: brand governs
+identity, the design system governs implementation. The direct influences on
+this one are the NYCTA Graphics Standards Manual (Vignelli/Unimark, 1970) for
+the wayfinding language and the plate structure, Mailchimp's content style
+guide for the tone-by-situation matrix, and GOV.UK's service manual for plain
+language and error messages that lead with the fix. Where they overlap
 — colour, type — **this document defines meaning and the design system defines
 values.** Changing a hex belongs there; changing what a colour is *for* belongs
 here.
@@ -128,7 +132,7 @@ Colour is never decorative. If a colour appears, it is doing one of these jobs.
 
 | Token | Hex | Job — and only this |
 |---|---|---|
-| `--signal` | `#E4572E` | **The decision.** Primary action, the chosen spot, the mark. |
+| `--signal` | `#FF7A55` dark<br>`#D1442A` light | **The decision.** Primary action, the chosen spot, the mark. Per-theme, because a saturated mid-tone vibrates on a dark field. |
 | `--agree` | `#3F7D5C` | Confirmed: on the map, open, voted for, settled. |
 | `--caution` | `#C98A26` | Needs a human: an outlier, unknown hours, a blocked permission. |
 | `--against` | `#A8382A` | Ruled out: vetoed, closed, refused. |
@@ -142,19 +146,21 @@ row of eight orange chips would spend the accent on something that is merely
 
 ### Neutrals
 
-Warm throughout, hue 30–38°. **Cold blue-greys are prohibited** — they are the
-default of generated interfaces and reading as generated is the specific thing
-this identity exists to avoid.
+Near-neutral with a trace of warmth, and real distance between levels. The
+first ramp was warm to the point of muddiness — three dark levels within ten
+lightness points of each other, which read as sludge and made an orange accent
+vibrate against it. Warmth is a trace, not a tint. **Cold blue-greys remain
+prohibited**; so now does brown.
 
 | Token | Dark | Light |
 |---|---|---|
-| `--ground` | `#14120F` | `#F7F4EE` |
-| `--surface` | `#1C1915` | `#FFFFFF` |
-| `--raised` | `#24201B` | `#F1ECE3` |
-| `--line` | `#332D26` | `#E0D8CB` |
-| `--ink` | `#F5F1EA` | `#1A1713` |
-| `--ink-2` | `#A9A093` | `#5E564C` |
-| `--ink-3` | `#6F675C` | `#8C8378` |
+| `--ground` | `#0C0C0D` | `#F2F1EF` |
+| `--surface` | `#17171A` | `#FFFFFF` |
+| `--raised` | `#202024` | `#F7F6F4` |
+| `--line` | `#2E2E34` | `#E2E0DC` |
+| `--ink` | `#F4F3F1` | `#16161A` |
+| `--ink-2` | `#A3A2A0` | `#5A5A5E` |
+| `--ink-3` | `#737270` | `#8A8A8E` |
 
 Both themes ship and both are tested. The app is used outdoors, where a dark
 interface in sunlight is unreadable — light mode is a functional requirement,
@@ -197,15 +203,20 @@ chosen rather than defaulted to.
 | Family | Licence | Role |
 |---|---|---|
 | **Fraunces** | SIL OFL 1.1 | Display only. App name, the decision, empty-state headlines. |
-| **Archivo** | SIL OFL 1.1 | Every interface label, button, input and body string. |
+| **System (SF Pro)** | Apple, on-device | Every interface label, button, input and body string. |
+| **Archivo** | SIL OFL 1.1 | Fallback, and the interface face off Apple platforms. |
 | **JetBrains Mono** | SIL OFL 1.1 | Every number: times, distances, tallies, session codes. |
 
 **Fraunces** is warm, optically-sized and distinctly drawn — nothing about it
 reads as a default. Used two or three times per screen at most, it does all the
 identity work. Never below 20px, never as an interface label.
 
-**Archivo** comes from signage and high-performance print. It holds at 12px on
-a phone in sunlight, which is the actual operating condition.
+**The system font** carries the interface, because Apple's oldest interface
+principle is deference and the system font is the most deferential type
+available: the reader is not conscious of reading it. Setting every label in a
+characterful face made the chrome compete with the content. Identity lives in
+the display face and the mark, not in every button. Archivo is the fallback and
+the face on anything that is not an Apple platform.
 
 **JetBrains Mono** is tabular by construction with unambiguous `0`/`O` and
 `1`/`l` — which matters when someone reads a session code aloud across a table.
