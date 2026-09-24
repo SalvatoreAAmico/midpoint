@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Midpoint">
-  <rect width="192" height="192" rx="44" fill="#E4572E"/>
-  <g transform="translate(48 48) scale(2)" stroke="#FFF6F2" stroke-width="7"
+  <rect width="192" height="192" rx="44" fill="#2F6F4F"/>
+  <g transform="translate(48 48) scale(2)" stroke="#F2FBF5" stroke-width="7"
      stroke-linecap="round" stroke-linejoin="round" fill="none">
     <path d="M6 12 L18 24 L6 36"/>
     <path d="M42 12 L30 24 L42 36"/>

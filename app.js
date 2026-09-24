@@ -9,8 +9,8 @@ const MAX_VENUES = 25;            // also caps the OSRM matrix URL length
 /* Route colours, drawn as transit lines are: separable at a 10px dot and
    harmonious as a set. The first four are maximally distinct, since most
    groups are two to four people. See docs/design-system.md. */
-const COLORS = ['#E4572E', '#2E6F9E', '#3F7D5C', '#C98A26',
-                '#7B5EA7', '#1F8A8A', '#C05286', '#6E7A3A'];
+const COLORS = ['#E8624A', '#2E7DB4', '#E0A32E', '#8465C4',
+                '#189C9C', '#D45C93', '#A2714A', '#4E5BC4'];
 /* Fallback speeds in m/s when the routing service is unavailable. Walking
    includes a detour factor: streets are not straight lines. */
 const SPEED = { drive: 13.4, walk: 1.05 };
@@ -621,7 +621,7 @@ function drawMap(selectedKey) {
 
   state.results.slice(0, 10).forEach(v => {
     const sel = v.key === selectedKey;
-    L.marker([v.lat, v.lon], { icon: circleIcon(sel ? '#E4572E' : '#6F675C', sel ? 14 : 9) })
+    L.marker([v.lat, v.lon], { icon: circleIcon(sel ? '#2F6F4F' : '#8B958E', sel ? 14 : 9) })
       .bindPopup(esc(v.name)).addTo(layer);
     if (sel) pts.push([v.lat, v.lon]);
   });

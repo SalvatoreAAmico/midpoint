@@ -5,20 +5,25 @@
 :root{
   /* Warm neutrals, hue 30-38. Cold blue-greys are banned: they are the
      default of every generated interface. */
-  /* Near-neutral with a trace of warmth, and real distance between levels.
-     The previous ramp sat within ten lightness points end to end, which read
-     as mud: no separation means no structure. */
-  --ground:#0C0C0D; --surface:#17171A; --raised:#202024; --line:#2E2E34;
-  --ink:#F4F3F1;    --ink-2:#A3A2A0;   --ink-3:#737270;
+  /* Light first. This is an app for making plans with friends on a Saturday,
+     not an instrument panel — the default should feel like daylight. Neutrals
+     carry the faintest green cast so the accent belongs to the palette rather
+     than sitting on top of it. */
+  --ground:#F4F7F4; --surface:#FFFFFF; --raised:#EDF2EE; --line:#DFE6E0;
+  --ink:#16201A;    --ink-2:#55605A;   --ink-3:#88938C;
 
-  /* One accent, lightened for dark ground: a saturated mid-tone on a dark
-     field vibrates, which is tiring over a minute of use. */
-  --signal:#FF7A55; --signal-ink:#1A0A05;
-  --agree:#3F7D5C;  --caution:#C98A26; --against:#A8382A;
+  /* Forest green: calm, uncommon in apps, and it reads as somewhere to be
+     rather than something to operate. */
+  --signal:#2F6F4F; --signal-ink:#F2FBF5;
+  /* "Agree" can no longer be green: it would be indistinguishable from the
+     accent. Confirmation now reads as the accent itself, and the remaining
+     signals stay clearly separate from it. */
+  --agree:#2F6F4F;  --caution:#B07818; --against:#A83F32;
 
-  /* Route colours: the eight people, drawn as transit lines. */
-  --r1:#E4572E; --r2:#2E6F9E; --r3:#3F7D5C; --r4:#C98A26;
-  --r5:#7B5EA7; --r6:#1F8A8A; --r7:#C05286; --r8:#6E7A3A;
+  /* Route colours. No mid-green among them, so no person is ever mistaken
+     for the decision. Brighter than before: these identify friends. */
+  --r1:#E8624A; --r2:#2E7DB4; --r3:#E0A32E; --r4:#8465C4;
+  --r5:#189C9C; --r6:#D45C93; --r7:#A2714A; --r8:#4E5BC4;
 
   /* Shape carries meaning: pills move, rectangles inform. */
   --r-pill:999px; --r-card:6px;
@@ -31,11 +36,15 @@
 
 /* Used outdoors, where a dark interface in sunlight is unreadable.
    Light mode is not an afterthought. */
-@media (prefers-color-scheme: light){
+@media (prefers-color-scheme: dark){
   :root{
-    --ground:#F2F1EF; --surface:#FFFFFF; --raised:#F7F6F4; --line:#E2E0DC;
-    --ink:#16161A;    --ink-2:#5A5A5E;   --ink-3:#8A8A8E;
-    --signal:#D1442A; --signal-ink:#FFF6F2;
+    color-scheme:dark;
+    --ground:#0E1211; --surface:#171D1A; --raised:#202825; --line:#2C3531;
+    --ink:#EDF2EE;    --ink-2:#9BA79F;   --ink-3:#6F7B74;
+    /* Lifted well off the forest value: a deep green on a dark field is
+       almost invisible, and a saturated one vibrates. */
+    --signal:#6FC496; --signal-ink:#07130C;
+    --agree:#6FC496;  --caution:#D8A54A; --against:#E0705F;
   }
 }
 
@@ -59,33 +68,33 @@ button{font:inherit;color:inherit;cursor:pointer;font-family:var(--sans)}
 
 /* ---------------------------------------------------------------- layout */
 #app{display:flex;flex-direction:column;height:100dvh}
-#map{flex:0 0 36dvh;min-height:190px;background:var(--raised);z-index:0}
+#map{flex:0 0 34dvh;min-height:180px;background:var(--raised);z-index:0}
 #sheet{
   flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  background:var(--surface);border-radius:18px 18px 0 0;
+  background:var(--surface);border-radius:22px 22px 0 0;
   margin-top:-18px;position:relative;z-index:400;
-  box-shadow:0 -1px 0 var(--line);              /* a seam, not a drop shadow */
-  padding:0 20px calc(32px + var(--safe-b));
+  box-shadow:0 -1px 0 var(--line), 0 -14px 30px rgba(20,40,30,.05);
+  padding:0 22px calc(40px + var(--safe-b));
 }
 .grabber{width:34px;height:4px;border-radius:var(--r-pill);background:var(--line);
   margin:10px auto 6px}
 
 h1{
   display:flex;align-items:center;gap:10px;
-  font:500 29px/1.05 var(--serif);
+  font:500 31px/1.05 var(--serif);
   font-variation-settings:'SOFT' 20,'WONK' 1,'opsz' 40;
   margin:10px 0 2px;letter-spacing:-.01em;
 }
-.tagline{color:var(--ink-2);font-size:14px;margin:0 0 20px}
+.tagline{color:var(--ink-2);font-size:14.5px;margin:0 0 26px}
 h2{
   font:600 11px/1.3 var(--sans);letter-spacing:.08em;text-transform:uppercase;
-  color:var(--ink-3);margin:28px 0 10px;
+  color:var(--ink-3);margin:34px 0 12px;
 }
 .hint{color:var(--ink-3);font-size:12.5px;margin:8px 0 0;max-width:62ch}
 
 /* ---------------------------------------------------------------- people */
 .person{
-  padding:12px 0;display:flex;gap:11px;align-items:flex-start;
+  padding:15px 0;display:flex;gap:12px;align-items:flex-start;
   border-bottom:1px solid var(--line);
 }
 .person:first-child{padding-top:4px}
@@ -186,7 +195,7 @@ select,input[type=time]{width:auto;padding:9px 12px;font-size:14px;border-radius
 
 /* --------------------------------------------------------------- results */
 .venue{
-  padding:15px 0;border-bottom:1px solid var(--line);
+  padding:19px 0;border-bottom:1px solid var(--line);
 }
 .venue.sel .vname{color:var(--signal)}
 .venue.won{border-left:2px solid var(--agree);padding-left:12px}
@@ -302,5 +311,5 @@ select,input[type=time]{width:auto;padding:9px 12px;font-size:14px;border-radius
 
 /* The mark sits with the wordmark at 0.62 of its cap height, optically
    centred. Clear space either side is never less than the gap in the mark. */
-.logo{display:inline-flex;width:26px;flex:0 0 auto;color:var(--signal)}
+.logo{display:inline-flex;width:25px;flex:0 0 auto;color:var(--signal)}
 .logo svg{width:100%;height:auto;display:block}

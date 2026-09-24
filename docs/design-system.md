@@ -148,15 +148,20 @@ Rules:
 
 ### Neutrals — warm, hue 30–38°
 
-| Token | Dark | Light | Use |
+| Token | Light (default) | Dark | Use |
 |---|---|---|---|
-| `--ground` | `#0C0C0D` | `#F2F1EF` | Page behind everything |
-| `--surface` | `#17171A` | `#FFFFFF` | The sheet |
-| `--raised` | `#202024` | `#F7F6F4` | Fields and controls |
-| `--line` | `#2E2E34` | `#E2E0DC` | Hairlines — the main separator |
-| `--ink` | `#F4F3F1` | `#16161A` | Primary text |
-| `--ink-2` | `#A3A2A0` | `#5A5A5E` | Secondary text |
-| `--ink-3` | `#737270` | `#8A8A8E` | Tertiary, never below 12px |
+| `--ground` | `#F4F7F4` | `#0E1211` | Page behind everything |
+| `--surface` | `#FFFFFF` | `#171D1A` | The sheet |
+| `--raised` | `#EDF2EE` | `#202825` | Fields and controls |
+| `--line` | `#DFE6E0` | `#2C3531` | Hairlines — the main separator |
+| `--ink` | `#16201A` | `#EDF2EE` | Primary text |
+| `--ink-2` | `#55605A` | `#9BA79F` | Secondary text |
+| `--ink-3` | `#88938C` | `#6F7B74` | Tertiary, never below 12px |
+
+**Light is the default and dark is the adaptation.** This is an app for making
+plans with friends on a Saturday, not an instrument panel, and the default
+should feel like daylight. Neutrals carry the faintest green cast so the accent
+belongs to the palette rather than sitting on top of it.
 
 The first ramp was warm to the point of muddiness: its three dark levels sat
 within ten lightness points of one another, so nothing separated from anything
@@ -171,10 +176,10 @@ interface in sunlight is unreadable. Both modes ship.
 
 | Token | Value | Meaning — and only this |
 |---|---|---|
-| `--signal` | `#FF7A55` dark / `#D1442A` light | The decision. The chosen spot, the primary action. Lighter on dark ground: a saturated mid-tone on a dark field vibrates, and vibration is tiring over a minute of use. |
-| `--agree` | `#3F7D5C` | Confirmed, on the map, open now. |
-| `--caution` | `#C98A26` | Needs attention: an outlier, unknown hours. |
-| `--against` | `#A8382A` | Ruled out, blocked, closed. |
+| `--signal` | `#2F6F4F` light / `#6FC496` dark | The decision. The chosen spot, the primary action. Forest green: calm, uncommon in apps, and it reads as somewhere to be rather than something to operate. Lifted well off the forest value on dark ground, where a deep green is nearly invisible. |
+| `--agree` | same as `--signal` | Confirmed, on the map, open now. |
+| `--caution` | `#B07818` light / `#D8A54A` dark | Needs attention: an outlier, unknown hours. |
+| `--against` | `#A83F32` light / `#E0705F` dark | Ruled out, blocked, closed. |
 
 One accent — `--signal`. A second accent must be argued for in writing.
 
@@ -186,14 +191,17 @@ rather than neon, which is the warmth the palette depends on.
 
 | # | Hex | Name |
 |---|---|---|
-| 1 | `#E4572E` | Clay |
-| 2 | `#2E6F9E` | Harbour |
-| 3 | `#3F7D5C` | Moss |
-| 4 | `#C98A26` | Brass |
-| 5 | `#7B5EA7` | Iris |
-| 6 | `#1F8A8A` | Teal |
-| 7 | `#C05286` | Fuchsia |
-| 8 | `#6E7A3A` | Olive |
+| 1 | `#E8624A` | Coral |
+| 2 | `#2E7DB4` | Ocean |
+| 3 | `#E0A32E` | Amber |
+| 4 | `#8465C4` | Violet |
+| 5 | `#189C9C` | Teal |
+| 6 | `#D45C93` | Rose |
+| 7 | `#A2714A` | Sienna |
+| 8 | `#4E5BC4` | Indigo |
+
+No mid-green appears among them: with a green accent, a green person would be
+confusable with the decision.
 
 Order matters: the first four must be maximally separable, since most groups
 are two to four people.

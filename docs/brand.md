@@ -132,10 +132,10 @@ Colour is never decorative. If a colour appears, it is doing one of these jobs.
 
 | Token | Hex | Job — and only this |
 |---|---|---|
-| `--signal` | `#FF7A55` dark<br>`#D1442A` light | **The decision.** Primary action, the chosen spot, the mark. Per-theme, because a saturated mid-tone vibrates on a dark field. |
-| `--agree` | `#3F7D5C` | Confirmed: on the map, open, voted for, settled. |
-| `--caution` | `#C98A26` | Needs a human: an outlier, unknown hours, a blocked permission. |
-| `--against` | `#A8382A` | Ruled out: vetoed, closed, refused. |
+| `--signal` | `#2F6F4F` light<br>`#6FC496` dark | **The decision.** Primary action, the chosen spot, the mark. Forest green: calm, and uncommon enough to be recognisable. |
+| `--agree` | same as `--signal` | Confirmed: on the map, open, voted for. With a green accent, a separate green would be indistinguishable, so confirmation reads as the accent itself. |
+| `--caution` | `#B07818` light / `#D8A54A` dark | Needs a human: an outlier, unknown hours, a blocked permission. |
+| `--against` | `#A83F32` light / `#E0705F` dark | Ruled out: vetoed, closed, refused. |
 
 **One accent.** `--signal` carries the brand. A second accent requires a
 written argument, because the moment two things are accented, neither is.
@@ -154,13 +154,13 @@ prohibited**; so now does brown.
 
 | Token | Dark | Light |
 |---|---|---|
-| `--ground` | `#0C0C0D` | `#F2F1EF` |
-| `--surface` | `#17171A` | `#FFFFFF` |
-| `--raised` | `#202024` | `#F7F6F4` |
-| `--line` | `#2E2E34` | `#E2E0DC` |
-| `--ink` | `#F4F3F1` | `#16161A` |
-| `--ink-2` | `#A3A2A0` | `#5A5A5E` |
-| `--ink-3` | `#737270` | `#8A8A8E` |
+| `--ground` | `#0E1211` | `#F4F7F4` |
+| `--surface` | `#171D1A` | `#FFFFFF` |
+| `--raised` | `#202825` | `#EDF2EE` |
+| `--line` | `#2C3531` | `#DFE6E0` |
+| `--ink` | `#EDF2EE` | `#16201A` |
+| `--ink-2` | `#9BA79F` | `#55605A` |
+| `--ink-3` | `#6F7B74` | `#88938C` |
 
 Both themes ship and both are tested. The app is used outdoors, where a dark
 interface in sunlight is unreadable — light mode is a functional requirement,
@@ -174,10 +174,13 @@ harmonious as a set. Muted rather than neon — the warmth is the point.
 
 | # | Hex | Name | | # | Hex | Name |
 |---|---|---|---|---|---|---|
-| 1 | `#E4572E` | Clay | | 5 | `#7B5EA7` | Iris |
-| 2 | `#2E6F9E` | Harbour | | 6 | `#1F8A8A` | Teal |
-| 3 | `#3F7D5C` | Moss | | 7 | `#C05286` | Fuchsia |
-| 4 | `#C98A26` | Brass | | 8 | `#6E7A3A` | Olive |
+| 1 | `#E8624A` | Coral | | 5 | `#189C9C` | Teal |
+| 2 | `#2E7DB4` | Ocean | | 6 | `#D45C93` | Rose |
+| 3 | `#E0A32E` | Amber | | 7 | `#A2714A` | Sienna |
+| 4 | `#8465C4` | Violet | | 8 | `#4E5BC4` | Indigo |
+
+No mid-green appears among them, so no person can be mistaken for the
+decision.
 
 Assigned in order. The first four are maximally separable because most groups
 are two to four people. **A route colour never means anything but a person** —
