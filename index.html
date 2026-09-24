@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="styles.css?v=15">
+<link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 <div id="app">
@@ -66,7 +66,7 @@
         <option value="drive">Driving</option>
         <option value="walk">Walking</option>
       </select>
-      <button class="chip" id="noChains">Independent only</button>
+      <button class="chip" id="noChains">No chains</button>
       <select id="whenDay">
         <option value="">Any time</option>
         <option value="now">Open now</option>
@@ -94,21 +94,24 @@
 
     <div id="results"></div>
 
-    <div id="mapsPref" hidden>
-      <label for="maps">Directions open in</label>
-      <select id="maps">
-        <option value="apple">Apple Maps</option>
-        <option value="google">Google Maps</option>
-        <option value="osm">OpenStreetMap</option>
-      </select>
-    </div>
   </main>
+
+  <div id="mapsSheet" hidden>
+    <div class="ms-backdrop"></div>
+    <div class="ms-panel" role="dialog" aria-modal="true" aria-labelledby="msTitle">
+      <p id="msTitle"></p>
+      <a class="ms-opt" data-app="apple" target="_blank" rel="noopener">Apple Maps</a>
+      <a class="ms-opt" data-app="google" target="_blank" rel="noopener">Google Maps</a>
+      <a class="ms-opt" data-app="osm" target="_blank" rel="noopener">OpenStreetMap</a>
+      <button class="ms-cancel">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="config.js?v=15"></script>
-<script src="sync.js?v=15"></script>
-<script src="app.js?v=15"></script>
+<script src="config.js?v=16"></script>
+<script src="sync.js?v=16"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

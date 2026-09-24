@@ -321,10 +321,10 @@ function mapsPref() {
 }
 function setMapsPref(v) { try { localStorage.setItem(MAPS_KEY, v); } catch {} }
 
-function mapsUrl(v) {
+function mapsUrl(v, app) {
   const q = encodeURIComponent(v.name || '');
   const ll = `${v.lat},${v.lon}`;
-  switch (mapsPref()) {
+  switch (app || mapsPref()) {
     case 'apple':  return `https://maps.apple.com/?q=${q}&ll=${ll}`;
     case 'osm':    return `https://www.openstreetmap.org/?mlat=${v.lat}&mlon=${v.lon}#map=18/${v.lat}/${v.lon}`;
     default:       return `https://www.google.com/maps/search/?api=1&query=${ll}&query_place_id=`
@@ -1060,9 +1060,26 @@ function applyRemoteFilters(f) {
   $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
   $('#noChains').classList.toggle('on', state.noChains);
   $('#price').value = state.maxPrice;
-  $('#maps').value = mapsPref();
   return true;
 }
+
+/* Choosing a maps app is a decision about the tap you are making right now,
+   not a setting to configure beforehand. Asking here costs one tap, removes a
+   control from the page, and still remembers what you picked last. */
+function openMapsSheet(v) {
+  const sheet = $('#mapsSheet');
+  $('#msTitle').textContent = `Open ${v.name} in`;
+  const last = mapsPref();
+  for (const a of sheet.querySelectorAll('.ms-opt')) {
+    a.href = mapsUrl(v, a.dataset.app);
+    a.classList.toggle('last', a.dataset.app === last);
+    a.onclick = () => { setMapsPref(a.dataset.app); closeMapsSheet(); };
+  }
+  sheet.hidden = false;
+  sheet.querySelector(`.ms-opt.last`)?.focus();
+}
+
+function closeMapsSheet() { $('#mapsSheet').hidden = true; }
 
 /* Pick a few activity types at random and search straight away. Re-rolling
    picks a different set, so tapping twice never gives the same answer. */
@@ -1117,8 +1134,7 @@ function renderResults(selectedKey) {
     b.className = 'winner';
     b.innerHTML = `<b>${esc(win.name)}</b>`
       + `<p>Everyone has voted. ${tally(win.key).up} in favour.</p>`
-      + `<a class="maplink" target="_blank" rel="noopener"
-            href="${esc(mapsUrl(win))}">Directions in ${esc(mapsLabel())} ↗</a>`;
+      + `<button class="maplink" data-venue="${esc(win.key)}">Directions ↗</button>`;
     host.appendChild(b);
   }
 
@@ -1162,13 +1178,13 @@ function renderResults(selectedKey) {
       <div class="vactions">
         <button class="vote up ${myVote > 0 ? 'on' : ''}" title="Up for it">Yes</button>
         <button class="vote down ${myVote < 0 ? 'on' : ''}" title="Rule it out">No</button>
-        <a class="maplink" target="_blank" rel="noopener"
-           href="${esc(mapsUrl(v))}">Directions ↗</a>
+        <button class="maplink" data-venue="${esc(v.key)}">Directions ↗</button>
         <span class="tally">${t.up}&nbsp;yes&nbsp;&nbsp;${t.down}&nbsp;no</span>
       </div>`;
 
     card.addEventListener('click', e => {
       if (e.target.closest('.vote') || e.target.closest('a')) return;
+      if (e.target.closest('.maplink')) { openMapsSheet(v); return; }
       drawMap(v.key); renderResults(v.key);
     });
     card.querySelector('.vote.up').addEventListener('click', () => vote(v.key, 1));
@@ -1188,8 +1204,6 @@ function renderResults(selectedKey) {
     });
     host.appendChild(v);
   }
-
-  $('#mapsPref').hidden = false;
 
   if (!isLive()) {
     const note = document.createElement('div');
@@ -1324,7 +1338,6 @@ function boot() {
   $('#whenTime').value = state.whenTime;
   $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
   $('#price').value = state.maxPrice;
-  $('#maps').value = mapsPref();
 
   renderPeople();
   renderCats();
@@ -1333,11 +1346,6 @@ function boot() {
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
 
-  $('#maps').addEventListener('change', e => {
-    setMapsPref(e.target.value);
-    if (state.results.length) renderResults();
-  });
-
   $('#travel').addEventListener('change', e => {
     state.travel = e.target.value;
     syncURL(); pushPrefs();
@@ -1345,6 +1353,12 @@ function boot() {
   });
 
   $('#catSearch').addEventListener('input', e => renderCatSearch(e.target.value));
+  $('#mapsSheet').querySelector('.ms-backdrop').addEventListener('click', closeMapsSheet);
+  $('#mapsSheet').querySelector('.ms-cancel').addEventListener('click', closeMapsSheet);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !$('#mapsSheet').hidden) closeMapsSheet();
+  });
+
   $('#catSearch').addEventListener('focus', () => renderCatSearch());
   $('#catSearch').addEventListener('blur', () => setTimeout(() => {
     if (document.activeElement !== $('#catSearch') && !$('#catSearch').value.trim()) {

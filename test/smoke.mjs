@@ -343,32 +343,51 @@ ok('tapping away closes the list', await page.locator('#catResults').isHidden())
 
 // ---- directions open in the chosen maps app -----------------------------
 {
-  const link = () => page.locator('.venue').first().locator('.maplink');
-  ok('the maps preference is not in the filter row',
-     await page.locator('.filters #maps').count() === 0);
-  ok('and appears with the results, where directions are',
-     await page.locator('#mapsPref').isVisible());
-  ok('it is labelled, not a bare dropdown',
-     (await page.locator('#mapsPref label').textContent()).includes('Directions open in'));
-  await page.selectOption('#maps', 'google');
+  ok('there is no maps setting anywhere on the page',
+     await page.locator('#maps').count() === 0 && await page.locator('#mapsPref').count() === 0);
+  ok('the sheet is closed until asked for', await page.locator('#mapsSheet').isHidden());
+
+  const name = await page.locator('.venue').first().locator('.vname').textContent();
+  await page.locator('.venue').first().locator('.maplink').click();
+  await page.waitForTimeout(250);
+  ok('tapping Directions asks which app', await page.locator('#mapsSheet').isVisible());
+  ok('and names the place being opened',
+     (await page.locator('#msTitle').textContent()).includes(name),
+     await page.locator('#msTitle').textContent());
+  ok('all three apps are offered', await page.locator('.ms-opt').count() === 3);
+  ok('Apple Maps points at Apple',
+     (await page.locator('.ms-opt[data-app=apple]').getAttribute('href')).includes('maps.apple.com'));
+  ok('Google Maps points at Google',
+     (await page.locator('.ms-opt[data-app=google]').getAttribute('href')).includes('google.com/maps'));
+  ok('OpenStreetMap points at OSM',
+     (await page.locator('.ms-opt[data-app=osm]').getAttribute('href')).includes('openstreetmap.org'));
+
+  // choosing remembers, so the next tap leads with it
+  await page.locator('.ms-opt[data-app=osm]').click();
   await page.waitForTimeout(200);
-  ok('Google Maps selected gives a Google link',
-     (await link().getAttribute('href')).includes('google.com/maps'),
-     await link().getAttribute('href'));
-  await page.selectOption('#maps', 'apple');
-  await page.waitForTimeout(200);
-  ok('Apple Maps selected gives an Apple link',
-     (await link().getAttribute('href')).includes('maps.apple.com'),
-     await link().getAttribute('href'));
-  await page.selectOption('#maps', 'osm');
-  await page.waitForTimeout(200);
-  ok('OpenStreetMap selected gives an OSM link',
-     (await link().getAttribute('href')).includes('openstreetmap.org'));
-  ok('the choice is remembered on the device',
+  ok('choosing closes the sheet', await page.locator('#mapsSheet').isHidden());
+  ok('and is remembered on the device',
      await page.evaluate(() => localStorage.getItem('midpoint.maps')) === 'osm');
-  await page.selectOption('#maps', 'google');
+
+  await page.locator('.venue').first().locator('.maplink').click();
+  await page.waitForTimeout(250);
+  ok('the next tap marks the last choice',
+     await page.locator('.ms-opt.last').getAttribute('data-app') === 'osm');
+
+  await page.locator('#mapsSheet .ms-cancel').click();
   await page.waitForTimeout(200);
+  ok('Cancel closes it', await page.locator('#mapsSheet').isHidden());
+
+  await page.locator('.venue').first().locator('.maplink').click();
+  await page.waitForTimeout(200);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+  ok('Escape closes it', await page.locator('#mapsSheet').isHidden());
 }
+
+ok('the chains filter is named in plain words',
+   (await page.locator('#noChains').textContent()).trim() === 'No chains',
+   await page.locator('#noChains').textContent());
 
 // ---- cuisine sub-chips --------------------------------------------------
 ok('no cuisine row until food is in play',
@@ -397,7 +416,7 @@ const beforeCats = await page.locator('.chip.on').allTextContents();
 await page.locator('#lucky').click();
 await page.waitForSelector('.venue', {timeout:8000});
 await page.waitForTimeout(400);
-const afterCats = (await page.locator('.chip.on').allTextContents()).filter(t=>!t.includes('Surprise')&&!t.includes('Re-roll')&&!t.includes('Independent'));
+const afterCats = (await page.locator('.chip.on').allTextContents()).filter(t=>!t.includes('Surprise')&&!t.includes('Re-roll')&&!t.includes('No chains'));
 ok('a roll selects 3 activity types', afterCats.length === 3, afterCats.join('|'));
 ok('lucky chip switches to Re-roll',
    (await page.locator('#lucky').textContent()).includes('Re-roll'));

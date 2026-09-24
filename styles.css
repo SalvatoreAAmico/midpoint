@@ -239,9 +239,24 @@ input[type=time]{width:auto;font-size:14px;padding:8px 11px}
 /* The midpoint is a place, not a person: a ring, never a filled dot. */
 .pin.mid{background:transparent!important;border:3px solid var(--ink)}
 
-/* A preference, not a filter: it changes which app opens, never the results.
-   Grouping it with the filters made people read it as one. */
-#mapsPref{display:flex;align-items:center;gap:9px;margin-top:14px;
-  padding-top:14px;border-top:1px solid var(--line)}
-#mapsPref label{font-size:12.5px;color:var(--dim)}
-#mapsPref select{width:auto;padding:7px 10px;font-size:13px}
+
+/* ---------- which maps app, asked at the moment of tapping ---------- */
+.maplink{background:none;border:none;padding:10px 0;font:inherit;font-size:13px;
+  color:var(--accent);font-weight:500}
+#mapsSheet{position:fixed;inset:0;z-index:900;display:flex;align-items:flex-end}
+.ms-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.ms-panel{
+  position:relative;width:100%;background:var(--panel);border-radius:18px 18px 0 0;
+  padding:18px 16px calc(18px + var(--safe-b));display:flex;flex-direction:column;gap:8px;
+}
+.ms-panel p{margin:0 0 6px;font-size:13px;color:var(--dim);text-align:center}
+.ms-opt{
+  display:block;text-align:center;padding:15px;border-radius:var(--r);
+  background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+  text-decoration:none;font-size:16px;
+}
+.ms-opt.last{border-color:var(--accent);color:var(--accent)}
+.ms-cancel{
+  margin-top:4px;padding:14px;border-radius:var(--r);background:none;
+  border:1px solid var(--line);color:var(--muted);font-size:15px;
+}
