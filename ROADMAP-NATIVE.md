@@ -75,9 +75,22 @@ check the third section: several things that *feel* native-only aren't.
 | TestFlight (10k testers, no full review) | free |
 | App Store review | free; 1 day–2 weeks, longer with background location |
 
-**Code reuse:** the scoring, tag mapping, and API calls port near 1:1 —
-call it 25–30%. The UI is a rewrite: HTML/CSS → SwiftUI, Leaflet → MapKit,
-Geolocation → CoreLocation, localStorage → SwiftData.
+**Code reuse, measured rather than estimated.** Of 1,702 lines in `app.js`,
+591 across 39 functions touch no DOM at all — scoring, fairness, outlier
+detection, opening hours, chain detection, category search, and the
+Nominatim/Overpass/OSRM calls. Those port mechanically. The other 980 lines
+across 26 functions are rendering and events, and are a rewrite: HTML/CSS →
+SwiftUI, Leaflet → MapKit, Geolocation → CoreLocation, localStorage →
+SwiftData. `sync.js` (233 lines) ports near 1:1. `supabase/schema.sql` is
+untouched: the backend does not care what talks to it.
+
+**So roughly 38% of the app logic carries over, plus the entire backend.**
+
+The more valuable asset is the test suite: 1,391 lines encoding 254 decisions,
+including why the fairness spread penalty beats a closest-to-one-person venue
+and why a chain-only area must still return results. A Swift port that passes
+equivalent assertions is correct by construction, and rewriting that knowledge
+from scratch would cost more than the code.
 
 ## 5. Decision: we are building the app
 
@@ -110,6 +123,32 @@ review cycle:
       where you have been, a veto list — any of it. Without one of these there
       is nothing for a notification to say.
 - [ ] **A second real meetup, using the saved group.** Proof the loop closes.
+
+### On wrapping the web app — considered and rejected
+
+Capacitor or a similar shell would keep one codebase and still reach the App
+Store. It is a worse idea than it sounds in 2026.
+
+Guideline 4.2 requires an app to "include features, content, and UI that
+elevate them beyond a repackaged website". It says nothing about how the app is
+built — WebView, Capacitor and Swift are all acceptable — only about whether
+the result does something a website cannot. Apple has added reviewers and
+automated more of review specifically because wrappers were lowering quality,
+and a shell that opens a WebView onto the existing site is reported to fail.
+
+The trap is circular, and worth stating plainly. To pass 4.2 the app needs
+native navigation, push, background location and real offline behaviour — which
+are precisely the things that would justify going native at all. Building them
+erases the wrapper's advantage: it saves the UI rewrite, then the guideline
+pushes you to write native UI anyway.
+
+The tempting version is the one that fails hardest: ship a thin wrapper early to
+get listed, add native capability later. That is the textbook rejection.
+
+So there are two options, not three: stay on the web, or commit to Swift when
+something genuinely requires it. A wrapper is only sensible in the narrow case
+where substantial native surface already exists and the goal is merely to keep
+the scoring engine in JavaScript.
 
 ### Then the port, cheapest path first
 
