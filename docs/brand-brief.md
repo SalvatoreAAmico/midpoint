@@ -143,6 +143,28 @@ platform, a budget)
 
 ---
 
+## Decided so far
+
+The first things confirmed by reaction rather than assertion. These are
+settled unless you change them.
+
+| | Decision | How we know |
+|---|---|---|
+| **Name** | Midpoint | "I actually really like the green midpoint logo and name" |
+| **Mark** | Two converging routes, the gap as the meeting point | Same |
+| **Brand colour** | Green | Same |
+| **Interface** | The original's quiet dark chrome | "The original is still better", said twice |
+
+**What that combination means, and it is the useful part:** the identity and
+the interface are separate problems. The logo and the name can be confidently
+green while the interface stays quiet, because the brand is carried by the mark
+rather than worn by every surface. Three attempts failed by making the whole
+interface wear the brand.
+
+Still open: light mode, typography, everything in the sections above.
+
+---
+
 ## How this gets used
 
 Once this is filled in:
