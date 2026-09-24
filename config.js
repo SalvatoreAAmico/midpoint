@@ -14,6 +14,6 @@
    every protection above and must not be committed or shipped to a browser. */
 
 window.MIDPOINT_CONFIG = {
-  supabaseUrl: '',      // e.g. https://abcdefghijkl.supabase.co
-  supabaseAnonKey: ''   // Publishable (or legacy anon) key — never the secret one
+  supabaseUrl: 'https://knpgwwfdvtcviwoiekda.supabase.co',
+  supabaseAnonKey: 'sb_publishable_vAeJTuAplfaV6mXG0eLkuQ_u65esYdN'
 };
