@@ -100,23 +100,24 @@ const CATALOG = [
     syn:'deli sandwich sandwiches sub hoagie lunch counter' },
 
   // ---- cuisines: restaurant/fast food narrowed by cuisine --------------
-  { id:'pizza',   label:'🍕 Pizza',     tags:['amenity=restaurant&cuisine~pizza','amenity=fast_food&cuisine~pizza'], syn:'pizza pizzeria slice' },
-  { id:'sushi',   label:'🍣 Sushi',     tags:['amenity=restaurant&cuisine~sushi|japanese'], syn:'sushi japanese sashimi ramen izakaya' },
-  { id:'mexican', label:'🌮 Mexican',   tags:['amenity=restaurant&cuisine~mexican|taco','amenity=fast_food&cuisine~mexican|taco'], syn:'mexican tacos taco burrito taqueria' },
-  { id:'italian', label:'🍝 Italian',   tags:['amenity=restaurant&cuisine~italian'], syn:'italian pasta trattoria' },
-  { id:'chinese', label:'🥡 Chinese',   tags:['amenity=restaurant&cuisine~chinese|dim_sum'], syn:'chinese dim sum dumplings szechuan' },
-  { id:'thai',    label:'🍜 Thai',      tags:['amenity=restaurant&cuisine~thai|vietnamese'], syn:'thai vietnamese pho noodles curry' },
-  { id:'indian',  label:'🍛 Indian',    tags:['amenity=restaurant&cuisine~indian'], syn:'indian curry tandoori' },
-  { id:'korean',  label:'🍲 Korean',    tags:['amenity=restaurant&cuisine~korean'], syn:'korean bbq bibimbap' },
-  { id:'burger',  label:'🍔 Burgers',   tags:['amenity=restaurant&cuisine~burger','amenity=fast_food&cuisine~burger'], syn:'burger burgers hamburger' },
-  { id:'bbq',     label:'🍖 BBQ',       tags:['amenity=restaurant&cuisine~barbecue|bbq'], syn:'bbq barbecue barbeque ribs brisket smokehouse' },
-  { id:'seafood', label:'🦞 Seafood',   tags:['amenity=restaurant&cuisine~seafood|fish'], syn:'seafood fish oysters lobster crab' },
-  { id:'vegan',   label:'🥗 Vegan',     tags:['amenity=restaurant&cuisine~vegan|vegetarian'], syn:'vegan vegetarian plant based salad healthy' },
-  { id:'mediterranean', label:'🥙 Mediterranean', tags:['amenity=restaurant&cuisine~mediterranean|greek|turkish|lebanese'], syn:'mediterranean greek turkish lebanese falafel kebab gyro' }
+  { id:'pizza',   label:'🍕 Pizza', cuisine:1,     tags:['amenity=restaurant&cuisine~pizza','amenity=fast_food&cuisine~pizza'], syn:'pizza pizzeria slice' },
+  { id:'sushi',   label:'🍣 Sushi', cuisine:1,     tags:['amenity=restaurant&cuisine~sushi|japanese'], syn:'sushi japanese sashimi ramen izakaya' },
+  { id:'mexican', label:'🌮 Mexican', cuisine:1,   tags:['amenity=restaurant&cuisine~mexican|taco','amenity=fast_food&cuisine~mexican|taco'], syn:'mexican tacos taco burrito taqueria' },
+  { id:'italian', label:'🍝 Italian', cuisine:1,   tags:['amenity=restaurant&cuisine~italian'], syn:'italian pasta trattoria' },
+  { id:'chinese', label:'🥡 Chinese', cuisine:1,   tags:['amenity=restaurant&cuisine~chinese|dim_sum'], syn:'chinese dim sum dumplings szechuan' },
+  { id:'thai',    label:'🍜 Thai', cuisine:1,      tags:['amenity=restaurant&cuisine~thai|vietnamese'], syn:'thai vietnamese pho noodles curry' },
+  { id:'indian',  label:'🍛 Indian', cuisine:1,    tags:['amenity=restaurant&cuisine~indian'], syn:'indian curry tandoori' },
+  { id:'korean',  label:'🍲 Korean', cuisine:1,    tags:['amenity=restaurant&cuisine~korean'], syn:'korean bbq bibimbap' },
+  { id:'burger',  label:'🍔 Burgers', cuisine:1,   tags:['amenity=restaurant&cuisine~burger','amenity=fast_food&cuisine~burger'], syn:'burger burgers hamburger' },
+  { id:'bbq',     label:'🍖 BBQ', cuisine:1,       tags:['amenity=restaurant&cuisine~barbecue|bbq'], syn:'bbq barbecue barbeque ribs brisket smokehouse' },
+  { id:'seafood', label:'🦞 Seafood', cuisine:1,   tags:['amenity=restaurant&cuisine~seafood|fish'], syn:'seafood fish oysters lobster crab' },
+  { id:'vegan',   label:'🥗 Vegan', cuisine:1,     tags:['amenity=restaurant&cuisine~vegan|vegetarian'], syn:'vegan vegetarian plant based salad healthy' },
+  { id:'mediterranean', label:'🥙 Mediterranean', cuisine:1, tags:['amenity=restaurant&cuisine~mediterranean|greek|turkish|lebanese'], syn:'mediterranean greek turkish lebanese falafel kebab gyro' }
 ];
 
 const CATS = Object.fromEntries(CATALOG.map(c => [c.id, c]));
 const CHIP_CATS = CATALOG.filter(c => c.chip).map(c => c.id);
+const CUISINES  = CATALOG.filter(c => c.cuisine).map(c => c.id);
 
 /* Match on what people type. Every word of the query must appear somewhere in
    the label or synonyms, so "mini golf" narrows rather than widening. */
@@ -175,7 +176,9 @@ const state = {
   center: null,
   estimated: false,
   liveErr: '',
-  geoBlocked: false
+  geoBlocked: false,
+  showVetoed: false,
+  searching: false
 };
 
 const isLive = () => window.Sync?.live;
@@ -298,6 +301,30 @@ function isOpenNow(spec, now = new Date()) {
   // including days it simply doesn't mention (Mo-Fr says nothing about Sunday).
   return parsedAny || coversToday ? false : null;
 }
+
+/* Which maps app a link opens. A personal preference, so it stays on the
+   device rather than travelling with the session. Apple Maps is the sensible
+   default on an iPhone and is unavailable elsewhere. */
+const MAPS_KEY = 'midpoint.maps';
+const isApple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+
+function mapsPref() {
+  try { return localStorage.getItem(MAPS_KEY) || (isApple ? 'apple' : 'google'); }
+  catch { return isApple ? 'apple' : 'google'; }
+}
+function setMapsPref(v) { try { localStorage.setItem(MAPS_KEY, v); } catch {} }
+
+function mapsUrl(v) {
+  const q = encodeURIComponent(v.name || '');
+  const ll = `${v.lat},${v.lon}`;
+  switch (mapsPref()) {
+    case 'apple':  return `https://maps.apple.com/?q=${q}&ll=${ll}`;
+    case 'osm':    return `https://www.openstreetmap.org/?mlat=${v.lat}&mlon=${v.lon}#map=18/${v.lat}/${v.lon}`;
+    default:       return `https://www.google.com/maps/search/?api=1&query=${ll}&query_place_id=`
+                        + `&query=${q}%20${ll}`;
+  }
+}
+const mapsLabel = () => ({ apple: 'Apple Maps', google: 'Google Maps', osm: 'OpenStreetMap' }[mapsPref()]);
 
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
@@ -629,6 +656,7 @@ function renderPeople() {
   state.people.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'person' + (p.id === state.me ? ' me' : '');
+    row.dataset.id = p.id;
     row.innerHTML = `
       <span class="dot" style="background:${COLORS[i % COLORS.length]}"></span>
       ${p.id === state.me ? '<span class="you-tag">You</span>' : ''}
@@ -647,38 +675,43 @@ function renderPeople() {
       </div>
       ${state.people.length > 1 && !isLive() ? '<button class="rm" title="Remove">&times;</button>' : ''}`;
 
+    const who = () => state.people.find(x => x.id === row.dataset.id) || p;
+
     row.querySelector('.nm').addEventListener('input', e => {
-      p.name = e.target.value;
-      if (i === 0 || p.id === Sync.me) saveName(p.name.trim());
+      const t = who();
+      t.name = e.target.value;
+      if (i === 0 || t.id === Sync.me) saveName(t.name.trim());
       syncURL();
-      if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
+      if (isLive() && t.id === Sync.me) Sync.push(t.name, t.lat, t.lon);
     });
 
     const lc = row.querySelector('.lc');
     lc.addEventListener('change', async () => {
+      const t = who();
       const q = lc.value.trim();
-      if (!q) { p.lat = p.lon = null; p.label = ''; p.status = ''; refresh(); return; }
-      p.status = 'Looking up…'; renderPeople();
+      if (!q) { t.lat = t.lon = null; t.label = ''; t.status = ''; refresh(); return; }
+      t.status = 'Looking up…'; renderPeople();
       try {
         const hit = await geocode(q);
-        if (!hit) { p.status = '!No match — try adding the city'; p.lat = p.lon = null; }
-        else { p.lat = hit.lat; p.lon = hit.lon; p.label = hit.label; p.status = hit.label; }
+        if (!hit) { t.status = '!No match — try adding the city'; t.lat = t.lon = null; }
+        else { t.lat = hit.lat; t.lon = hit.lon; t.label = hit.label; t.status = hit.label; }
       } catch (e) {
-        p.status = '!Lookup failed: ' + e.message;
+        t.status = '!Lookup failed: ' + e.message;
       }
-      if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
+      if (isLive() && t.id === Sync.me) Sync.push(t.name, t.lat, t.lon);
       refresh();
     });
 
-    row.querySelector('.loc').addEventListener('click', () => locate(p));
+    row.querySelector('.loc').addEventListener('click', () => locate(who()));
     row.querySelector('.flex-toggle').addEventListener('click', () => {
-      p.flex = !p.flex;
+      const t = who();
+      t.flex = !t.flex;
       renderPeople(); syncURL();
       if (state.results.length) search();
     });
     row.querySelector('.rm')?.addEventListener('click', () => {
       if (isLive()) return;   // in a live session people join and leave themselves
-      state.people = state.people.filter(x => x.id !== p.id);
+      state.people = state.people.filter(x => x.id !== row.dataset.id);
       refresh();
     });
 
@@ -698,6 +731,16 @@ function patchPeople() {
     // Leave any field the user is in alone, whatever the server says.
     if (nm && document.activeElement !== nm && nm.value !== p.name) nm.value = p.name;
     if (lc && document.activeElement !== lc && lc.value !== (p.label || '')) lc.value = p.label || '';
+    const ft = row.querySelector('.flex-toggle');
+    if (ft) {
+      const text = p.flex ? '✓ Happy to travel further' : 'I can travel further';
+      if (ft.textContent.trim() !== text) ft.textContent = text;
+      ft.classList.toggle('on', !!p.flex);
+    }
+    row.classList.toggle('me', p.id === state.me);
+    const you = row.querySelector('.you-tag');
+    if (!!you !== (p.id === state.me)) { $('#people').dataset.sig = ''; }
+
     const st = row.querySelector('.status');
     if (st) {
       const text = p.status?.replace(/^!/, '') || (p.lat != null ? 'Location set' : '');
@@ -853,10 +896,19 @@ function applyRemote(remote, err) {
   for (const v of (remote.votes || [])) {
     (state.votes[v.venue_key] ||= {})[v.participant_id] = v.dir;
   }
+  const catsBefore = state.cats.join(',');
   if (Array.isArray(remote.cats) && remote.cats.length) state.cats = remote.cats;
+  const changed = applyRemoteFilters(remote.filters) || state.cats.join(',') !== catsBefore;
 
   renderPeople(); renderCats(); renderLive(); drawMap();
   if (state.results.length) renderResults();
+
+  // Someone changed the search: re-run it so everyone is looking at the same
+  // list, rather than at whatever they last searched for themselves.
+  if (changed && state.results.length && !state.searching) {
+    log('Search settings changed by someone in the session — updating…');
+    search();
+  }
 }
 
 function renderCats() {
@@ -878,9 +930,38 @@ function renderCats() {
       if (!state.cats.length) state.cats = [k];
       state.lucky = false;            // an explicit choice ends lucky mode
       renderCats(); syncURL();
-      if (isLive()) Sync.prefs(state.cats, null);
+      pushPrefs();
     });
     host.appendChild(b);
+  }
+
+  // Cuisines are only interesting once someone is thinking about food, so
+  // they stay out of the way until Food (or a cuisine) is selected.
+  const foodish = state.cats.includes('food') || state.cats.some(c => CUISINES.includes(c));
+  if (foodish) {
+    const sub = document.createElement('div');
+    sub.className = 'subchips';
+    for (const id of CUISINES) {
+      const c = CATS[id];
+      const b = document.createElement('button');
+      b.className = 'chip sub' + (state.cats.includes(id) ? ' on' : '');
+      b.textContent = c.label;
+      b.addEventListener('click', () => {
+        const on = state.cats.includes(id);
+        // A cuisine narrows Food, so the two cannot both apply: "restaurants
+        // OR pizza places" is just "restaurants".
+        state.cats = on ? state.cats.filter(x => x !== id)
+                        : [...state.cats.filter(x => x !== 'food'), id];
+        if (!state.cats.some(x => CUISINES.includes(x)) && !state.cats.includes('food')) {
+          state.cats = [...state.cats, 'food'];
+        }
+        state.lucky = false;
+        renderCats(); syncURL();
+        pushPrefs();
+      });
+      sub.appendChild(b);
+    }
+    host.appendChild(sub);
   }
 
   renderCatSearch();
@@ -896,10 +977,18 @@ function renderCats() {
 function renderCatSearch(q) {
   const host = $('#catResults');
   const query = q ?? $('#catSearch').value;
-  const hits = searchCats(query);
   host.innerHTML = '';
 
-  if (!query.trim()) { host.hidden = true; return; }
+  // An empty box with the cursor in it should show what there is to choose
+  // from. Making people guess the right word is a worse search box.
+  if (!query.trim()) {
+    if (document.activeElement !== $('#catSearch')) { host.hidden = true; return; }
+    host.hidden = false;
+    host.appendChild(catRow(CATALOG, 'Everything'));
+    return;
+  }
+
+  const hits = searchCats(query);
   host.hidden = false;
 
   if (!hits.length) {
@@ -908,20 +997,65 @@ function renderCatSearch(q) {
     return;
   }
 
-  for (const c of hits) {
-    const b = document.createElement('button');
-    b.className = 'cat-hit' + (state.cats.includes(c.id) ? ' on' : '');
-    b.innerHTML = `<span>${esc(c.label)}</span>`
-      + (state.cats.includes(c.id) ? '<span class="tick">✓</span>' : '');
-    b.addEventListener('click', () => {
-      if (!state.cats.includes(c.id)) state.cats = [...state.cats, c.id];
-      state.lucky = false;
-      $('#catSearch').value = '';
-      renderCats(); syncURL();
-      if (isLive()) Sync.prefs(state.cats, null);
-    });
-    host.appendChild(b);
+  host.appendChild(catRow(hits));
+}
+
+function catRow(list, heading) {
+  const frag = document.createDocumentFragment();
+  if (heading) {
+    const h = document.createElement('div');
+    h.className = 'cat-head';
+    h.textContent = heading;
+    frag.appendChild(h);
   }
+  for (const c of list) {
+    const on = state.cats.includes(c.id);
+    const b = document.createElement('button');
+    b.className = 'cat-hit' + (on ? ' on' : '');
+    b.innerHTML = `<span>${esc(c.label)}</span>` + (on ? '<span class="tick">✓</span>' : '');
+    b.addEventListener('mousedown', e => e.preventDefault());   // keep focus
+    b.addEventListener('click', () => {
+      state.cats = on ? state.cats.filter(x => x !== c.id) : [...state.cats, c.id];
+      if (!state.cats.length) state.cats = [c.id];
+      state.lucky = false;
+      if (!on) $('#catSearch').value = '';
+      renderCats(); syncURL(); pushPrefs();
+    });
+    frag.appendChild(b);
+  }
+  return frag;
+}
+
+/* Everything that shapes a search travels with the session, not just the
+   categories. Otherwise one person sets "Tuesday 6pm, walking, no chains",
+   searches, and everyone else is quietly looking at different results. */
+function currentFilters() {
+  return { travel: state.travel, when: state.when, whenTime: state.whenTime,
+           noChains: state.noChains, maxPrice: state.maxPrice };
+}
+
+function pushPrefs() {
+  if (isLive()) Sync.prefs(state.cats, currentFilters());
+}
+
+function applyRemoteFilters(f) {
+  if (!f || typeof f !== 'object') return false;
+  const before = JSON.stringify(currentFilters());
+  if (typeof f.travel === 'string')   state.travel = f.travel === 'walk' ? 'walk' : 'drive';
+  if (typeof f.when === 'string')     state.when = f.when;
+  if (typeof f.whenTime === 'string') state.whenTime = f.whenTime;
+  if (typeof f.noChains === 'boolean')state.noChains = f.noChains;
+  if (typeof f.maxPrice === 'string') state.maxPrice = f.maxPrice;
+  if (JSON.stringify(currentFilters()) === before) return false;
+
+  $('#travel').value = state.travel;
+  $('#whenDay').value = state.when;
+  $('#whenTime').value = state.whenTime;
+  $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
+  $('#noChains').classList.toggle('on', state.noChains);
+  $('#price').value = state.maxPrice;
+  $('#maps').value = mapsPref();
+  return true;
 }
 
 /* Pick a few activity types at random and search straight away. Re-rolling
@@ -935,8 +1069,7 @@ function rollLucky() {
     ? pickRandom(keys.filter(k => !state.cats.includes(k)), LUCKY_CATS)
     : next;
   state.lucky = true;
-  renderCats(); syncURL();
-  if (isLive()) Sync.prefs(state.cats, null);
+  renderCats(); syncURL(); pushPrefs();
   search();
 }
 
@@ -947,20 +1080,53 @@ function tally(key) {
   return { up, down };
 }
 
+/* A thumbs-down is a veto. "Not there, it's terrible" is the commonest thing
+   anyone says while choosing, and one objection is usually enough. */
+const isVetoed = key => tally(key).down > 0;
+
+/* Once everyone with a location has voted, the group has decided. Announcing
+   it gives the session an ending, which it otherwise lacks. */
+function winner() {
+  const voters = new Set();
+  for (const v of Object.values(state.votes)) for (const id of Object.keys(v)) voters.add(id);
+  const present = state.people.filter(p => p.lat != null);
+  if (present.length < 2 || !present.every(p => voters.has(p.id))) return null;
+
+  const live = state.results.filter(v => !isVetoed(v.key) && tally(v.key).up > 0);
+  if (!live.length) return null;
+  return live.reduce((a, b) => (tally(b.key).up > tally(a.key).up ? b : a));
+}
+
 function renderResults(selectedKey) {
   const host = $('#results');
   host.innerHTML = '';
   if (!state.results.length) return;
 
+  const vetoed = state.results.filter(v => isVetoed(v.key));
+  const shown = state.showVetoed ? state.results : state.results.filter(v => !isVetoed(v.key));
+
+  const win = winner();
+  if (win) {
+    const b = document.createElement('div');
+    b.className = 'winner';
+    b.innerHTML = `<b>🎉 ${esc(win.name)}</b>`
+      + `<p>Everyone has voted — ${tally(win.key).up} for.</p>`
+      + `<a class="maplink" target="_blank" rel="noopener"
+            href="${esc(mapsUrl(win))}">Directions in ${esc(mapsLabel())} ↗</a>`;
+    host.appendChild(b);
+  }
+
   const worst = Math.max(...state.results.flatMap(v => v.costs));
   const unit = fmtMin;
   const approx = state.estimated ? '~' : '';
 
-  state.results.slice(0, 10).forEach((v, i) => {
+  shown.slice(0, 10).forEach((v, i) => {
     const t = tally(v.key);
     const myVote = (state.votes[v.key] || {})[state.me];
     const card = document.createElement('div');
-    card.className = 'venue' + (v.key === selectedKey ? ' sel' : '');
+    card.className = 'venue' + (v.key === selectedKey ? ' sel' : '')
+                   + (isVetoed(v.key) ? ' vetoed' : '')
+                   + (win && v.key === win.key ? ' won' : '');
 
     const at = whenLabel() || 'now';
     const openPill = v.open === true ? `<span class="pill good">Open ${esc(at)}</span>`
@@ -988,10 +1154,10 @@ function renderResults(selectedKey) {
         </div>`).join('')}
       </div>
       <div class="vactions">
-        <button class="vote up ${myVote > 0 ? 'on' : ''}">👍</button>
-        <button class="vote down ${myVote < 0 ? 'on' : ''}">👎</button>
+        <button class="vote up ${myVote > 0 ? 'on' : ''}" title="Up for it">👍</button>
+        <button class="vote down ${myVote < 0 ? 'on' : ''}" title="Rule it out">👎</button>
         <a class="maplink" target="_blank" rel="noopener"
-           href="https://www.openstreetmap.org/?mlat=${v.lat}&mlon=${v.lon}#map=18/${v.lat}/${v.lon}">Open map ↗</a>
+           href="${esc(mapsUrl(v))}">Directions ↗</a>
         <span class="tally">${t.up}👍 ${t.down}👎</span>
       </div>`;
 
@@ -1004,11 +1170,26 @@ function renderResults(selectedKey) {
     host.appendChild(card);
   });
 
-  const note = document.createElement('div');
-  note.className = 'note';
-  note.innerHTML = 'Votes and everyone’s pins live in the link, not on a server. '
-    + 'Tap <b>Copy invite link</b> after voting and send it back so the group sees your picks.';
-  host.appendChild(note);
+  if (vetoed.length) {
+    const v = document.createElement('button');
+    v.className = 'vetoed-toggle';
+    v.textContent = state.showVetoed
+      ? `Hide the ${vetoed.length} ruled out`
+      : `${vetoed.length} ruled out — show anyway`;
+    v.addEventListener('click', () => {
+      state.showVetoed = !state.showVetoed;
+      renderResults(selectedKey);
+    });
+    host.appendChild(v);
+  }
+
+  if (!isLive()) {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.innerHTML = 'Votes and everyone’s pins live in the link, not on a server. '
+      + 'Tap <b>Copy invite link</b> after voting and send it back so the group sees your picks.';
+    host.appendChild(note);
+  }
 }
 
 function vote(key, dir) {
@@ -1026,6 +1207,8 @@ function vote(key, dir) {
 /* --------------------------------------------------------------- search */
 
 async function search() {
+  if (state.searching) return;
+  state.searching = true;
   const located = state.people.filter(p => p.lat != null);
   if (!located.length) { log('Add at least one location first.'); return; }
 
@@ -1105,6 +1288,7 @@ async function search() {
   } catch (e) {
     log('Search failed: ' + e.message);
   } finally {
+    state.searching = false;
     $('#find').disabled = false;
   }
 }
@@ -1132,6 +1316,7 @@ function boot() {
   $('#whenTime').value = state.whenTime;
   $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
   $('#price').value = state.maxPrice;
+  $('#maps').value = mapsPref();
 
   renderPeople();
   renderCats();
@@ -1140,13 +1325,24 @@ function boot() {
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
 
+  $('#maps').addEventListener('change', e => {
+    setMapsPref(e.target.value);
+    if (state.results.length) renderResults();
+  });
+
   $('#travel').addEventListener('change', e => {
     state.travel = e.target.value;
-    syncURL();
+    syncURL(); pushPrefs();
     if (state.results.length) search();
   });
 
   $('#catSearch').addEventListener('input', e => renderCatSearch(e.target.value));
+  $('#catSearch').addEventListener('focus', () => renderCatSearch());
+  $('#catSearch').addEventListener('blur', () => setTimeout(() => {
+    if (document.activeElement !== $('#catSearch') && !$('#catSearch').value.trim()) {
+      $('#catResults').hidden = true;
+    }
+  }, 150));
   $('#catSearch').addEventListener('keydown', e => {
     if (e.key === 'Escape') { e.target.value = ''; renderCatSearch(''); }
     if (e.key === 'Enter')  { e.preventDefault(); $('#catResults .cat-hit')?.click(); }
@@ -1158,18 +1354,18 @@ function boot() {
   $('#noChains').addEventListener('click', e => {
     state.noChains = !state.noChains;
     e.currentTarget.classList.toggle('on', state.noChains);
-    syncURL();
+    syncURL(); pushPrefs();
   });
   $('#whenDay').addEventListener('change', e => {
     state.when = e.target.value;
     $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
-    syncURL();
+    syncURL(); pushPrefs();
   });
   $('#whenTime').addEventListener('change', e => {
     state.whenTime = e.target.value || '19:00';
-    syncURL();
+    syncURL(); pushPrefs();
   });
-  $('#price').addEventListener('change', e => { state.maxPrice = e.target.value; syncURL(); });
+  $('#price').addEventListener('change', e => { state.maxPrice = e.target.value; syncURL(); pushPrefs(); });
 
   $('#share').addEventListener('click', async () => {
     syncURL();

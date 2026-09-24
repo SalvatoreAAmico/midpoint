@@ -218,7 +218,15 @@ ok('picking a result clears the search box',
 ok('picked category becomes a selected chip',
    (await page.locator('.chip.on').allTextContents()).some(t=>t.includes('Pizza')),
    (await page.locator('.chip.on').allTextContents()).join('|'));
-ok('results panel hides again', await page.locator('#catResults').isHidden());
+// Focus is kept deliberately, so the panel falls back to the browse list and
+// you can pick a second category without tapping the box again.
+ok('the panel stays open for a second pick',
+   !(await page.locator('#catResults').isHidden()));
+ok('and falls back to browsing everything',
+   await page.locator('.cat-head').count() === 1);
+await page.locator('body').click({position:{x:5,y:5}});
+await page.waitForTimeout(350);
+ok('tapping away then closes it', await page.locator('#catResults').isHidden());
 
 // a long-tail want must resolve upward, never to a dead end
 await page.locator('#catSearch').fill('axe throwing');
@@ -268,6 +276,68 @@ for (const t of ['Pizza','Sushi']) {
   if (await chip.count()) await chip.first().click();
 }
 await page.waitForTimeout(150);
+
+// ---- browse everything by tapping the empty search box ------------------
+await page.locator('#catSearch').click();
+await page.waitForTimeout(250);
+ok('tapping the empty search box lists every category',
+   await page.locator('.cat-hit').count() > 25,
+   String(await page.locator('.cat-hit').count()));
+ok('the full list is headed so it reads as a browse, not a result',
+   await page.locator('.cat-head').count() === 1);
+await page.locator('#catSearch').fill('pizza');
+await page.waitForTimeout(200);
+ok('typing narrows it back down',
+   await page.locator('.cat-hit').count() < 5,
+   String(await page.locator('.cat-hit').count()));
+await page.locator('#catSearch').fill('');
+await page.locator('body').click({position:{x:5,y:5}});
+await page.waitForTimeout(350);
+ok('tapping away closes the list', await page.locator('#catResults').isHidden());
+
+// ---- directions open in the chosen maps app -----------------------------
+{
+  const link = () => page.locator('.venue').first().locator('.maplink');
+  await page.selectOption('#maps', 'google');
+  await page.waitForTimeout(200);
+  ok('Google Maps selected gives a Google link',
+     (await link().getAttribute('href')).includes('google.com/maps'),
+     await link().getAttribute('href'));
+  await page.selectOption('#maps', 'apple');
+  await page.waitForTimeout(200);
+  ok('Apple Maps selected gives an Apple link',
+     (await link().getAttribute('href')).includes('maps.apple.com'),
+     await link().getAttribute('href'));
+  await page.selectOption('#maps', 'osm');
+  await page.waitForTimeout(200);
+  ok('OpenStreetMap selected gives an OSM link',
+     (await link().getAttribute('href')).includes('openstreetmap.org'));
+  ok('the choice is remembered on the device',
+     await page.evaluate(() => localStorage.getItem('midpoint.maps')) === 'osm');
+  await page.selectOption('#maps', 'google');
+  await page.waitForTimeout(200);
+}
+
+// ---- cuisine sub-chips --------------------------------------------------
+ok('no cuisine row until food is in play',
+   await page.locator('.subchips').count() === 0);
+await page.locator('.chip', {hasText:'Food'}).first().click();
+await page.waitForTimeout(200);
+ok('choosing Food reveals cuisines', await page.locator('.subchips .chip.sub').count() > 5);
+await page.locator('.chip.sub', {hasText:'Pizza'}).click();
+await page.waitForTimeout(200);
+ok('picking a cuisine selects it',
+   (await page.locator('.chip.sub.on').allTextContents()).some(t=>t.includes('Pizza')));
+ok('and drops the broader Food, which would swallow it',
+   !(await page.locator('.chip.on').allTextContents()).some(t=>t.trim().startsWith('🍽')),
+   (await page.locator('.chip.on').allTextContents()).join('|'));
+await page.locator('.chip.sub', {hasText:'Pizza'}).click();
+await page.waitForTimeout(200);
+ok('deselecting the last cuisine restores Food',
+   (await page.locator('.chip.on').allTextContents()).some(t=>t.includes('Food')),
+   (await page.locator('.chip.on').allTextContents()).join('|'));
+await page.locator('.chip', {hasText:'Food'}).first().click();
+await page.waitForTimeout(200);
 
 // ---- feeling lucky ------------------------------------------------------
 ok('lucky chip present', await page.locator('#lucky').count() === 1);
@@ -349,12 +419,42 @@ ok('pill names the chosen time, not "now"',
 await page.locator('#whenDay').selectOption('');
 
 // voting
+const firstName = await page.locator('.venue').first().locator('.vname').textContent();
 await page.locator('.venue').first().locator('.vote.up').click();
 await page.waitForTimeout(150);
 ok('vote registers in tally',
    (await page.locator('.venue').first().locator('.tally').textContent()).trim().startsWith('1👍'));
 ok('vote button shows active state',
    await page.locator('.venue').first().locator('.vote.up').getAttribute('class').then(c=>c.includes('on')));
+
+// ---- a thumbs-down rules a place out ------------------------------------
+{
+  const before = await page.locator('.venue').count();
+  const second = await page.locator('.venue').nth(1).locator('.vname').textContent();
+  await page.locator('.venue').nth(1).locator('.vote.down').click();
+  await page.waitForTimeout(250);
+  ok('a vetoed venue disappears from the list',
+     await page.locator('.venue', {hasText:second}).count() === 0, second);
+  ok('the list shrinks by exactly one',
+     await page.locator('.venue').count() === before - 1);
+  ok('and the veto is undoable, not destructive',
+     await page.locator('.vetoed-toggle').count() === 1);
+
+  await page.locator('.vetoed-toggle').click();
+  await page.waitForTimeout(200);
+  ok('showing them again brings it back, struck through',
+     await page.locator('.venue.vetoed', {hasText:second}).count() === 1);
+  await page.locator('.venue.vetoed', {hasText:second}).locator('.vote.down').click();
+  await page.waitForTimeout(250);
+  ok('un-voting restores it fully',
+     await page.locator('.venue.vetoed').count() === 0);
+}
+
+// ---- a winner is declared once everyone has voted -----------------------
+{
+  ok('no winner while only one person has voted',
+     await page.locator('.winner').count() === 0);
+}
 
 // URL state round-trip
 const url = page.url();

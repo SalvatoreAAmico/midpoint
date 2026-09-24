@@ -96,7 +96,11 @@ const rpcHandler = async r => {
     if (p) { p.name = a.p_name ?? p.name; p.lat = a.p_lat; p.lon = a.p_lon; }
     return send(null, 204);
   }
-  if (fn === 'mp_prefs') { if (a.p_cats) S().cats = a.p_cats; return send(null, 204); }
+  if (fn === 'mp_prefs') {
+    if (a.p_cats) S().cats = a.p_cats;
+    if (a.p_filters) S().filters = a.p_filters;
+    return send(null, 204);
+  }
   if (fn === 'mp_vote') {
     S().votes = S().votes.filter(v => !(v.participant_id===a.p_participant && v.venue_key===a.p_venue));
     if (a.p_dir) S().votes.push({participant_id:a.p_participant, venue_key:a.p_venue, dir:a.p_dir});
@@ -308,6 +312,65 @@ ok("host's vote reaches the other device within one poll cycle",
   ok('your name survives the refresh',
      (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana',
      await p2.locator('.person').nth(1).locator('.nm').inputValue());
+}
+
+// ---- search settings travel with the session ----------------------------
+{
+  await page.selectOption('#travel', 'walk');
+  await page.locator('#whenDay').selectOption('2');       // Tuesday
+  await page.waitForTimeout(400);
+  await p2.waitForTimeout(4800);                          // p2 polls it in
+  ok('travel mode reaches the other device',
+     (await p2.locator('#travel').inputValue()) === 'walk',
+     await p2.locator('#travel').inputValue());
+  ok('the chosen day reaches the other device',
+     (await p2.locator('#whenDay').inputValue()) === '2',
+     await p2.locator('#whenDay').inputValue());
+  ok('and the time box is revealed there too',
+     !(await p2.locator('#whenTime').isHidden()));
+  // put it back
+  await page.selectOption('#travel', 'drive');
+  await page.locator('#whenDay').selectOption('');
+  await page.waitForTimeout(400);
+  await p2.waitForTimeout(4800);
+  ok('reverting syncs back as well',
+     (await p2.locator('#travel').inputValue()) === 'drive');
+}
+
+// ---- the group reaches a decision ---------------------------------------
+{
+  ok('no winner announced before everyone has voted',
+     await page.locator('.winner').count() === 0);
+
+  // p2 reloaded during the refresh test, so it needs results again.
+  await p2.locator('#find').click();
+  await p2.waitForSelector('.venue', {timeout:8000});
+  await p2.waitForTimeout(300);
+
+  // Dana votes for the same place the host did.
+  const top = await p2.locator('.venue').first().locator('.vname').textContent();
+  await p2.locator('.venue').first().locator('.vote.up').click();
+  await p2.waitForTimeout(400);
+  await page.waitForTimeout(4800);          // host polls it in
+
+  console.log('    [dbg] server people=', JSON.stringify(db.sessions.get('abc1234567').people.map(x=>({id:x.id,lat:x.lat}))));
+  console.log('    [dbg] p2 top       =', top);
+  ok('once both have voted, a winner is announced',
+     await page.locator('.winner').count() === 1);
+  ok('the winner is the venue they agreed on',
+     (await page.locator('.winner').textContent()).includes(top),
+     await page.locator('.winner').textContent());
+  ok('the winning card is highlighted in the list',
+     await page.locator('.venue.won').count() === 1);
+  ok('the other device sees the same winner',
+     (await p2.locator('.winner').textContent()).includes(top),
+     await p2.locator('.winner').textContent());
+
+  // a veto from one person removes it for everyone
+  await page.locator('.venue').nth(1).locator('.vote.down').click();
+  await page.waitForTimeout(4800);
+  ok('one person vetoing hides it on the other device too',
+     await p2.locator('.vetoed-toggle').count() === 1);
 }
 
 // leaving

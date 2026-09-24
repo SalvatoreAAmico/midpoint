@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 <div id="app">
@@ -79,6 +79,11 @@
         <option value="0">Sunday</option>
       </select>
       <input type="time" id="whenTime" value="19:00" hidden>
+      <select id="maps" title="Which maps app directions open in">
+        <option value="apple">🗺 Apple Maps</option>
+        <option value="google">🗺 Google Maps</option>
+        <option value="osm">🗺 OpenStreetMap</option>
+      </select>
       <select id="price">
         <option value="">Any price</option>
         <option value="1">$ and under</option>
@@ -98,8 +103,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="config.js?v=7"></script>
-<script src="sync.js?v=7"></script>
-<script src="app.js?v=7"></script>
+<script src="config.js?v=9"></script>
+<script src="sync.js?v=9"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
