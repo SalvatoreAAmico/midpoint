@@ -689,7 +689,7 @@ function renderPeople() {
       t.name = e.target.value;
       if (i === 0 || t.id === Sync.me) saveName(t.name.trim());
       syncURL();
-      if (isLive() && t.id === Sync.me) Sync.push(t.name, t.lat, t.lon);
+      if (isLive() && t.id === Sync.me) Sync.push(t.name, t.label, t.lat, t.lon);
     });
 
     const lc = row.querySelector('.lc');
@@ -705,7 +705,7 @@ function renderPeople() {
       } catch (e) {
         t.status = '!Lookup failed: ' + e.message;
       }
-      if (isLive() && t.id === Sync.me) Sync.push(t.name, t.lat, t.lon);
+      if (isLive() && t.id === Sync.me) Sync.push(t.name, t.label, t.lat, t.lon);
       refresh();
     });
 
@@ -814,7 +814,7 @@ function locateAsync(p, timeout = 10000) {
         p.lat = pos.coords.latitude; p.lon = pos.coords.longitude;
         p.label = 'Locating…'; p.status = 'Found you — naming the area…';
         if (!p.name.trim()) p.name = savedName() || '';
-        if (isLive() && p.id === Sync.me) Sync.push(p.name, p.lat, p.lon);
+        if (isLive() && p.id === Sync.me) Sync.push(p.name, p.label, p.lat, p.lon);
         else state.me = p.id;
         refresh();
         resolve(p);
@@ -823,6 +823,7 @@ function locateAsync(p, timeout = 10000) {
         const settle = (label, status) => {
           if (p.label !== 'Locating…') return;            // user has since typed
           p.label = label; p.status = status;
+          if (isLive() && p.id === Sync.me) Sync.push(p.name, p.label, p.lat, p.lon);
           renderPeople(); syncURL();
         };
         reverseGeocode(p.lat, p.lon)
@@ -889,10 +890,11 @@ function applyRemote(remote, err) {
       // flight, and accepting the stale empty value would wipe it.
       name: (keepLocal || (mine && prev?.name && !p.name)) ? prev.name : (p.name || ''),
       lat: p.lat, lon: p.lon,
-      label: prev?.label || (p.lat != null ? 'Shared location' : ''),
+      label: (keepLocal && prev ? prev.label : (p.label || prev?.label || ''))
+             || (p.lat != null ? 'Shared location' : ''),
       flex: prev?.flex || false,
       status: p.lat != null
-        ? (mine ? 'You — on the map' : 'On the map')
+        ? (mine ? 'You — on the map' : (p.label || 'On the map'))
         : (mine ? 'Tap Locate to add yourself' : 'Joined, no location shared yet')
     };
   });
@@ -1425,7 +1427,7 @@ function wireLive() {
     }
 
     try {
-      await Sync.create(me?.name || 'Me', me?.lat ?? null, me?.lon ?? null);
+      await Sync.create(me?.name || 'Me', me?.label || '', me?.lat ?? null, me?.lon ?? null);
       state.liveErr = '';
       history.replaceState(null, '', `?s=${Sync.code}`);
       log(me?.lat != null
@@ -1450,7 +1452,7 @@ function wireLive() {
     if (!me) return;
     try {
       await locateAsync(me);
-      await Sync.push(me.name, me.lat, me.lon);
+      await Sync.push(me.name, me.label, me.lat, me.lon);
       log('You are on the map.');
     } catch {
       log('Location is blocked for this site. Allow it in Safari settings, or type a place above.');
@@ -1522,7 +1524,7 @@ async function joinSession(code, fromLink) {
       return;
     }
 
-    await Sync.join(code, me?.name || savedName() || '', me?.lat ?? null, me?.lon ?? null);
+    await Sync.join(code, me?.name || savedName() || '', me?.label || '', me?.lat ?? null, me?.lon ?? null);
     state.liveErr = '';
     history.replaceState(null, '', `?s=${code}`);
 
@@ -1537,7 +1539,7 @@ async function joinSession(code, fromLink) {
       log('Joined. Sharing your location, or tap “Share my location”…', true);
       try {
         await locateAsync(me, 6000);
-        await Sync.push(me.name, me.lat, me.lon);
+        await Sync.push(me.name, me.label, me.lat, me.lon);
         log('You are on the map.');
       } catch {
         // Declined or unavailable: the Share my location button takes over.
@@ -1545,7 +1547,7 @@ async function joinSession(code, fromLink) {
       }
     } else {
       log('Joined the session.');
-      if (me) await Sync.push(me.name, me.lat, me.lon);
+      if (me) await Sync.push(me.name, me.label, me.lat, me.lon);
     }
   } catch (e) {
     state.liveErr = e.message;

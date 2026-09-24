@@ -7,20 +7,26 @@ P="psql -h /tmp -p 5433 -U postgres -d ${MPDB:-mp} -qAt"
 pass=0; fail=0
 ok(){ if [ "$2" = "1" ]; then pass=$((pass+1)); echo "  ok   $1"; else fail=$((fail+1)); echo "  FAIL $1 | $3"; fi; }
 
-CODE=$($P -c "set role anon; select public.mp_create('Sal',41.9088,-87.6796)::json->>'code';")
+CODE=$($P -c "set role anon; select public.mp_create('Sal','Wicker Park',41.9088,-87.6796)::json->>'code';")
 ok "mp_create returns a session code" "$([ ${#CODE} -eq 10 ] && echo 1 || echo 0)" "got '$CODE'"
 
-PID2=$($P -c "set role anon; select public.mp_join('$CODE','Dana',41.7943,-87.5907)::json->>'participant_id';")
+PID2=$($P -c "set role anon; select public.mp_join('$CODE','Dana','Hyde Park',41.7943,-87.5907)::json->>'participant_id';")
 ok "mp_join adds a second person" "$([ ${#PID2} -eq 36 ] && echo 1 || echo 0)" "got '$PID2'"
 
 N=$($P -c "set role anon; select json_array_length(public.mp_state('$CODE')->'people');")
 ok "mp_state lists both people" "$([ "$N" = "2" ] && echo 1 || echo 0)" "n=$N"
 
+L=$($P -c "set role anon; select public.mp_state('$CODE')->'people'->0->>'label';")
+ok "the place name is returned to everyone, not just coordinates" "$([ "$L" = "Wicker Park" ] && echo 1 || echo 0)" "got '$L'"
+$P -c "set role anon; select public.mp_update('$CODE','$PID2','Dana','Logan Square',41.92,-87.70);" >/dev/null
+L2=$($P -c "set role anon; select public.mp_state('$CODE')->'people'->1->>'label';")
+ok "an updated place name propagates" "$([ "$L2" = "Logan Square" ] && echo 1 || echo 0)" "got '$L2'"
+
 # 8-person cap
-for i in 3 4 5 6 7 8; do $P -c "set role anon; select public.mp_join('$CODE','P$i',41.8,-87.6);" >/dev/null; done
+for i in 3 4 5 6 7 8; do $P -c "set role anon; select public.mp_join('$CODE','P$i','Somewhere',41.8,-87.6);" >/dev/null; done
 N=$($P -c "set role anon; select json_array_length(public.mp_state('$CODE')->'people');")
 ok "session fills to 8" "$([ "$N" = "8" ] && echo 1 || echo 0)" "n=$N"
-ERR=$($P -c "set role anon; select public.mp_join('$CODE','Ninth',41.8,-87.6);" 2>&1 | grep -c session_full)
+ERR=$($P -c "set role anon; select public.mp_join('$CODE','Ninth','Somewhere',41.8,-87.6);" 2>&1 | grep -c session_full)
 ok "9th person refused with session_full" "$([ "$ERR" -ge 1 ] && echo 1 || echo 0)" "$ERR"
 
 # votes
@@ -58,12 +64,12 @@ ok "internal helper mp_gc is not callable by anon" "$([ "$E6" -ge 1 ] && echo 1 
 $P -c "update public.sessions set expires_at = now() - interval '1 hour' where code='$CODE';" >/dev/null
 ERR=$($P -c "set role anon; select public.mp_state('$CODE');" 2>&1 | grep -c session_not_found)
 ok "an expired session is unreachable" "$([ "$ERR" -ge 1 ] && echo 1 || echo 0)" "$ERR"
-$P -c "set role anon; select public.mp_create('gc',1,1);" >/dev/null
+$P -c "set role anon; select public.mp_create('gc','x',1,1);" >/dev/null
 LEFT=$($P -c "select count(*) from public.participants p join public.sessions s on s.id=p.session_id where s.code='$CODE';")
 ok "expired session's participants are deleted (gc + cascade)" "$([ "$LEFT" = "0" ] && echo 1 || echo 0)" "left=$LEFT"
 
 # codes are unique and random
-D=$($P -c "set role anon; select count(distinct public.mp_create('x',1,1)::json->>'code') from generate_series(1,50);")
+D=$($P -c "set role anon; select count(distinct public.mp_create('x','y',1,1)::json->>'code') from generate_series(1,50);")
 ok "50 generated codes are all distinct" "$([ "$D" = "50" ] && echo 1 || echo 0)" "d=$D"
 
 echo ""; echo "$pass passed, $fail failed"

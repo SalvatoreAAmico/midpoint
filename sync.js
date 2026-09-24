@@ -91,28 +91,32 @@ const Sync = {
     return state;
   },
 
-  async create(name, lat, lon) {
-    const r = await this.rpc('mp_create', { p_name: name || '', p_lat: lat, p_lon: lon });
+  async create(name, label, lat, lon) {
+    const r = await this.rpc('mp_create',
+      { p_name: name || '', p_label: label || '', p_lat: lat, p_lon: lon });
     this.code = r.code; this.me = r.participant_id;
     this.remember();
     this.start();
     return r;
   },
 
-  async join(code, name, lat, lon) {
+  async join(code, name, label, lat, lon) {
     const r = await this.rpc('mp_join',
-      { p_code: code, p_name: name || '', p_lat: lat, p_lon: lon });
+      { p_code: code, p_name: name || '', p_label: label || '', p_lat: lat, p_lon: lon });
     this.code = code.toLowerCase(); this.me = r.participant_id;
     this.remember();
     this.start();
     return r;
   },
 
-  push(name, lat, lon) {
+  /* The place name travels too. Without it, everyone else saw a pin with no
+     label, and on reload the person's own typed location looked lost. */
+  push(name, label, lat, lon) {
     if (!this.live) return Promise.resolve();
     return this.rpc('mp_update', {
       p_code: this.code, p_participant: this.me,
-      p_name: name || '', p_lat: lat ?? null, p_lon: lon ?? null
+      p_name: name || '', p_label: label || '',
+      p_lat: lat ?? null, p_lon: lon ?? null
     }).catch(() => {});
   },
 

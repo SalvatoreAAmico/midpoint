@@ -90,20 +90,21 @@ const rpcHandler = async r => {
     const code = 'abc1234567';
     db.sessions.set(code, {code, cats:['coffee'], filters:{}, people:[], votes:[]});
     const pid = 'p-host';
-    db.sessions.get(code).people.push({id:pid, name:a.p_name||'', lat:a.p_lat, lon:a.p_lon});
+    db.sessions.get(code).people.push({id:pid, name:a.p_name||'', label:a.p_label||'', lat:a.p_lat, lon:a.p_lon});
     return send({code, participant_id:pid});
   }
   if (!S()) return send({message:'session_not_found'}, 400);
   if (fn === 'mp_join') {
     if (S().people.length >= 8) return send({message:'session_full'}, 400);
     const pid = 'p-' + S().people.length;
-    S().people.push({id:pid, name:a.p_name||'', lat:a.p_lat, lon:a.p_lon});
+    S().people.push({id:pid, name:a.p_name||'', label:a.p_label||'', lat:a.p_lat, lon:a.p_lon});
     return send({participant_id:pid});
   }
   if (fn === 'mp_state') return send(S());
   if (fn === 'mp_update') {
     const p = S().people.find(x=>x.id===a.p_participant);
-    if (p) { p.name = a.p_name ?? p.name; p.lat = a.p_lat; p.lon = a.p_lon; }
+    if (p) { p.name = a.p_name ?? p.name; p.label = a.p_label ?? p.label;
+             p.lat = a.p_lat; p.lon = a.p_lon; }
     return send(null, 204);
   }
   if (fn === 'mp_prefs') {
@@ -250,6 +251,21 @@ ok('name still intact a full poll later',
    await p2.locator('.person').nth(1).locator('.nm').inputValue());
 await p2.locator('.person').nth(1).locator('.nm').blur();
 await p2.waitForTimeout(300);
+
+// The bug two real users hit: a pin appeared but nobody could see where.
+await p2.locator('.person').nth(1).locator('.lc').fill('Hyde Park, Chicago');
+await p2.locator('.person').nth(1).locator('.lc').press('Tab');
+await p2.waitForTimeout(700);
+ok('a typed place reaches the server, not just the coordinates',
+   db.sessions.get('abc1234567').people[1].label === 'Hyde Park, Chicago',
+   JSON.stringify(db.sessions.get('abc1234567').people[1]));
+await page.waitForTimeout(4800);
+ok('and the other device shows where they are, not a bare pin',
+   (await page.locator('.person').nth(1).locator('.lc').inputValue()) === 'Hyde Park, Chicago',
+   await page.locator('.person').nth(1).locator('.lc').inputValue());
+ok('their row says the place too',
+   (await page.locator('.person').nth(1).locator('.status').textContent()).includes('Hyde Park'),
+   await page.locator('.person').nth(1).locator('.status').textContent());
 
 ok('joiner name pushed to server',
    db.sessions.get('abc1234567').people[1].name === 'Dana',
@@ -408,7 +424,7 @@ ok('leaving clears the code from the URL', !p2.url().includes('?s='));
     const fn = r.request().url().split('/rpc/')[1].split('?')[0];
     const a = JSON.parse(r.request().postData() || '{}');
     const S = db.sessions.get(a.p_code);
-    if (fn === 'mp_join') { S.people.push({id:'p-denied', name:a.p_name||'', lat:a.p_lat, lon:a.p_lon});
+    if (fn === 'mp_join') { S.people.push({id:'p-denied', name:a.p_name||'', label:a.p_label||'', lat:a.p_lat, lon:a.p_lon});
       return r.fulfill({status:200, contentType:'application/json', body:JSON.stringify({participant_id:'p-denied'})}); }
     if (fn === 'mp_state') return r.fulfill({status:200, contentType:'application/json', body:JSON.stringify(S)});
     return r.fulfill({status:204, body:''});

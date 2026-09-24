@@ -6,6 +6,14 @@ rather than documents and are marked as such.
 
 ---
 
+## Right now
+
+- [ ] **Run `supabase/fix-002-participant-label.sql`** in the Supabase SQL
+      editor. Without it, live sessions show everyone's pin but not where they
+      are, and a person's own typed location looks lost on reload. Verified
+      against a real Postgres from both a fresh install and the existing
+      schema; sessions already running keep working.
+
 ## Before anyone else uses this
 
 - [ ] **Read and approve `PRIVACY.md`** — draft written, accurate to what the
