@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
 <div id="app">
@@ -43,6 +43,9 @@
     <p class="hint">Up to 8. Tap <b>Locate</b> for your own spot, or type a neighborhood, address, or city.</p>
 
     <h2>What are you in the mood for</h2>
+    <input type="search" id="catSearch" placeholder="Search — pizza, hiking, live music…"
+           autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="catResults" hidden></div>
     <div class="chips" id="cats"></div>
 
     <h2>Filters</h2>
@@ -78,8 +81,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="config.js?v=4"></script>
-<script src="sync.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="config.js?v=5"></script>
+<script src="sync.js?v=5"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

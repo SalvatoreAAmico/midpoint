@@ -152,6 +152,69 @@ await page.locator('#noChains').click();
 await page.locator('#find').click();
 await page.waitForTimeout(900);
 
+// ---- category search ----------------------------------------------------
+ok('search box present', await page.locator('#catSearch').count()===1);
+ok('no results panel before typing', await page.locator('#catResults').isHidden());
+
+await page.locator('#catSearch').fill('pizza');
+await page.waitForTimeout(200);
+ok('typing shows matches', await page.locator('.cat-hit').count() > 0);
+ok('pizza is the first match',
+   (await page.locator('.cat-hit').first().textContent()).includes('Pizza'),
+   await page.locator('.cat-hit').first().textContent());
+
+await page.locator('.cat-hit').first().click();
+await page.waitForTimeout(200);
+ok('picking a result clears the search box',
+   (await page.locator('#catSearch').inputValue())==='');
+ok('picked category becomes a selected chip',
+   (await page.locator('.chip.on').allTextContents()).some(t=>t.includes('Pizza')),
+   (await page.locator('.chip.on').allTextContents()).join('|'));
+ok('results panel hides again', await page.locator('#catResults').isHidden());
+
+// a long-tail want must resolve upward, never to a dead end
+await page.locator('#catSearch').fill('axe throwing');
+await page.waitForTimeout(200);
+ok('"axe throwing" offers bars rather than nothing',
+   (await page.locator('.cat-hit').allTextContents()).some(t=>t.includes('Drinks')),
+   (await page.locator('.cat-hit').allTextContents()).join('|'));
+
+// a genuine miss explains itself
+await page.locator('#catSearch').fill('zzzqqq');
+await page.waitForTimeout(200);
+ok('an unmatched search explains itself', await page.locator('.no-cat').count()===1);
+ok('and suggests broader words',
+   (await page.locator('.no-cat').textContent()).includes('drinks'));
+await page.locator('#catSearch').fill('');
+await page.waitForTimeout(150);
+
+// Enter picks the top match
+await page.locator('#catSearch').fill('sushi');
+await page.waitForTimeout(200);
+await page.locator('#catSearch').press('Enter');
+await page.waitForTimeout(200);
+ok('Enter selects the first result',
+   (await page.locator('.chip.on').allTextContents()).some(t=>t.includes('Sushi')),
+   (await page.locator('.chip.on').allTextContents()).join('|'));
+
+// a cuisine search must compile into the Overpass query
+let lastQuery = '';
+await page.route('**/api/interpreter', async r => {
+  lastQuery = decodeURIComponent(r.request().postData()||'');
+  await r.fallback();
+});
+await page.locator('#find').click();
+await page.waitForTimeout(1500);
+ok('cuisine categories compile into the Overpass query',
+   lastQuery.includes('["cuisine"~"sushi|japanese",i]'), lastQuery.slice(0,200));
+
+// reset selection for the assertions that follow
+for (const t of ['Pizza','Sushi']) {
+  const chip = page.locator('.chip.on', {hasText:t});
+  if (await chip.count()) await chip.first().click();
+}
+await page.waitForTimeout(150);
+
 // ---- feeling lucky ------------------------------------------------------
 ok('lucky chip present', await page.locator('#lucky').count() === 1);
 const beforeCats = await page.locator('.chip.on').allTextContents();

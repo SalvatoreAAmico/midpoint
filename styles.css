@@ -168,3 +168,24 @@ select{
 #shareLoc{width:100%;margin-top:10px;background:var(--accent);color:var(--accent-ink);
   border:none;border-radius:var(--r);padding:13px;font-size:15px;font-weight:700}
 #shareLoc:active{filter:brightness(.92)}
+
+/* ---------- category search ---------- */
+#catSearch{
+  width:100%;background:#0f1218;border:1px solid var(--line);color:var(--ink);
+  border-radius:99px;padding:10px 14px;font:inherit;outline:none;margin-bottom:9px;
+  -webkit-appearance:none;
+}
+#catSearch:focus{border-color:var(--accent)}
+#catResults{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);
+  padding:5px;margin-bottom:9px;max-height:232px;overflow-y:auto;
+}
+.cat-hit{
+  display:flex;align-items:center;justify-content:space-between;width:100%;
+  background:none;border:none;border-radius:9px;padding:10px 11px;
+  font-size:15px;text-align:left;
+}
+.cat-hit:active{background:#0f1218}
+.cat-hit.on{color:var(--accent)}
+.cat-hit .tick{color:var(--accent);font-weight:700}
+.no-cat{padding:10px 11px;font-size:13px;color:var(--dim);line-height:1.5}

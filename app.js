@@ -18,17 +18,109 @@ const OVERPASS = [
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const OSRM = 'https://router.project-osrm.org/table/v1/driving/';
 
-/* Category -> OpenStreetMap tag filters. */
-const CATS = {
-  coffee:  { label: '☕ Coffee',   tags: ['amenity=cafe'] },
-  food:    { label: '🍽 Food',     tags: ['amenity=restaurant'] },
-  drinks:  { label: '🍺 Drinks',   tags: ['amenity=bar', 'amenity=pub', 'amenity=biergarten'] },
-  parks:   { label: '🌳 Parks',    tags: ['leisure=park', 'leisure=garden'] },
-  culture: { label: '🎨 Culture',  tags: ['tourism=museum', 'tourism=gallery', 'amenity=theatre'] },
-  active:  { label: '🎳 Active',   tags: ['leisure=bowling_alley', 'leisure=sports_centre', 'leisure=fitness_centre'] },
-  music:   { label: '🎶 Music',    tags: ['amenity=nightclub', 'amenity=music_venue'] },
-  books:   { label: '📚 Books',    tags: ['shop=books', 'amenity=library'] }
-};
+/* Category catalogue. See docs/osm-categories.md for why these tags and not
+   others. Rules that shaped it:
+     - `chip: true` entries are the headline chips. Every one is densely enough
+       mapped that it cannot come back empty — a chip that returns nothing
+       reads as a broken app.
+     - Everything else is reachable by search.
+     - `syn` is what people actually type. Nobody types amenity=biergarten.
+     - Long-tail wants resolve UPWARD: "axe throwing" finds bars rather than
+       finding nothing.
+   A tag may AND several conditions with `&`, and `~` matches a value loosely,
+   which is how cuisine searches work (cuisine is often a semicolon list). */
+const CATALOG = [
+  // ---- headline chips -------------------------------------------------
+  { id:'coffee',  label:'☕ Coffee',   chip:1, lucky:1, tags:['amenity=cafe','shop=bakery'],
+    syn:'coffee cafe espresso latte cappuccino tea bakery pastry croissant brunch breakfast' },
+  { id:'food',    label:'🍽 Food',     chip:1, lucky:1, tags:['amenity=restaurant','amenity=fast_food'],
+    syn:'food eat dinner lunch restaurant meal hungry supper bite' },
+  { id:'drinks',  label:'🍺 Drinks',   chip:1, lucky:1, tags:['amenity=bar','amenity=pub','amenity=biergarten'],
+    syn:'drinks beer bar pub cocktails wine happy hour pint tavern brewery '
+       +'pool billiards darts karaoke trivia axe throwing shuffleboard' },
+  { id:'outdoors',label:'🌳 Outdoors', chip:1, lucky:1, tags:['leisure=park','leisure=garden','tourism=viewpoint'],
+    syn:'park outside outdoors walk stroll nature green grass picnic view viewpoint sunset fresh air' },
+  { id:'culture', label:'🎨 Culture',  chip:1, lucky:1, tags:['tourism=museum','tourism=gallery','amenity=theatre'],
+    syn:'culture museum art gallery exhibit exhibition theatre theater play show' },
+  { id:'screens', label:'🎬 Screens',  chip:1, lucky:1, tags:['amenity=cinema'],
+    syn:'movie movies cinema film screening flick theater' },
+  { id:'active',  label:'🎳 Active',   chip:1, lucky:1, tags:['leisure=bowling_alley','leisure=sports_centre','leisure=fitness_centre'],
+    syn:'active sport sports bowling gym workout exercise fitness climbing bouldering yoga' },
+  { id:'quiet',   label:'📚 Quiet',    chip:1, lucky:1, tags:['amenity=library','shop=books'],
+    syn:'quiet library books bookshop bookstore read study work laptop calm' },
+
+  // ---- searchable ------------------------------------------------------
+  { id:'icecream', label:'🍦 Ice cream', lucky:1, tags:['amenity=ice_cream','shop=confectionery','shop=chocolate'],
+    syn:'ice cream gelato dessert sweets candy chocolate sundae frozen yogurt' },
+  { id:'nightlife',label:'🪩 Nightlife', tags:['amenity=nightclub'],
+    syn:'nightclub club clubbing dancing dance night dj late' },
+  { id:'playground',label:'🛝 Playground', lucky:1, tags:['leisure=playground'],
+    syn:'playground kids children family toddler swings park for kids' },
+  { id:'dogpark',  label:'🐕 Dog park', tags:['leisure=dog_park'],
+    syn:'dog dogs puppy dog park dog run' },
+  { id:'beach',    label:'🏖 Beach', tags:['natural=beach'],
+    syn:'beach sand lake shore waterfront lakefront' },
+  { id:'nature',   label:'🏞 Nature', lucky:1, tags:['leisure=nature_reserve'],
+    syn:'nature hike hiking trail trails reserve woods forest wildlife' },
+  { id:'swimming', label:'🏊 Swimming', tags:['leisure=swimming_pool','leisure=water_park'],
+    syn:'swim swimming pool water park laps' },
+  { id:'golf',     label:'⛳ Golf', tags:['leisure=golf_course','leisure=miniature_golf'],
+    syn:'golf mini golf minigolf putting driving range' },
+  { id:'zoo',      label:'🦓 Zoo & aquarium', lucky:1, tags:['tourism=zoo','tourism=aquarium'],
+    syn:'zoo aquarium animals fish penguins safari' },
+  { id:'themepark',label:'🎢 Theme park', tags:['tourism=theme_park'],
+    syn:'theme park amusement park rides roller coaster fair carnival' },
+  { id:'arcade',   label:'🕹 Arcade', lucky:1, tags:['leisure=amusement_arcade'],
+    syn:'arcade video games pinball claw machine barcade retro games' },
+  { id:'shopping', label:'🛍 Shopping', lucky:1, tags:['shop=mall','shop=department_store'],
+    syn:'shop shopping mall stores browse retail window shopping' },
+  { id:'market',   label:'🧺 Market', tags:['amenity=marketplace'],
+    syn:'market farmers market stalls bazaar flea market' },
+  { id:'landmarks',label:'🏛 Landmarks', lucky:1, tags:['historic=monument','historic=memorial','tourism=artwork','tourism=attraction'],
+    syn:'landmark landmarks monument historic history statue mural public art sightseeing tourist' },
+  { id:'arts',     label:'🎭 Arts centre', tags:['amenity=arts_centre','amenity=community_centre'],
+    syn:'arts centre arts center performance community centre workshop' },
+  { id:'deli',     label:'🥪 Deli', tags:['shop=deli'],
+    syn:'deli sandwich sandwiches sub hoagie lunch counter' },
+
+  // ---- cuisines: restaurant/fast food narrowed by cuisine --------------
+  { id:'pizza',   label:'🍕 Pizza',     tags:['amenity=restaurant&cuisine~pizza','amenity=fast_food&cuisine~pizza'], syn:'pizza pizzeria slice' },
+  { id:'sushi',   label:'🍣 Sushi',     tags:['amenity=restaurant&cuisine~sushi|japanese'], syn:'sushi japanese sashimi ramen izakaya' },
+  { id:'mexican', label:'🌮 Mexican',   tags:['amenity=restaurant&cuisine~mexican|taco','amenity=fast_food&cuisine~mexican|taco'], syn:'mexican tacos taco burrito taqueria' },
+  { id:'italian', label:'🍝 Italian',   tags:['amenity=restaurant&cuisine~italian'], syn:'italian pasta trattoria' },
+  { id:'chinese', label:'🥡 Chinese',   tags:['amenity=restaurant&cuisine~chinese|dim_sum'], syn:'chinese dim sum dumplings szechuan' },
+  { id:'thai',    label:'🍜 Thai',      tags:['amenity=restaurant&cuisine~thai|vietnamese'], syn:'thai vietnamese pho noodles curry' },
+  { id:'indian',  label:'🍛 Indian',    tags:['amenity=restaurant&cuisine~indian'], syn:'indian curry tandoori' },
+  { id:'korean',  label:'🍲 Korean',    tags:['amenity=restaurant&cuisine~korean'], syn:'korean bbq bibimbap' },
+  { id:'burger',  label:'🍔 Burgers',   tags:['amenity=restaurant&cuisine~burger','amenity=fast_food&cuisine~burger'], syn:'burger burgers hamburger' },
+  { id:'bbq',     label:'🍖 BBQ',       tags:['amenity=restaurant&cuisine~barbecue|bbq'], syn:'bbq barbecue barbeque ribs brisket smokehouse' },
+  { id:'seafood', label:'🦞 Seafood',   tags:['amenity=restaurant&cuisine~seafood|fish'], syn:'seafood fish oysters lobster crab' },
+  { id:'vegan',   label:'🥗 Vegan',     tags:['amenity=restaurant&cuisine~vegan|vegetarian'], syn:'vegan vegetarian plant based salad healthy' },
+  { id:'mediterranean', label:'🥙 Mediterranean', tags:['amenity=restaurant&cuisine~mediterranean|greek|turkish|lebanese'], syn:'mediterranean greek turkish lebanese falafel kebab gyro' }
+];
+
+const CATS = Object.fromEntries(CATALOG.map(c => [c.id, c]));
+const CHIP_CATS = CATALOG.filter(c => c.chip).map(c => c.id);
+
+/* Match on what people type. Every word of the query must appear somewhere in
+   the label or synonyms, so "mini golf" narrows rather than widening. */
+function searchCats(q) {
+  const words = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  return CATALOG
+    .map(c => {
+      const hay = (c.label + ' ' + c.syn).toLowerCase();
+      if (!words.every(w => hay.includes(w))) return null;
+      // Prefer a label match, then a synonym starting with the query.
+      const label = c.label.toLowerCase();
+      const rank = label.includes(words[0]) ? 0 : hay.startsWith(words[0]) ? 1 : 2;
+      return { c, rank };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.rank - b.rank || a.c.label.localeCompare(b.c.label))
+    .map(x => x.c)
+    .slice(0, 8);
+}
 
 /* Chain detection. OpenStreetMap tags branded venues with `brand` and
    `brand:wikidata`; an independent cafe essentially never carries either, so
@@ -290,12 +382,24 @@ async function geocode(q) {
 
 /* ------------------------------------------------------------- overpass */
 
+/* "amenity=restaurant&cuisine~pizza" -> ["amenity"="restaurant"]["cuisine"~"pizza",i]
+   `=` is exact, `~` is a case-insensitive regex, which is what cuisine needs
+   since it is often a semicolon-separated list. */
+function tagFilter(spec) {
+  return spec.split('&').map(part => {
+    const m = part.match(/^([^=~]+)([=~])(.+)$/);
+    if (!m) return '';
+    const [, k, op, v] = m;
+    return op === '=' ? `["${k}"="${v}"]` : `["${k}"~"${v}",i]`;
+  }).join('');
+}
+
 function overpassQuery(center, radiusM) {
   const sel = [];
+  const at = `(around:${Math.round(radiusM)},${center.lat.toFixed(5)},${center.lon.toFixed(5)});`;
   for (const c of state.cats) {
     for (const t of (CATS[c]?.tags || [])) {
-      const [k, v] = t.split('=');
-      sel.push(`nwr["${k}"="${v}"](around:${Math.round(radiusM)},${center.lat.toFixed(5)},${center.lon.toFixed(5)});`);
+      sel.push('nwr' + tagFilter(t) + at);
     }
   }
   return `[out:json][timeout:25];(${sel.join('')});out center 120;`;
@@ -615,7 +719,12 @@ function applyRemote(remote, err) {
 function renderCats() {
   const host = $('#cats');
   host.innerHTML = '';
-  for (const [k, c] of Object.entries(CATS)) {
+  // The eight headline chips, plus anything picked from search so a chosen
+  // category never disappears from view.
+  const shown = [...new Set([...CHIP_CATS, ...state.cats])];
+  for (const k of shown) {
+    const c = CATS[k];
+    if (!c) continue;
     const b = document.createElement('button');
     b.className = 'chip' + (state.cats.includes(k) ? ' on' : '');
     b.textContent = c.label;
@@ -631,6 +740,8 @@ function renderCats() {
     host.appendChild(b);
   }
 
+  renderCatSearch();
+
   const lucky = document.createElement('button');
   lucky.className = 'chip lucky' + (state.lucky ? ' on' : '');
   lucky.id = 'lucky';
@@ -639,10 +750,41 @@ function renderCats() {
   host.appendChild(lucky);
 }
 
+function renderCatSearch(q) {
+  const host = $('#catResults');
+  const query = q ?? $('#catSearch').value;
+  const hits = searchCats(query);
+  host.innerHTML = '';
+
+  if (!query.trim()) { host.hidden = true; return; }
+  host.hidden = false;
+
+  if (!hits.length) {
+    host.innerHTML = `<div class="no-cat">Nothing matches “${esc(query.trim())}”. `
+      + `Try a broader word — “drinks”, “food”, “outdoors”.</div>`;
+    return;
+  }
+
+  for (const c of hits) {
+    const b = document.createElement('button');
+    b.className = 'cat-hit' + (state.cats.includes(c.id) ? ' on' : '');
+    b.innerHTML = `<span>${esc(c.label)}</span>`
+      + (state.cats.includes(c.id) ? '<span class="tick">✓</span>' : '');
+    b.addEventListener('click', () => {
+      if (!state.cats.includes(c.id)) state.cats = [...state.cats, c.id];
+      state.lucky = false;
+      $('#catSearch').value = '';
+      renderCats(); syncURL();
+      if (isLive()) Sync.prefs(state.cats, null);
+    });
+    host.appendChild(b);
+  }
+}
+
 /* Pick a few activity types at random and search straight away. Re-rolling
    picks a different set, so tapping twice never gives the same answer. */
 function rollLucky() {
-  const keys = Object.keys(CATS);
+  const keys = CATALOG.filter(c => c.lucky).map(c => c.id);
   const next = pickRandom(keys, LUCKY_CATS);
   // Never re-roll into the identical set — a re-roll that changes nothing
   // reads as a broken button.
@@ -849,6 +991,13 @@ function boot() {
   drawMap();
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
+
+  $('#catSearch').addEventListener('input', e => renderCatSearch(e.target.value));
+  $('#catSearch').addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.target.value = ''; renderCatSearch(''); }
+    if (e.key === 'Enter')  { e.preventDefault(); $('#catResults .cat-hit')?.click(); }
+  });
+
   wireLive();
   $('#find').addEventListener('click', search);
 

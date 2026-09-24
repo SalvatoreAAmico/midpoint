@@ -23,6 +23,13 @@ tags, which independents essentially never carry, with a name list as backup.
 Where a midpoint has *nothing but* chains, they are shown anyway with a note —
 an empty list reads as a broken search.
 
+**Search** sits above the chips and covers 37 categories — cuisines included,
+so "pizza", "sushi" and "tacos" narrow to `cuisine=*` rather than returning
+every restaurant. It matches on what people type rather than on tag names, and
+long-tail wants resolve *upward*: "axe throwing" offers bars instead of
+offering nothing. Only categories dense enough in OSM to return results are
+listed. See `docs/osm-categories.md`.
+
 **🎲 Feeling lucky** picks three activity types at random and shuffles the
 results, for when nobody can decide. It shuffles *within the twelve fairest*
 spots rather than across everything: a random pick that is forty minutes from
@@ -159,9 +166,9 @@ fallback, not a setting — there is no reason a user would choose worse numbers
 
 ## Testing status
 
-- Core geo/scoring/hours/chain/shuffle logic: **28/28 unit tests passing**.
+- Core geo/scoring/hours/chain/shuffle/search logic: **48/48 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
-  **48/48 passing**, no JS errors.
+  **60/60 passing**, no JS errors.
 - Schema against a real Postgres as the `anon` role: **18/18 passing** —
   the full session flow, the cap, expiry, and the access restrictions above.
 - Live-session flow against a mocked Supabase backend: **39/39 passing** —

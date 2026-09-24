@@ -2,7 +2,7 @@ import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
 src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
-src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom};\n';
+src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');
 
@@ -73,6 +73,41 @@ ok('shuffle actually reorders over 20 runs',
 }
 ok('pickRandom returns the requested count', m.pickRandom(nums,3).length===3);
 ok('pickRandom returns distinct items', new Set(m.pickRandom(nums,5)).size===5);
+
+// category search
+const ids = q => m.searchCats(q).map(c=>c.id);
+ok('"pizza" finds pizza', ids('pizza')[0]==='pizza', ids('pizza').join());
+ok('"beer" resolves to drinks', ids('beer').includes('drinks'), ids('beer').join());
+ok('"workout" resolves to active', ids('workout').includes('active'), ids('workout').join());
+ok('"tacos" finds mexican', ids('tacos').includes('mexican'), ids('tacos').join());
+ok('"books" finds quiet', ids('books').includes('quiet'), ids('books').join());
+ok('"kids" finds playground', ids('kids').includes('playground'), ids('kids').join());
+// the long tail must resolve UPWARD, never to nothing
+ok('"axe throwing" resolves up to drinks', ids('axe throwing').includes('drinks'), ids('axe throwing').join());
+ok('"billiards" resolves up to drinks', ids('billiards').includes('drinks'), ids('billiards').join());
+ok('"karaoke" resolves up to drinks', ids('karaoke').includes('drinks'), ids('karaoke').join());
+// multi-word narrows rather than widens
+ok('"mini golf" narrows to golf', ids('mini golf').length===1 && ids('mini golf')[0]==='golf', ids('mini golf').join());
+ok('empty query returns nothing', m.searchCats('   ').length===0);
+ok('gibberish returns nothing', m.searchCats('zzzqqq').length===0);
+ok('results are capped at 8', m.searchCats('a').length<=8, String(m.searchCats('a').length));
+
+// every headline chip must be a real catalogue entry
+ok('all chip ids exist in the catalogue',
+   m.CHIP_CATS.every(id => m.CATALOG.some(c=>c.id===id)));
+ok('there are exactly 8 headline chips', m.CHIP_CATS.length===8, String(m.CHIP_CATS.length));
+ok('catalogue ids are unique',
+   new Set(m.CATALOG.map(c=>c.id)).size === m.CATALOG.length);
+ok('every category has tags and synonyms',
+   m.CATALOG.every(c => c.tags?.length && c.syn?.length));
+
+// overpass tag compilation
+ok('simple tag compiles', m.tagFilter('amenity=cafe')==='["amenity"="cafe"]', m.tagFilter('amenity=cafe'));
+ok('ANDed cuisine tag compiles',
+   m.tagFilter('amenity=restaurant&cuisine~pizza')==='["amenity"="restaurant"]["cuisine"~"pizza",i]',
+   m.tagFilter('amenity=restaurant&cuisine~pizza'));
+ok('every catalogue tag compiles to a filter',
+   m.CATALOG.every(c => c.tags.every(t => m.tagFilter(t).startsWith('['))));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
