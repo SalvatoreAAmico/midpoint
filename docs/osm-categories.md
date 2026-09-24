@@ -101,9 +101,17 @@ never rely on it alone; always pair with `amenity=restaurant`.
 | `tourism=theme_park` | B | |
 | `tourism=zoo` / `tourism=aquarium` | B | |
 
-Billiards, darts and axe throwing have **no dependable tag** — they appear as
-`sport=*` on a venue, if at all. Treat all of them as synonyms that resolve to
-Bars & Pubs rather than as categories of their own.
+Billiards, darts, axe throwing, laser tag and karting have **no dependable
+primary tag** — they appear as `sport=*` on a venue, if at all. The same is true
+of the newer "competitive socializing" venues (Level99 and the like), which get
+mapped as an arcade, a sports centre or just an attraction depending on the
+mapper.
+
+So the **Games** category deliberately casts a wide net: the specific `leisure=*`
+values *plus* a loose `sport~laser_tag|paintball|axe_throwing|darts|billiards|
+bowling|karting|climbing` match that picks them up whatever their primary tag
+says. For venue types the community has not standardised, a wide OR beats a
+precise filter that misses.
 
 ## 8. Browsing & shopping
 
@@ -138,8 +146,12 @@ something. Everything else reaches the user through search synonyms.
 | 🌳 Outdoors | `leisure=park`, `leisure=garden`, `tourism=viewpoint` |
 | 🎨 Culture | `tourism=museum`, `tourism=gallery`, `amenity=theatre` |
 | 🎬 Screens | `amenity=cinema` |
-| 🎳 Active | `leisure=bowling_alley`, `leisure=sports_centre`, `leisure=fitness_centre` |
+| 🎯 Games | `leisure=bowling_alley`, `amusement_arcade`, `escape_game`, `miniature_golf`, `trampoline_park`, plus a `sport=*` net |
 | 📚 Quiet | `amenity=library`, `shop=books` |
+
+Gyms and sports centres moved out of the headline set into a searchable
+**Active** category. "Let's go bowling" is a meetup; "let's meet at the gym"
+mostly is not, and the chip slot is better spent on games.
 
 ## Rules the search box should follow
 

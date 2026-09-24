@@ -42,19 +42,32 @@ const CATALOG = [
     syn:'food eat dinner lunch restaurant meal hungry supper bite' },
   { id:'drinks',  label:'🍺 Drinks',   chip:1, lucky:1, tags:['amenity=bar','amenity=pub','amenity=biergarten'],
     syn:'drinks beer bar pub cocktails wine happy hour pint tavern brewery '
-       +'pool billiards darts karaoke trivia axe throwing shuffleboard' },
+       +'karaoke trivia pool darts' },
   { id:'outdoors',label:'🌳 Outdoors', chip:1, lucky:1, tags:['leisure=park','leisure=garden','tourism=viewpoint'],
     syn:'park outside outdoors walk stroll nature green grass picnic view viewpoint sunset fresh air' },
   { id:'culture', label:'🎨 Culture',  chip:1, lucky:1, tags:['tourism=museum','tourism=gallery','amenity=theatre'],
     syn:'culture museum art gallery exhibit exhibition theatre theater play show' },
   { id:'screens', label:'🎬 Screens',  chip:1, lucky:1, tags:['amenity=cinema'],
     syn:'movie movies cinema film screening flick theater' },
-  { id:'active',  label:'🎳 Active',   chip:1, lucky:1, tags:['leisure=bowling_alley','leisure=sports_centre','leisure=fitness_centre'],
-    syn:'active sport sports bowling gym workout exercise fitness climbing bouldering yoga' },
+  { id:'games',   label:'🎯 Games',    chip:1, lucky:1,
+    tags:['leisure=bowling_alley','leisure=amusement_arcade','leisure=escape_game',
+          'leisure=miniature_golf','leisure=trampoline_park','leisure=adult_gaming_centre',
+          // Venues like Level99 have no settled tag and get mapped as an arcade,
+          // a sports centre or just an attraction. Matching on sport=* catches
+          // them whatever their primary tag says.
+          'sport~laser_tag|paintball|axe_throwing|darts|billiards|bowling|karting|climbing'],
+    syn:'games gaming fun activity activities things to do bowling bowl arcade '
+       +'escape room escape rooms axe throwing hatchet laser tag paintball '
+       +'mini golf minigolf putt putt trampoline go karts karting darts '
+       +'billiards pool table shuffleboard vr virtual reality level 99 level99 '
+       +'competitive socializing pinball barcade' },
   { id:'quiet',   label:'📚 Quiet',    chip:1, lucky:1, tags:['amenity=library','shop=books'],
     syn:'quiet library books bookshop bookstore read study work laptop calm' },
 
   // ---- searchable ------------------------------------------------------
+  { id:'active',  label:'🏃 Active', lucky:1,
+    tags:['leisure=sports_centre','leisure=fitness_centre','leisure=climbing','sport~climbing|yoga'],
+    syn:'active sport sports gym workout exercise fitness climbing bouldering yoga pilates' },
   { id:'icecream', label:'🍦 Ice cream', lucky:1, tags:['amenity=ice_cream','shop=confectionery','shop=chocolate'],
     syn:'ice cream gelato dessert sweets candy chocolate sundae frozen yogurt' },
   { id:'nightlife',label:'🪩 Nightlife', tags:['amenity=nightclub'],
@@ -69,14 +82,12 @@ const CATALOG = [
     syn:'nature hike hiking trail trails reserve woods forest wildlife' },
   { id:'swimming', label:'🏊 Swimming', tags:['leisure=swimming_pool','leisure=water_park'],
     syn:'swim swimming pool water park laps' },
-  { id:'golf',     label:'⛳ Golf', tags:['leisure=golf_course','leisure=miniature_golf'],
-    syn:'golf mini golf minigolf putting driving range' },
+  { id:'golf',     label:'⛳ Golf', tags:['leisure=golf_course','leisure=driving_range'],
+    syn:'golf course driving range putting green' },
   { id:'zoo',      label:'🦓 Zoo & aquarium', lucky:1, tags:['tourism=zoo','tourism=aquarium'],
     syn:'zoo aquarium animals fish penguins safari' },
   { id:'themepark',label:'🎢 Theme park', tags:['tourism=theme_park'],
     syn:'theme park amusement park rides roller coaster fair carnival' },
-  { id:'arcade',   label:'🕹 Arcade', lucky:1, tags:['leisure=amusement_arcade'],
-    syn:'arcade video games pinball claw machine barcade retro games' },
   { id:'shopping', label:'🛍 Shopping', lucky:1, tags:['shop=mall','shop=department_store'],
     syn:'shop shopping mall stores browse retail window shopping' },
   { id:'market',   label:'🧺 Market', tags:['amenity=marketplace'],

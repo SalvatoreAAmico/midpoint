@@ -83,11 +83,23 @@ ok('"tacos" finds mexican', ids('tacos').includes('mexican'), ids('tacos').join(
 ok('"books" finds quiet', ids('books').includes('quiet'), ids('books').join());
 ok('"kids" finds playground', ids('kids').includes('playground'), ids('kids').join());
 // the long tail must resolve UPWARD, never to nothing
-ok('"axe throwing" resolves up to drinks', ids('axe throwing').includes('drinks'), ids('axe throwing').join());
-ok('"billiards" resolves up to drinks', ids('billiards').includes('drinks'), ids('billiards').join());
-ok('"karaoke" resolves up to drinks', ids('karaoke').includes('drinks'), ids('karaoke').join());
+ok('"axe throwing" finds games', ids('axe throwing')[0]==='games', ids('axe throwing').join());
+ok('"escape room" finds games', ids('escape room')[0]==='games', ids('escape room').join());
+ok('"laser tag" finds games', ids('laser tag')[0]==='games', ids('laser tag').join());
+ok('"level 99" finds games', ids('level 99')[0]==='games', ids('level 99').join());
+ok('"bowling" finds games', ids('bowling')[0]==='games', ids('bowling').join());
+ok('"things to do" finds games', ids('things to do')[0]==='games', ids('things to do').join());
+ok('"arcade" still resolves after folding it in', ids('arcade')[0]==='games', ids('arcade').join());
+ok('"karaoke" still resolves to drinks', ids('karaoke').includes('drinks'), ids('karaoke').join());
+ok('"gym" still finds active', ids('gym')[0]==='active', ids('gym').join());
+ok('games casts a wide net including a sport=* match',
+   m.CATALOG.find(c=>c.id==='games').tags.some(t=>t.startsWith('sport~')),
+   m.CATALOG.find(c=>c.id==='games').tags.join(' | '));
+ok('the sport=* match compiles to a loose filter',
+   m.tagFilter('sport~laser_tag|paintball') === '["sport"~"laser_tag|paintball",i]',
+   m.tagFilter('sport~laser_tag|paintball'));
 // multi-word narrows rather than widens
-ok('"mini golf" narrows to golf', ids('mini golf').length===1 && ids('mini golf')[0]==='golf', ids('mini golf').join());
+ok('"mini golf" finds games', ids('mini golf')[0]==='games', ids('mini golf').join());
 ok('empty query returns nothing', m.searchCats('   ').length===0);
 ok('gibberish returns nothing', m.searchCats('zzzqqq').length===0);
 ok('results are capped at 8', m.searchCats('a').length<=8, String(m.searchCats('a').length));

@@ -223,8 +223,14 @@ ok('results panel hides again', await page.locator('#catResults').isHidden());
 // a long-tail want must resolve upward, never to a dead end
 await page.locator('#catSearch').fill('axe throwing');
 await page.waitForTimeout(200);
-ok('"axe throwing" offers bars rather than nothing',
-   (await page.locator('.cat-hit').allTextContents()).some(t=>t.includes('Drinks')),
+ok('"axe throwing" finds Games rather than nothing',
+   (await page.locator('.cat-hit').first().textContent()).includes('Games'),
+   (await page.locator('.cat-hit').allTextContents()).join('|'));
+
+await page.locator('#catSearch').fill('level 99');
+await page.waitForTimeout(200);
+ok('a venue brand with no OSM tag still lands somewhere sensible',
+   (await page.locator('.cat-hit').first().textContent()).includes('Games'),
    (await page.locator('.cat-hit').allTextContents()).join('|'));
 
 // a genuine miss explains itself
