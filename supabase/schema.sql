@@ -127,7 +127,7 @@ declare s public.sessions; v_pid uuid; v_n int;
 begin
   s := public.mp_session(p_code);
   select count(*) into v_n from public.participants where session_id = s.id;
-  if v_n >= 4 then
+  if v_n >= 8 then
     raise exception 'session_full' using errcode = 'check_violation';
   end if;
   insert into public.participants(session_id, name, lat, lon)

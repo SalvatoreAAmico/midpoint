@@ -55,7 +55,7 @@ const Sync = {
       let detail = '';
       try { detail = (await res.json()).message || ''; } catch { /* non-JSON error */ }
       if (/session_not_found/.test(detail)) throw new Error('That session has expired or does not exist.');
-      if (/session_full/.test(detail))      throw new Error('That session already has 4 people.');
+      if (/session_full/.test(detail))      throw new Error('That session already has 8 people.');
       throw new Error(detail || `Server error ${res.status}`);
     }
     return res.status === 204 ? null : res.json();

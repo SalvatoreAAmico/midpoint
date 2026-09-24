@@ -4,9 +4,12 @@
 
 'use strict';
 
-const MAX_PEOPLE = 4;
+const MAX_PEOPLE = 8;
 const MAX_VENUES = 25;            // also caps the OSRM matrix URL length
-const COLORS = ['#4f9cf9', '#3fbf7f', '#f0b429', '#ef5f5f'];
+const COLORS = ['#4f9cf9', '#3fbf7f', '#f0b429', '#ef5f5f',
+                '#a78bfa', '#2dd4bf', '#f472b6', '#fb923c'];
+const LUCKY_CATS = 3;    // how many activity types a roll picks
+const LUCKY_POOL = 12;   // shuffle within this many of the fairest spots
 
 const OVERPASS = [
   'https://overpass-api.de/api/interpreter',
@@ -27,10 +30,34 @@ const CATS = {
   books:   { label: '📚 Books',    tags: ['shop=books', 'amenity=library'] }
 };
 
+/* Chain detection. OpenStreetMap tags branded venues with `brand` and
+   `brand:wikidata`; an independent cafe essentially never carries either, so
+   that is the primary signal. The name list is a backup for franchises whose
+   local entries were added without brand tags. */
+const CHAIN_NAMES = new RegExp([
+  'starbucks', 'dunkin', "peet'?s", 'caribou coffee', 'tim hortons', 'costa coffee',
+  'pret a manger', 'panera', 'au bon pain', 'corner bakery', 'einstein bros',
+  'dutch bros', "scooter'?s coffee", "mcdonald'?s", 'burger king', "wendy'?s",
+  'subway', 'taco bell', 'kfc', 'popeyes', 'chipotle', 'panda express',
+  'five guys', 'shake shack', 'sweetgreen', 'chick-?fil-?a', 'domino', 'papa john',
+  "applebee'?s", "chili'?s", 'olive garden', 'buffalo wild wings', "friday'?s",
+  "denny'?s", 'ihop', 'cracker barrel', 'red lobster', 'outback', 'hooters',
+  'barnes ?& ?noble', 'planet fitness', 'la fitness', 'equinox', 'orangetheory',
+  'amc ', 'regal ', 'cinemark'
+].join('|'), 'i');
+
+function isChain(tags, name) {
+  if (tags['brand'] || tags['brand:wikidata'] || tags['brand:wikipedia']) return true;
+  return CHAIN_NAMES.test(name || '');
+}
+
 const state = {
   people: [],
   cats: ['coffee'],
-  openNow: false,
+  lucky: false,
+  when: '',           // '' any time | 'now' | '0'-'6' weekday
+  whenTime: '19:00',
+  noChains: true,     // on by default: the midpoint Starbucks is a bad answer
   maxPrice: '',
   mode: 'drive',
   votes: {},        // { venueKey: { personId: 1 | -1 } }
@@ -81,6 +108,19 @@ function centroid(pts) {
     lon: Math.atan2(y, x) / rad
   };
 }
+
+/* Fisher-Yates. Array.sort(() => Math.random() - 0.5) is not a shuffle —
+   it biases badly and varies by engine. */
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const pickRandom = (arr, n) => shuffle(arr).slice(0, n);
 
 const fmtMin = s => s == null ? '—' : (s < 60 ? '<1 min' : Math.round(s / 60) + ' min');
 const fmtKm  = m => m == null ? '—' : (m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(1) + ' km');
@@ -142,6 +182,30 @@ function isOpenNow(spec, now = new Date()) {
   return parsedAny || coversToday ? false : null;
 }
 
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* The moment to test opening hours against: null means "don't filter by time".
+   A weekday resolves to its next occurrence, so picking Friday on a Saturday
+   means the Friday coming, not the one just gone. */
+function whenDate() {
+  if (!state.when) return null;
+  if (state.when === 'now') return new Date();
+  const [h, m] = (state.whenTime || '19:00').split(':').map(Number);
+  const d = new Date();
+  d.setDate(d.getDate() + ((+state.when - d.getDay() + 7) % 7));
+  d.setHours(h || 0, m || 0, 0, 0);
+  return d;
+}
+
+function whenLabel() {
+  if (!state.when) return '';
+  if (state.when === 'now') return 'now';
+  const [h, m] = (state.whenTime || '19:00').split(':').map(Number);
+  const ampm = h < 12 ? 'am' : 'pm';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${DAY_NAMES[+state.when].slice(0,3)} ${h12}${m ? ':' + String(m).padStart(2,'0') : ''}${ampm}`;
+}
+
 /* OSM price data is sparse. Read it where it exists; never guess, never
    exclude a venue just because the tag is missing. */
 function priceLevel(tags) {
@@ -161,7 +225,8 @@ function encodeState() {
   const payload = {
     p: state.people.map(p => [p.id, p.name, p.lat == null ? null : +p.lat.toFixed(5),
                               p.lon == null ? null : +p.lon.toFixed(5), p.label || '']),
-    c: state.cats, o: state.openNow ? 1 : 0, r: state.maxPrice, m: state.mode, v: state.votes
+    c: state.cats, w: state.when, wt: state.whenTime, r: state.maxPrice,
+    v: state.votes, l: state.lucky ? 1 : 0, n: state.noChains ? 1 : 0
   };
   const json = JSON.stringify(payload);
   return btoa(unescape(encodeURIComponent(json)))
@@ -176,9 +241,13 @@ function decodeState(hash) {
       id: a[0], name: a[1] || '', lat: a[2], lon: a[3], label: a[4] || '', status: ''
     }));
     state.cats    = Array.isArray(d.c) && d.c.length ? d.c : ['coffee'];
-    state.openNow = !!d.o;
+    // `o` is the old open-now boolean from links made before this control.
+    state.when     = d.w !== undefined ? String(d.w) : (d.o ? 'now' : '');
+    state.whenTime = d.wt || '19:00';
     state.maxPrice = d.r || '';
-    state.mode    = d.m === 'straight' ? 'straight' : 'drive';
+    state.lucky   = !!d.l;
+    // Absent in links made before this filter existed; default it on.
+    state.noChains = d.n === undefined ? true : !!d.n;
     state.votes   = d.v && typeof d.v === 'object' ? d.v : {};
     return true;
   } catch { return false; }
@@ -247,9 +316,9 @@ async function fetchVenues(center, radiusM) {
           name: tags.name,
           kind: tags.amenity || tags.leisure || tags.tourism || tags.shop || '',
           lat, lon,
-          open: isOpenNow(tags.opening_hours),
           hours: tags.opening_hours || '',
-          price: priceLevel(tags)
+          price: priceLevel(tags),
+          chain: isChain(tags, tags.name)
         };
       }).filter(Boolean);
     } catch (e) { lastErr = e; }
@@ -327,7 +396,7 @@ function drawMap(selectedKey) {
 
   state.people.forEach((p, i) => {
     if (p.lat == null) return;
-    L.marker([p.lat, p.lon], { icon: circleIcon(COLORS[i % 4], 16) })
+    L.marker([p.lat, p.lon], { icon: circleIcon(COLORS[i % COLORS.length], 16) })
       .bindPopup(esc(p.name || 'Person ' + (i + 1)))
       .addTo(layer);
     pts.push([p.lat, p.lon]);
@@ -367,7 +436,7 @@ function renderPeople() {
     const row = document.createElement('div');
     row.className = 'person';
     row.innerHTML = `
-      <span class="dot" style="background:${COLORS[i % 4]}"></span>
+      <span class="dot" style="background:${COLORS[i % COLORS.length]}"></span>
       <div class="fields">
         <input type="text" class="nm" placeholder="Name" value="${esc(p.name)}">
         <div class="loc-row">
@@ -500,11 +569,35 @@ function renderCats() {
         ? state.cats.filter(x => x !== k)
         : [...state.cats, k];
       if (!state.cats.length) state.cats = [k];
+      state.lucky = false;            // an explicit choice ends lucky mode
       renderCats(); syncURL();
       if (isLive()) Sync.prefs(state.cats, null);
     });
     host.appendChild(b);
   }
+
+  const lucky = document.createElement('button');
+  lucky.className = 'chip lucky' + (state.lucky ? ' on' : '');
+  lucky.id = 'lucky';
+  lucky.textContent = state.lucky ? '🎲 Re-roll' : '🎲 Feeling lucky';
+  lucky.addEventListener('click', rollLucky);
+  host.appendChild(lucky);
+}
+
+/* Pick a few activity types at random and search straight away. Re-rolling
+   picks a different set, so tapping twice never gives the same answer. */
+function rollLucky() {
+  const keys = Object.keys(CATS);
+  const next = pickRandom(keys, LUCKY_CATS);
+  // Never re-roll into the identical set — a re-roll that changes nothing
+  // reads as a broken button.
+  state.cats = (state.lucky && next.every(k => state.cats.includes(k)))
+    ? pickRandom(keys.filter(k => !state.cats.includes(k)), LUCKY_CATS)
+    : next;
+  state.lucky = true;
+  renderCats(); syncURL();
+  if (isLive()) Sync.prefs(state.cats, null);
+  search();
 }
 
 function tally(key) {
@@ -520,9 +613,8 @@ function renderResults(selectedKey) {
   if (!state.results.length) return;
 
   const worst = Math.max(...state.results.flatMap(v => v.costs));
-  // In straight-line mode the "cost" is metres/13.4, so multiply back to metres.
-  const unit = state.mode === 'straight' ? (s => fmtKm(s * 13.4)) : fmtMin;
-  const approx = state.estimated && state.mode === 'drive' ? '~' : '';
+  const unit = fmtMin;
+  const approx = state.estimated ? '~' : '';
 
   state.results.slice(0, 10).forEach((v, i) => {
     const t = tally(v.key);
@@ -530,10 +622,12 @@ function renderResults(selectedKey) {
     const card = document.createElement('div');
     card.className = 'venue' + (v.key === selectedKey ? ' sel' : '');
 
-    const openPill = v.open === true ? '<span class="pill good">Open now</span>'
-                   : v.open === false ? '<span class="pill bad">Closed</span>'
+    const at = whenLabel() || 'now';
+    const openPill = v.open === true ? `<span class="pill good">Open ${esc(at)}</span>`
+                   : v.open === false ? `<span class="pill bad">Closed ${esc(at)}</span>`
                    : '<span class="pill">Hours unknown</span>';
     const pricePill = v.price ? `<span class="pill">${'$'.repeat(v.price)}</span>` : '';
+    const chainPill = v.chain ? '<span class="pill warn">Chain</span>' : '';
 
     card.innerHTML = `
       <div class="vhead">
@@ -544,12 +638,12 @@ function renderResults(selectedKey) {
       <div class="vmeta">
         <span class="pill">avg ${approx}${unit(v.mean)}</span>
         <span class="pill ${v.spread < 300 ? 'good' : v.spread < 600 ? 'warn' : ''}">±${approx}${unit(v.spread)} spread</span>
-        ${openPill}${pricePill}
+        ${openPill}${pricePill}${chainPill}
       </div>
       <div class="fair">${state.people.map((p, pi) => `
         <div class="fairrow">
           <span class="nm">${esc(p.name || 'P' + (pi + 1))}</span>
-          <span class="bar"><i style="width:${Math.max(4, 100 * v.costs[pi] / worst)}%;background:${COLORS[pi % 4]}"></i></span>
+          <span class="bar"><i style="width:${Math.max(4, 100 * v.costs[pi] / worst)}%;background:${COLORS[pi % COLORS.length]}"></i></span>
           <span class="tm">${approx}${unit(v.costs[pi])}</span>
         </div>`).join('')}
       </div>
@@ -611,7 +705,18 @@ async function search() {
 
     // Open-now filter never drops venues with unknown hours; that would hide
     // most of the map, since opening_hours coverage in OSM is partial.
-    if (state.openNow) venues = venues.filter(v => v.open !== false);
+    let chainsHidden = 0;
+    if (state.noChains) {
+      const indie = venues.filter(v => !v.chain);
+      chainsHidden = venues.length - indie.length;
+      // Somewhere that is *only* chains should still get an answer, with a
+      // note, rather than an empty list that looks like a broken search.
+      if (indie.length) venues = indie;
+      else if (venues.length) chainsHidden = -1;
+    }
+    const at = whenDate();
+    for (const v of venues) v.open = isOpenNow(v.hours, at || new Date());
+    if (at) venues = venues.filter(v => v.open !== false);
     if (state.maxPrice) venues = venues.filter(v => v.price == null || v.price <= +state.maxPrice);
 
     if (!venues.length) {
@@ -624,20 +729,32 @@ async function search() {
     venues = scoreVenues(venues, located, null).slice(0, MAX_VENUES);
 
     let matrix = null;
-    if (state.mode === 'drive') {
-      log(`Getting drive times for ${located.length} × ${venues.length} pairs…`, true);
-      try {
-        matrix = await driveTimes(located, venues);
-      } catch (e) {
-        log('Drive-time service unavailable — ranked by straight-line distance instead.');
-      }
+    log(`Getting drive times for ${located.length} × ${venues.length} pairs…`, true);
+    try {
+      matrix = await driveTimes(located, venues);
+    } catch {
+      // Not a user-visible mode: distance stands in for time until OSRM returns,
+      // and every figure is marked "~" so an estimate never reads as measured.
+      log('Drive-time service unavailable — showing distance-based estimates.');
     }
 
     state.results = scoreVenues(venues, located, matrix);
     state.estimated = !matrix;
-    if (matrix) log(`${state.results.length} spots, ranked by real drive time.`);
-    else if (state.mode === 'drive') { /* message already set */ }
-    else log(`${state.results.length} spots, ranked by straight-line distance.`);
+
+    if (state.lucky) {
+      // Shuffle within the fairest handful rather than across everything:
+      // a "random" pick that is 40 minutes from one person defeats the point.
+      const pool = state.results.slice(0, LUCKY_POOL);
+      state.results = shuffle(pool).concat(state.results.slice(LUCKY_POOL));
+      const picked = state.cats.map(c => CATS[c]?.label.replace(/^\S+\s/, '')).join(', ');
+      log(`🎲 ${picked} — shuffled from the ${pool.length} fairest. Tap Re-roll for another.`);
+    }
+    else if (chainsHidden === -1)
+      log(`Only chains near this midpoint — showing them anyway.`);
+    else if (matrix)
+      log(`${state.results.length} spots, ranked by real drive time.`
+          + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : ''));
+    else { /* fallback message already set */ }
 
     drawMap(state.results[0]?.key);
     renderResults(state.results[0]?.key);
@@ -666,9 +783,11 @@ function boot() {
   }
   if (!state.me) state.me = state.people[0].id;
 
-  $('#openNow').classList.toggle('on', state.openNow);
+  $('#noChains').classList.toggle('on', state.noChains);
+  $('#whenDay').value = state.when;
+  $('#whenTime').value = state.whenTime;
+  $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
   $('#price').value = state.maxPrice;
-  $('#mode').value = state.mode;
 
   renderPeople();
   renderCats();
@@ -678,13 +797,21 @@ function boot() {
   wireLive();
   $('#find').addEventListener('click', search);
 
-  $('#openNow').addEventListener('click', e => {
-    state.openNow = !state.openNow;
-    e.currentTarget.classList.toggle('on', state.openNow);
+  $('#noChains').addEventListener('click', e => {
+    state.noChains = !state.noChains;
+    e.currentTarget.classList.toggle('on', state.noChains);
+    syncURL();
+  });
+  $('#whenDay').addEventListener('change', e => {
+    state.when = e.target.value;
+    $('#whenTime').hidden = !/^[0-6]$/.test(state.when);
+    syncURL();
+  });
+  $('#whenTime').addEventListener('change', e => {
+    state.whenTime = e.target.value || '19:00';
     syncURL();
   });
   $('#price').addEventListener('change', e => { state.maxPrice = e.target.value; syncURL(); });
-  $('#mode').addEventListener('change', e => { state.mode = e.target.value; syncURL(); });
 
   $('#share').addEventListener('click', async () => {
     syncURL();

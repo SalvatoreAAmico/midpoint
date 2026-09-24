@@ -2,7 +2,7 @@ import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
 src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
-src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin};\n';
+src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');
 
@@ -49,6 +49,30 @@ ok('lopsided venue has larger spread', r.find(x=>x.name==='Lopsided').spread > r
 const mx=[[600,900],[1200,900]];
 const r2=m.scoreVenues(venues,people,mx);
 ok('matrix durations are used verbatim', r2[0].costs[0]===900 && r2[0].name==='Even');
+
+// chain detection
+ok('brand tag marks a chain', m.isChain({brand:'Starbucks'},'Starbucks')===true);
+ok('brand:wikidata marks a chain', m.isChain({'brand:wikidata':'Q37158'},'Coffee Place')===true);
+ok('known name marks a chain even with no tags', m.isChain({},'Starbucks Reserve')===true);
+ok('Dunkin variants caught', m.isChain({},"Dunkin' Donuts")===true);
+ok('independent cafe is not a chain', m.isChain({amenity:'cafe'},'Bow Truss Coffee')===false);
+ok('empty name is not a chain', m.isChain({},'')===false);
+ok('substring false positive avoided', m.isChain({},'Subversive Records')===false);
+
+// shuffle
+const nums=[1,2,3,4,5,6,7,8,9,10];
+const sh=m.shuffle(nums);
+ok('shuffle preserves every element', sh.slice().sort((a,b)=>a-b).join()===nums.join());
+ok('shuffle does not mutate the input', nums.join()==='1,2,3,4,5,6,7,8,9,10');
+ok('shuffle actually reorders over 20 runs',
+   Array.from({length:20},()=>m.shuffle(nums).join()).some(x=>x!==nums.join()));
+{ // every position must be reachable - catches a biased sort-based shuffle
+  const seen=new Set();
+  for(let i=0;i<300;i++) seen.add(m.shuffle(nums)[0]);
+  ok('any element can land first (unbiased)', seen.size===10, `${seen.size}/10 distinct`);
+}
+ok('pickRandom returns the requested count', m.pickRandom(nums,3).length===3);
+ok('pickRandom returns distinct items', new Set(m.pickRandom(nums,5)).size===5);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

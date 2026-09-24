@@ -72,6 +72,10 @@ input::placeholder{color:var(--dim)}
 .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 
 .filters{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+input[type=time]{
+  background:#0f1218;border:1px solid var(--line);color:var(--ink);
+  border-radius:99px;padding:7px 11px;font:inherit;
+}
 select{
   background:#0f1218;border:1px solid var(--line);color:var(--ink);
   border-radius:99px;padding:8px 11px;font:inherit;
@@ -152,3 +156,8 @@ select{
   border-radius:7px;padding:5px 9px;user-select:all}
 #liveBar .hint{margin-top:8px}
 #liveBar .hint.err{color:var(--bad)}
+
+/* ---------- feeling lucky ---------- */
+.chip.lucky{border-style:dashed}
+.chip.lucky.on{background:var(--warn);border-color:var(--warn);
+  border-style:solid;color:#2a1f05;font-weight:700}

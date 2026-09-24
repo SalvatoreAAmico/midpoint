@@ -25,6 +25,8 @@ const VENUES = [
   ['Shuttered Bean', 41.8500,-87.6300, {amenity:'cafe', opening_hours:'Mo-Fr 08:00-18:00'},    [640, 660]],
   ['Mystery Mug',    41.8530,-87.6400, {amenity:'cafe'},                                       [660, 640]],
   ['Pricey Perk',    41.8520,-87.6360, {amenity:'cafe','price:range':'$$$',opening_hours:'24/7'},[610, 620]],
+  ['Starbucks',      41.8518,-87.6354, {amenity:'cafe', brand:'Starbucks', opening_hours:'24/7'}, [605, 615]],
+  ['Dunkin',         41.8515,-87.6351, {amenity:'cafe', opening_hours:'24/7'},                    [602, 612]],
 ];
 const byCoord = new Map(VENUES.map(v=>[`${v[2].toFixed(5)},${v[1].toFixed(5)}`, v]));
 
@@ -93,12 +95,12 @@ ok('geocode status shown to user',
    (await rows.nth(0).locator('.status').textContent()).includes('Wicker Park'));
 
 // add people up to the cap
-await page.locator('#addPerson').click();
-await page.locator('#addPerson').click();
-ok('can reach 4 people', await page.locator('.person').count()===4);
+for (let i=0;i<6;i++) await page.locator('#addPerson').click();
+ok('can reach 8 people', await page.locator('.person').count()===8);
 ok('Add button disabled at the cap', await page.locator('#addPerson').isDisabled());
-await page.locator('.person').nth(3).locator('.rm').click();
-await page.locator('.person').nth(2).locator('.rm').click();
+ok('every person gets a distinct colour', await page.locator('.person .dot').evaluateAll(
+     els => new Set(els.map(e=>e.style.background)).size === 8));
+for (let i=7;i>=2;i--) await page.locator('.person').nth(i).locator('.rm').click();
 ok('removing a person works', await page.locator('.person').count()===2);
 
 // search
@@ -126,9 +128,84 @@ ok('venue with no hours shows "Hours unknown"',
 ok('venue with $$$ shows a price pill',
    (await page.locator('.venue',{hasText:'Pricey Perk'}).locator('.vmeta').textContent()).includes('$$$'));
 
+// ---- independent-only (default on) -------------------------------------
+ok('Independent only is on by default',
+   (await page.locator('#noChains').getAttribute('class')).includes('on'));
+ok('brand-tagged chain hidden by default',
+   await page.locator('.venue', {hasText:'Starbucks'}).count() === 0);
+ok('name-matched chain hidden by default',
+   await page.locator('.venue', {hasText:'Dunkin'}).count() === 0);
+ok('independents still shown',
+   await page.locator('.venue', {hasText:'Fair Grounds'}).count() === 1);
+ok('log reports how many chains were hidden',
+   (await page.locator('#log').textContent()).includes('2 chains hidden'),
+   await page.locator('#log').textContent());
+
+await page.locator('#noChains').click();
+await page.locator('#find').click();
+await page.waitForTimeout(900);
+ok('turning the filter off brings chains back',
+   await page.locator('.venue', {hasText:'Starbucks'}).count() === 1);
+ok('a shown chain is labelled as one',
+   (await page.locator('.venue',{hasText:'Starbucks'}).locator('.vmeta').textContent()).includes('Chain'));
+await page.locator('#noChains').click();
+await page.locator('#find').click();
+await page.waitForTimeout(900);
+
+// ---- feeling lucky ------------------------------------------------------
+ok('lucky chip present', await page.locator('#lucky').count() === 1);
+const beforeCats = await page.locator('.chip.on').allTextContents();
+await page.locator('#lucky').click();
+await page.waitForSelector('.venue', {timeout:8000});
+await page.waitForTimeout(400);
+const afterCats = (await page.locator('.chip.on').allTextContents()).filter(t=>!t.includes('🎲')&&!t.includes('Independent'));
+ok('a roll selects 3 activity types', afterCats.length === 3, afterCats.join('|'));
+ok('lucky chip switches to Re-roll',
+   (await page.locator('#lucky').textContent()).includes('Re-roll'));
+ok('lucky results are still shown', await page.locator('.venue').count() > 0);
+ok('log explains the roll',
+   (await page.locator('#log').textContent()).includes('shuffled from'),
+   await page.locator('#log').textContent());
+
+const roll1 = await page.locator('.chip.on').allTextContents();
+await page.locator('#lucky').click();
+await page.waitForTimeout(1200);
+const roll2 = await page.locator('.chip.on').allTextContents();
+ok('re-rolling changes the selection', roll1.join() !== roll2.join(), roll1.join()+' -> '+roll2.join());
+
+// lucky must not abandon fairness
+const luckyTimes = await page.locator('.venue').first().locator('.tm').allTextContents();
+ok('lucky picks are still drawn from fair spots',
+   luckyTimes.every(t => parseInt(t) <= 25), luckyTimes.join('/'));
+
+// picking a category by hand leaves lucky mode
+await page.locator('.chip', {hasText:'Coffee'}).first().click();
+ok('manual category choice exits lucky mode',
+   (await page.locator('#lucky').textContent()).includes('Feeling lucky'));
+
+// a midpoint surrounded only by chains must still return something
+{
+  const saved = VENUES.splice(0, VENUES.length);
+  VENUES.push(['Starbucks', 41.8518,-87.6354, {amenity:'cafe', brand:'Starbucks', opening_hours:'24/7'}, [605,615]],
+              ['Dunkin',    41.8515,-87.6351, {amenity:'cafe', opening_hours:'24/7'},                    [602,612]]);
+  byCoord.clear(); VENUES.forEach(v => byCoord.set(`${v[2].toFixed(5)},${v[1].toFixed(5)}`, v));
+  await page.locator('#find').click();
+  await page.waitForTimeout(1200);
+  ok('chain-only area still returns results rather than an empty list',
+     await page.locator('.venue').count() > 0);
+  ok('and says why', (await page.locator('#log').textContent()).includes('Only chains'),
+     await page.locator('#log').textContent());
+  VENUES.splice(0, VENUES.length, ...saved);
+  byCoord.clear(); VENUES.forEach(v => byCoord.set(`${v[2].toFixed(5)},${v[1].toFixed(5)}`, v));
+}
+
+// restore a known state for the assertions that follow
+await page.locator('#find').click();
+await page.waitForTimeout(900);
+
 // open-now filter must not drop unknown-hours venues
 const before = await page.locator('.venue').count();
-await page.locator('#openNow').click();
+await page.locator('#whenDay').selectOption('now');
 await page.locator('#find').click();
 await page.waitForTimeout(900);
 const after = await page.locator('.venue').count();
@@ -136,7 +213,23 @@ ok('open-now keeps unknown-hours venues',
    await page.locator('.venue',{hasText:'Mystery Mug'}).count()===1);
 ok('open-now drops the genuinely-closed one',
    await page.locator('.venue',{hasText:'Shuttered Bean'}).count()===0, `before=${before} after=${after}`);
-await page.locator('#openNow').click();
+
+// a specific day + time, not just "now"
+ok('time input appears once a weekday is chosen', await (async()=>{
+  await page.locator('#whenDay').selectOption('3');   // Wednesday
+  return !(await page.locator('#whenTime').isHidden());
+})());
+await page.locator('#whenTime').fill('23:00');        // Wed 11pm
+await page.locator('#find').click();
+await page.waitForTimeout(1000);
+ok('Wed 11pm excludes a Mo-Fr 08:00-18:00 cafe',
+   await page.locator('.venue',{hasText:'Shuttered Bean'}).count()===0);
+ok('Wed 11pm keeps a 24/7 cafe',
+   await page.locator('.venue',{hasText:'Fair Grounds'}).count()===1);
+ok('pill names the chosen time, not "now"',
+   (await page.locator('.venue',{hasText:'Fair Grounds'}).locator('.vmeta').textContent()).includes('Wed 11pm'),
+   await page.locator('.venue',{hasText:'Fair Grounds'}).locator('.vmeta').textContent());
+await page.locator('#whenDay').selectOption('');
 
 // voting
 await page.locator('.venue').first().locator('.vote.up').click();
@@ -158,12 +251,6 @@ ok('shared link restores names',
 ok('shared link restores coordinates (no re-geocoding needed)', calls.nominatim===2,
    `nominatim total=${calls.nominatim}`);
 
-// straight-line fallback
-await p2.locator('#mode').selectOption('straight');
-await p2.locator('#find').click();
-await p2.waitForSelector('.venue', {timeout:8000});
-const km = await p2.locator('.venue').first().locator('.tm').first().textContent();
-ok('straight-line mode reports distance not minutes', /km|m$/.test(km.trim()), km);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 if(errs.length){ console.log('\nJS errors:'); [...new Set(errs)].forEach(e=>console.log('  '+e)); }

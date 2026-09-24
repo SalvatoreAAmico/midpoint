@@ -39,23 +39,31 @@
     <h2>Who's coming</h2>
     <div id="people"></div>
     <button id="addPerson">+ Add person</button>
-    <p class="hint">Up to 4. Tap <b>Locate</b> for your own spot, or type a neighborhood, address, or city.</p>
+    <p class="hint">Up to 8. Tap <b>Locate</b> for your own spot, or type a neighborhood, address, or city.</p>
 
     <h2>What are you in the mood for</h2>
     <div class="chips" id="cats"></div>
 
     <h2>Filters</h2>
     <div class="filters">
-      <button class="chip" id="openNow">Open now</button>
+      <button class="chip" id="noChains">Independent only</button>
+      <select id="whenDay">
+        <option value="">Any time</option>
+        <option value="now">Open now</option>
+        <option value="1">Monday</option>
+        <option value="2">Tuesday</option>
+        <option value="3">Wednesday</option>
+        <option value="4">Thursday</option>
+        <option value="5">Friday</option>
+        <option value="6">Saturday</option>
+        <option value="0">Sunday</option>
+      </select>
+      <input type="time" id="whenTime" value="19:00" hidden>
       <select id="price">
         <option value="">Any price</option>
         <option value="1">$ and under</option>
         <option value="2">$$ and under</option>
         <option value="3">$$$ and under</option>
-      </select>
-      <select id="mode">
-        <option value="drive">Drive time</option>
-        <option value="straight">Straight line</option>
       </select>
     </div>
 

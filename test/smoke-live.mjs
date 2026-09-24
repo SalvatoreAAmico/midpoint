@@ -84,7 +84,7 @@ await ctx.route('**/rest/v1/rpc/**', async r => {
   }
   if (!S()) return send({message:'session_not_found'}, 400);
   if (fn === 'mp_join') {
-    if (S().people.length >= 4) return send({message:'session_full'}, 400);
+    if (S().people.length >= 8) return send({message:'session_full'}, 400);
     const pid = 'p-' + S().people.length;
     S().people.push({id:pid, name:a.p_name||'', lat:a.p_lat, lon:a.p_lon});
     return send({participant_id:pid});
@@ -165,12 +165,12 @@ ok('host roster is server-owned (no manual remove buttons)',
 ok('Add person disabled during a live session', await page.locator('#addPerson').isDisabled());
 
 // session cap enforced server-side
-for (const pid of ['x1','x2']) db.sessions.get('abc1234567').people.push({id:pid,name:pid,lat:41.8,lon:-87.6});
+for (const pid of ['x1','x2','x3','x4','x5','x6']) db.sessions.get('abc1234567').people.push({id:pid,name:pid,lat:41.8,lon:-87.6});
 const p5 = await ctx.newPage();
 await p5.goto('http://localhost:8099/?s=abc1234567', {waitUntil:'networkidle'});
 await p5.waitForTimeout(600);
-ok('5th person is refused with a clear message',
-   (await p5.locator('#liveNote').textContent()).includes('already has 4'),
+ok('9th person is refused with a clear message',
+   (await p5.locator('#liveNote').textContent()).includes('already has 8'),
    await p5.locator('#liveNote').textContent());
 await p5.close();
 db.sessions.get('abc1234567').people = db.sessions.get('abc1234567').people.filter(p=>!p.id.startsWith('x'));

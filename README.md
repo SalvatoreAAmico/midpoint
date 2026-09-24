@@ -2,7 +2,7 @@
 
 Find a place to meet that's **fair to everyone**, not just central on a map.
 
-Add up to 4 people, pick what you're in the mood for, and get ranked suggestions
+Add up to 8 people, pick what you're in the mood for, and get ranked suggestions
 with each person's real drive time shown side by side.
 
 **Live:** https://SalvatoreAAmico.com/midpoint/
@@ -11,10 +11,25 @@ with each person's real drive time shown side by side.
 
 ## What it does
 
-1. **Manual mode** — type in neighborhoods/cities for up to 4 people, pick activity
+1. **Manual mode** — type in neighborhoods/cities for up to 8 people, pick activity
    types, get ranked spots.
 2. **Live-location mode** — each person taps *Locate*; their pin is added to the
    session. (See *How multi-user works* below — there's no server.)
+
+**Independent only** is on by default. The midpoint chain coffee shop is a
+technically correct and deeply uninspiring answer, so branded venues are hidden
+unless you ask for them. Detection leans on OSM's `brand` / `brand:wikidata`
+tags, which independents essentially never carry, with a name list as backup.
+Where a midpoint has *nothing but* chains, they are shown anyway with a note —
+an empty list reads as a broken search.
+
+**🎲 Feeling lucky** picks three activity types at random and shuffles the
+results, for when nobody can decide. It shuffles *within the twelve fairest*
+spots rather than across everything: a random pick that is forty minutes from
+one person would defeat the entire premise. Re-roll never repeats the same set.
+
+**When** filters by opening hours at a chosen day and time, not just right now —
+so you can plan Friday evening on a Tuesday.
 
 Every suggestion shows a **fairness breakdown**: a bar per person with their
 individual travel time, so the group can see at a glance if one person is eating
@@ -106,12 +121,13 @@ to breach. The tradeoff is that syncing is manual — see the roadmap.
 **Total: $0/month.**
 
 A full search costs exactly **two HTTP requests**: one Overpass query, and one
-OSRM `/table` call that returns all 4 people × 25 venues = 100 durations at once.
+OSRM `/table` call that returns all 8 people × 25 venues = 200 durations at once.
 Requesting routes one pair at a time is what makes travel-time APIs expensive;
 the matrix endpoint is what makes this free.
 
-If OSRM is slow or down, the app degrades to straight-line estimates and labels
-them with a `~` rather than passing them off as measured times.
+If OSRM is slow or down, the app falls back to straight-line estimates and marks
+every figure with `~` rather than passing them off as measured times. This is a
+fallback, not a setting — there is no reason a user would choose worse numbers.
 
 ### Known data limitations
 
@@ -119,6 +135,10 @@ them with a `~` rather than passing them off as measured times.
   `isOpenNow()` handles the common formats only. Anything it can't parse is shown
   as *Hours unknown* and is **never filtered out** — hiding those would hide most
   of the map.
+- **Chain detection** is a heuristic. A franchise whose OSM entry lacks brand tags
+  and isn't in the name list will slip through; a genuine independent that happens
+  to carry a `brand` tag will be hidden. Shown chains are labelled, so a
+  false negative is visible rather than silent.
 - **Price**: OSM price tags are sparse. The filter only excludes venues that
   *have* a price tag exceeding your max. Untagged venues always pass. No guessing.
 - **Transit times**: not supported. There is no free transit-routing API worth
@@ -126,9 +146,9 @@ them with a `~` rather than passing them off as measured times.
 
 ## Testing status
 
-- Core geo/scoring/hours logic: **15/15 unit tests passing**.
+- Core geo/scoring/hours/chain/shuffle logic: **28/28 unit tests passing**.
 - Full UI in headless mobile Chromium against mocked OSM responses:
-  **27/27 passing**, no JS errors.
+  **48/48 passing**, no JS errors.
 - Live-session flow against a mocked Supabase backend: **24/24 passing** —
   create, auto-join by link, roster sync, the 4-person cap, expired codes,
   vote propagation, leaving, and the four spend guards above.
