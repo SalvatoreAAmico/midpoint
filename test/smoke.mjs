@@ -469,8 +469,12 @@ await page.waitForTimeout(900);
 const after = await page.locator('.venue').count();
 ok('open-now keeps unknown-hours venues',
    await page.locator('.venue',{hasText:'Mystery Mug'}).count()===1);
-ok('open-now drops the genuinely-closed one',
-   await page.locator('.venue',{hasText:'Shuttered Bean'}).count()===0, `before=${before} after=${after}`);
+// Deliberately NOT asserting that a weekday-hours cafe is dropped here: with
+// "now" that depends on when the suite happens to run, and it passed for weeks
+// only because runs landed outside office hours. The Wed 23:00 case below
+// covers the same behaviour against a fixed moment.
+ok('open-now does not drop everything',
+   after > 0, `before=${before} after=${after}`);
 
 // a specific day + time, not just "now"
 ok('time input appears once a weekday is chosen', await (async()=>{
