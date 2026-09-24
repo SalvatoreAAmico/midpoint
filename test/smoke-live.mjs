@@ -31,8 +31,18 @@ const byCoord = new Map(VENUES.map(v=>[`${v[2].toFixed(5)},${v[1].toFixed(5)}`, 
 let calls = {nominatim:0, overpass:0, osrm:0, tiles:0};
 
 const browser = await chromium.launch({ ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
+
+/* Web fonts are not reachable from the test sandbox and would log a console
+   error that the suite treats as a failure. Serve them as empty. */
+const stubFonts = async c => {
+  await c.route('**/fonts.googleapis.com/**', r =>
+    r.fulfill({status:200, contentType:'text/css', body:''}));
+  await c.route('**/fonts.gstatic.com/**', r =>
+    r.fulfill({status:200, contentType:'font/woff2', body:''}));
+};
 const ctx = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true,
   permissions:['geolocation'], geolocation:{latitude:41.9088, longitude:-87.6796}});
+await stubFonts(ctx);
 
 await ctx.route('**/unpkg.com/leaflet**', r => {
   const u = r.request().url();
@@ -127,6 +137,8 @@ async function newDevice(opts = {}) {
   const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true,
     permissions: opts.noGeo ? [] : ['geolocation'],
     geolocation: opts.noGeo ? undefined : {latitude:41.7943, longitude:-87.5907}});
+  await stubFonts(c);
+await stubFonts(c);
   await c.route('**/unpkg.com/leaflet**', r => {
     const u = r.request().url();
     r.fulfill({status:200, contentType:u.endsWith('.css')?'text/css':'text/javascript',

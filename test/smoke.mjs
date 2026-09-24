@@ -33,7 +33,17 @@ const byCoord = new Map(VENUES.map(v=>[`${v[2].toFixed(5)},${v[1].toFixed(5)}`, 
 let calls = {nominatim:0, overpass:0, osrm:0, tiles:0};
 
 const browser = await chromium.launch({ ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
+
+/* Web fonts are not reachable from the test sandbox and would log a console
+   error that the suite treats as a failure. Serve them as empty. */
+const stubFonts = async c => {
+  await c.route('**/fonts.googleapis.com/**', r =>
+    r.fulfill({status:200, contentType:'text/css', body:''}));
+  await c.route('**/fonts.gstatic.com/**', r =>
+    r.fulfill({status:200, contentType:'font/woff2', body:''}));
+};
 const ctx = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+await stubFonts(ctx);
 
 await ctx.route('**/unpkg.com/leaflet**', r => {
   const u = r.request().url();
@@ -166,6 +176,7 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
 {
   const odd = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,
     hasTouch:true, permissions:['geolocation'], geolocation:{latitude:41.9,longitude:-87.63}});
+await stubFonts(odd);
   await odd.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
     r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
       body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
@@ -191,6 +202,7 @@ ok('no blocked-location help when location works', await page.locator('#geoHelp'
 {
   // Simulate iOS after a refusal: the call fails instantly with code 1.
   const blocked = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+await stubFonts(blocked);
   await blocked.route('**/unpkg.com/leaflet**', r => {
     const u = r.request().url();
     r.fulfill({status:200, contentType:u.endsWith('.css')?'text/css':'text/javascript',
