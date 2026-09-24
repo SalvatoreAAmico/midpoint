@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"
+     role="img" aria-label="Midpoint">
+  <!-- Two routes converging. The gap between them is the midpoint: the mark
+       draws the arriving, and leaves the place itself as negative space.
+       Constructed on a 48 grid, stroke 7, 12-unit reach, 6-unit gap either
+       side of centre. Do not redraw by eye. -->
+  <g stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 12 L18 24 L6 36"/>
+    <path d="M42 12 L30 24 L42 36"/>
+  </g>
+</svg>

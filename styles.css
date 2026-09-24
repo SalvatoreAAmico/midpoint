@@ -67,6 +67,7 @@ button{font:inherit;color:inherit;cursor:pointer;font-family:var(--sans)}
   margin:10px auto 6px}
 
 h1{
+  display:flex;align-items:center;gap:11px;
   font:500 34px/1.05 var(--serif);
   font-variation-settings:'SOFT' 20,'WONK' 1,'opsz' 40;
   margin:10px 0 2px;letter-spacing:-.01em;
@@ -289,3 +290,8 @@ select,input[type=time]{width:auto;padding:9px 13px;font-size:14px}
   box-shadow:0 1px 3px rgba(0,0,0,.45)}
 /* The midpoint is a place, not a person: a ring, never a filled dot. */
 .pin.mid{background:transparent!important;border:3px solid var(--ink)}
+
+/* The mark sits with the wordmark at 0.62 of its cap height, optically
+   centred. Clear space either side is never less than the gap in the mark. */
+.logo{display:inline-flex;width:26px;flex:0 0 auto;color:var(--signal)}
+.logo svg{width:100%;height:auto;display:block}

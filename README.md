@@ -212,7 +212,13 @@ what a Swift app would and would not buy us.
 - Split-the-difference for *repeat* meetups: track who traveled farthest last time
   and bias the next pick toward them.
 
-## Design
+## Brand and design
+
+| Document | Answers |
+|---|---|
+| `docs/brand.md` | Who we are: mark, colour meaning, voice, naming, misuse. |
+| `docs/design-system.md` | How the interface is built: tokens, components, layout. |
+| `docs/osm-categories.md` | Which activity categories exist, and why those. |
 
 The visual language is documented in `docs/design-system.md` and is normative:
 if the app and that document disagree, the app is wrong. In short — a wayfinding
@@ -230,7 +236,9 @@ config.js             Supabase URL + anon key (blank = no backend)
 sync.js               live session client
 supabase/schema.sql   database setup — run once in the SQL editor
 styles.css            the design system, as tokens and components
-docs/design-system.md the normative reference for all of the above
+docs/design-system.md the normative reference for the interface
+docs/brand.md         identity: mark, voice, colour meaning, naming
+assets/mark.svg       the logo mark
 app.js                all logic — geo, APIs, scoring, rendering
 manifest.webmanifest  PWA manifest (Add to Home Screen)
 icon.svg              app icon
