@@ -174,7 +174,8 @@ fallback, not a setting — there is no reason a user would choose worse numbers
 Live sessions are implemented. Still open: accounts, and push when friends are
 nearby (which needs native iOS).
 
-**Phase 3 — native iOS**
+**Phase 3 — native iOS** — see `ROADMAP-NATIVE.md` for the running list of
+what a Swift app would and would not buy us.
 - Business logic (scoring, tag mapping, API calls) ports ~1:1 — roughly 25–30% of the code.
 - UI is a rewrite: HTML/CSS → SwiftUI, Leaflet → MapKit, Geolocation → CoreLocation.
 - Requires a Mac, Xcode, and the $99/yr Apple Developer Program.
