@@ -197,6 +197,9 @@ await stubFonts(odd);
   await odd.close();
 }
 
+// ---- failures are said out loud -----------------------------------------
+ok('nothing is reported when nothing is wrong', await page.locator('#trouble').isHidden());
+
 // ---- blocked location ---------------------------------------------------
 ok('no blocked-location help when location works', await page.locator('#geoHelp').isHidden());
 {
@@ -226,6 +229,10 @@ await stubFonts(blocked);
   await pb.waitForTimeout(400);
 
   ok('a refusal shows the recovery instructions', await pb.locator('#geoHelp').isVisible());
+  ok('and the trouble banner names it too', await pb.locator('#trouble .tr').count() >= 1);
+  ok('the banner says how to fix it, not just what broke',
+     (await pb.locator('#trouble').textContent()).includes('Website Settings'),
+     await pb.locator('#trouble').textContent());
   ok('instructions name the aA button, not clearing all data',
      (await pb.locator('#geoHelp').textContent()).includes('aA'));
   ok('and say typing a place works instead',

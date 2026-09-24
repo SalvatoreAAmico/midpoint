@@ -356,6 +356,9 @@ ok("host's vote reaches the other device within one poll cycle",
   const po = await old.newPage();
   await po.goto('http://localhost:8099/?s=abc1234567', {waitUntil:'networkidle'});
   await po.waitForTimeout(1500);
+  ok('a missing migration is reported rather than silently degrading',
+     (await po.locator('#trouble').textContent()).includes('fix-002'),
+     await po.locator('#trouble').textContent());
   ok('an un-migrated server still lets someone join',
      db.sessions.get('abc1234567').people.some(x => x.id !== 'p-host' && x.id !== 'p-1'),
      JSON.stringify(db.sessions.get('abc1234567').people.map(x=>x.id)));

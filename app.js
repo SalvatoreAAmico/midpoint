@@ -926,10 +926,45 @@ function renderOutliers(located) {
   $('#outlierEqual').addEventListener('click', () => { el.hidden = true; });
 }
 
+/* Every failure the app can detect, said out loud in one place. Two sessions
+   with a real tester were lost to problems the app knew about and did not
+   mention: a write that failed, a permission already refused, a session that
+   had expired. Silence is the worst possible error state — it looks like the
+   app working. */
+const TROUBLE = {
+  write:    { text: 'Changes are not saving. Check your connection — anything typed may be lost.', fix: null },
+  migration:{ text: 'The database is missing an update, so names and places will not save for other people.',
+              fix: 'Run supabase/fix-002 in the Supabase SQL editor.' },
+  geo:      { text: 'Location is blocked for this site, and iPhone will not ask again.',
+              fix: 'Tap aA in the address bar → Website Settings → Location → Ask. Or type a neighborhood instead.' },
+  expired:  { text: 'That session has expired. Sessions last 12 hours.',
+              fix: 'Start a new one with Go live.' },
+  offline:  { text: 'No connection.', fix: 'Suggestions and live updates need one.' }
+};
+
+function renderTrouble() {
+  const el = $('#trouble');
+  if (!el) return;
+  const now = [];
+  if (!navigator.onLine) now.push('offline');
+  if (Sync?.needsMigration) now.push('migration');
+  else if (Sync?.writeFailed) now.push('write');
+  if (state.geoBlocked) now.push('geo');
+  if (/expired|does not exist/i.test(state.liveErr || '')) now.push('expired');
+
+  if (!now.length) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = now.map(k => {
+    const t = TROUBLE[k];
+    return `<div class="tr"><b>${esc(t.text)}</b>${t.fix ? `<span>${esc(t.fix)}</span>` : ''}</div>`;
+  }).join('');
+}
+
 function renderGeoHelp() {
   const el = $('#geoHelp');
   if (!el) return;
   el.hidden = !state.geoBlocked;
+  renderTrouble();
 }
 
 function locate(p) { return locateAsync(p).catch(() => {}); }
@@ -992,6 +1027,7 @@ function renderLive() {
   const mine = state.people.find(p => p.id === Sync.me);
   $('#shareLoc').hidden = !(live && mine && mine.lat == null);
 
+  renderTrouble();
   $('#liveNote').textContent = state.liveErr
     || (live ? 'Everyone in this session sees each other move. Expires in 12 hours.'
              : 'Start a live session and friends join by link — no copying state back and forth.');
@@ -1477,6 +1513,9 @@ function boot() {
   renderCats();
   drawMap();
   checkGeoPermission();
+  renderTrouble();
+  addEventListener('online', renderTrouble);
+  addEventListener('offline', renderTrouble);
 
   $('#addPerson').addEventListener('click', () => { addPerson(); refresh(); });
 
@@ -1545,10 +1584,7 @@ function wireLive() {
   if (!window.Sync?.init(window.MIDPOINT_CONFIG)) { renderLive(); return; }
   Sync.onState = applyRemote;
   Sync.onWriteError = () => {
-    state.liveErr = Sync.needsMigration
-      ? 'Live session is out of date — run supabase/fix-002 to save names and places.'
-      : 'Could not save that change. Check your connection.';
-    renderLive();
+    renderLive();     // the banner says what is wrong and how to fix it
   };
 
   $('#goLive').addEventListener('click', async () => {

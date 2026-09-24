@@ -278,3 +278,11 @@ input[type=time]{width:auto;font-size:14px;padding:8px 11px}
 .g-form .g-name{flex:1;min-width:150px;background:#0f1218;border:1px solid var(--accent);
   color:var(--ink);border-radius:99px;padding:10px 14px;font:inherit;font-size:16px;
   outline:none}
+
+/* ---------- something is wrong, said out loud ---------- */
+#trouble{margin:10px 0 0;display:flex;flex-direction:column;gap:7px}
+#trouble .tr{background:#241a16;border:1px solid #4a3c15;border-left:3px solid var(--warn);
+  border-radius:9px;padding:10px 12px;font-size:12.5px;line-height:1.5;
+  display:flex;flex-direction:column;gap:3px}
+#trouble .tr b{color:var(--ink);font-weight:600}
+#trouble .tr span{color:var(--muted)}

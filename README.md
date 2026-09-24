@@ -1,5 +1,7 @@
 # Midpoint
 
+*Picking this up after a gap? Read `STATUS.md` first.*
+
 Find a place to meet that's **fair to everyone**, not just central on a map.
 
 Add up to 8 people, pick what you're in the mood for, and get ranked suggestions
