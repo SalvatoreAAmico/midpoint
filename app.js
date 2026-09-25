@@ -217,6 +217,7 @@ const state = {
   liveErr: '',
   geoBlocked: false,
   showVetoed: false,
+  nudgedVotes: false,
   searching: false,
   together: false,
   resultsAt: 0
@@ -815,6 +816,11 @@ function renderPeople() {
     lc.addEventListener('change', async () => {
       const t = who();
       t.locDirty = false;
+      /* A place typed by hand ends the lookup's claim on this field. Without
+         this, committing the typed value cleared locDirty and a reverse
+         geocode landing a moment later overwrote it -- the guard used to be
+         the label still reading "Locating…", and that label is gone now. */
+      t.locating = false;
       const q = lc.value.trim();
       if (!q) { t.lat = t.lon = null; t.label = ''; t.status = ''; refresh(); return; }
       t.status = 'Looking up…'; renderPeople();
@@ -1014,6 +1020,8 @@ const TROUBLE = {
   write:    { text: 'Changes are not saving. Check your connection — anything typed may be lost.', fix: null },
   migration:{ text: 'The database is missing an update, so names and places will not save for other people.',
               fix: 'Run supabase/fix-002 in the Supabase SQL editor.' },
+  results:  { text: 'The database is missing an update, so your search and shortlist stay on this phone — everyone else has to search for themselves.',
+              fix: 'Run supabase/fix-003-shared-results.sql in the Supabase SQL editor.' },
   geo:      { text: 'Location is blocked for this site, and iPhone will not ask again.',
               fix: 'Tap aA in the address bar → Website Settings → Location → Ask. Or type a neighborhood instead.' },
   expired:  { text: 'That session has expired. Sessions last 12 hours.',
@@ -1027,6 +1035,7 @@ function renderTrouble() {
   const now = [];
   if (!navigator.onLine) now.push('offline');
   if (Sync?.needsMigration) now.push('migration');
+  else if (Sync?.needsResults) now.push('results');
   else if (Sync?.writeFailed) now.push('write');
   if (state.geoBlocked) now.push('geo');
   if (/expired|does not exist/i.test(state.liveErr || '')) now.push('expired');
@@ -1058,7 +1067,16 @@ function locateAsync(p, timeout = 10000) {
     navigator.geolocation.getCurrentPosition(
       pos => {
         p.lat = pos.coords.latitude; p.lon = pos.coords.longitude;
-        p.label = 'Locating…'; p.status = 'Found you — naming the area…';
+        /* "Locating…" is a state, not a place name, so it never goes in the
+           label -- and above all never gets pushed. It used to: the pin's push
+           carried the placeholder and the reverse-geocode's push carried the
+           real name, and nothing orders two in-flight writes. When the
+           placeholder landed second the session stored it for good, and every
+           poll then overwrote each phone's own correct label with it. Both
+           phones showed "Locating…" over a map with the pins in the right
+           place. Now the label stays empty until it is real, and the progress
+           lives in the status line where it cannot be mistaken for data. */
+        p.locating = true; p.label = ''; p.status = 'Found you — naming the area…';
         if (!p.name.trim()) p.name = savedName() || '';
         if (isLive() && p.id === Sync.me) Sync.push(p.name, p.label, p.lat, p.lon);
         else state.me = p.id;
@@ -1071,8 +1089,8 @@ function locateAsync(p, timeout = 10000) {
           // while the lookup was in flight, and writing to the old object
           // would leave the row showing "Locating…" for good.
           const t = state.people.find(x => x.id === p.id) || p;
-          if (t.label !== 'Locating…' || t.locDirty) return;   // being typed, or already set
-          t.label = label; t.status = status;
+          if (!t.locating || t.locDirty) return;   // being typed, or already set
+          t.label = label; t.status = status; t.locating = false;
           if (isLive() && t.id === Sync.me) Sync.push(t.name, t.label, t.lat, t.lon);
           renderPeople(); syncURL();
         };
@@ -1131,10 +1149,16 @@ function applyRemote(remote, err) {
   const focusedRow = document.activeElement?.closest?.('.person');
   const focusedId = focusedRow ? state.people[[...$('#people').children].indexOf(focusedRow)]?.id : null;
 
+  /* Sessions started before the fix above, and phones still running the old
+     file, have the placeholder stored as a genuine label. Reading it as "no
+     label yet" heals them in place instead of stranding anyone mid-meetup. */
+  const clean = l => (l && l !== 'Locating…' ? l : '');
+
   state.people = (remote.people || []).slice(0, MAX_PEOPLE).map(p => {
     const mine = p.id === Sync.me;
     const prev = state.people.find(x => x.id === p.id);
     const keepLocal = prev && p.id === focusedId;
+    const locating = mine ? !!prev?.locating : false;
     return {
       id: p.id,
       // Also keep a local name the server has not echoed yet: the push is in
@@ -1144,18 +1168,29 @@ function applyRemote(remote, err) {
               : (p.name || codename(p.id)),
       nameAuto: prev?.nameAuto ?? !p.name,
       lat: p.lat, lon: p.lon,
-      label: (keepLocal && prev ? prev.label
-              : (mine && prev?.label === 'Locating…' ? 'Locating…'
-                 : (p.label || prev?.label || '')))
-             || (p.lat != null ? 'Shared location' : ''),
+      /* While the lookup is still out, hold the field empty rather than
+         filling it with a stand-in the user would have to delete. */
+      label: locating ? (prev?.label || '')
+             : ((keepLocal && prev ? prev.label
+                 : (clean(p.label) || prev?.label || ''))
+                || (p.lat != null ? 'Shared location' : '')),
+      locating,
       locDirty: prev?.locDirty || false,
       flex: prev?.flex || false,
       status: p.lat != null
-        ? (mine ? 'You — on the map' : (p.label || 'On the map'))
+        ? (mine ? 'You — on the map' : (clean(p.label) || 'On the map'))
         : (mine ? 'Tap Locate to add yourself' : 'Joined, no location shared yet')
     };
   });
   state.me = Sync.me;
+
+  /* If the session is still holding the old placeholder for us while we know
+     the real name, correct the server rather than waiting for the next locate. */
+  const meRow = state.people.find(x => x.id === Sync.me);
+  const meRemote = (remote.people || []).find(x => x.id === Sync.me);
+  if (meRow && meRemote?.label === 'Locating…' && meRow.label && !meRow.locating) {
+    Sync.push(meRow.name, meRow.label, meRow.lat, meRow.lon);
+  }
 
   /* Two devices belonging to one person both recall the same saved name, so a
      session shows the same name twice. Whoever did not type it this session
@@ -1176,12 +1211,30 @@ function applyRemote(remote, err) {
   if (Array.isArray(remote.cats) && remote.cats.length) state.cats = remote.cats;
   const changed = applyRemoteFilters(remote.filters) || state.cats.join(',') !== catsBefore;
 
-  // Someone else searched: show their list rather than running our own.
-  const adopted = remote.results_by !== Sync.me && adoptResults(remote.results);
+  /* Someone else searched: show their list rather than running our own. We
+     also take back our own published list when we are holding nothing --
+     after a reload the session still has it, and refusing it because we were
+     the one who published meant an empty screen and a pointless second
+     search. */
+  const mineToReclaim = remote.results_by === Sync.me && !state.results.length;
+  const adopted = (remote.results_by !== Sync.me || mineToReclaim)
+                  && adoptResults(remote.results);
   if (adopted) {
     const who = state.people.find(p => p.id === remote.results_by);
-    log(`${who?.name || 'Someone'} searched — showing the same ${state.results.length} spots.`);
+    log(mineToReclaim
+      ? `Picked your search back up — ${state.results.length} spots.`
+      : `${who?.name || 'Someone'} searched — showing the same ${state.results.length} spots.`);
   }
+
+  /* A thumbs-up from the other phone should be enough to put the list on
+     screen. If the session has no published search to adopt, say so, because
+     the alternative is a shortlist that exists and is invisible. */
+  if (!state.results.length && (remote.votes || []).length && !adopted) {
+    if (!state.nudgedVotes) {          // once, not once every four seconds
+      state.nudgedVotes = true;
+      log('Someone in the session liked a spot. Tap Find meetup spots to see it.');
+    }
+  } else if (state.results.length) state.nudgedVotes = false;
 
   renderPeople(); renderCats(); renderLive(); drawMap();
   if (state.results.length) renderResults();

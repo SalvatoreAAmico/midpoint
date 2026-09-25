@@ -30,7 +30,7 @@ const STORE_KEY = 'midpoint.session';
 const Sync = {
   url: '', key: '', code: null, me: null,
   timer: null, onState: null, onWriteError: null, failures: 0,
-  writeFailed: false, needsMigration: false,
+  writeFailed: false, needsMigration: false, needsResults: false,
   inFlight: false, startedAt: 0, requests: 0, paused: false,
 
   get configured() { return !!(this.url && this.key); },
@@ -158,7 +158,16 @@ const Sync = {
     if (!this.live) return Promise.resolve();
     return this.rpc('mp_results',
       { p_code: this.code, p_participant: this.me, p_results: payload })
-      .catch(e => { this.onWriteError?.(e); });
+      .then(() => { this.needsResults = false; })
+      /* A server without fix-003 has no mp_results at all. Reported as a
+         generic write failure it read as "check your connection", which sent
+         Sal looking at his wifi while the list quietly stayed private to one
+         phone. Name the missing migration instead. */
+      .catch(e => {
+        if (/PGRST202|Could not find the function|does not exist/i.test(e.message))
+          this.needsResults = true;
+        this.onWriteError?.(e);
+      });
   },
 
   vote(venueKey, dir) {

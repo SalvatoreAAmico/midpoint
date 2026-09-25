@@ -78,6 +78,8 @@ await ctx.route('**/router.project-osrm.org/**', r => { calls.osrm++;
 // ---- fake Supabase: an in-memory stand-in for the mp_* functions ----------
 const db = { sessions: new Map() };
 let rpcCalls = 0, leaveCalls = 0;
+const pushedLabels = [];      // every label any device has ever written
+let noResultsFn = false;      // simulate a server missing supabase/fix-003
 
 const rpcHandler = async r => {
   rpcCalls++;
@@ -102,12 +104,16 @@ const rpcHandler = async r => {
     return send({participant_id:pid});
   }
   if (fn === 'mp_results') {
+    // Lets a test play a server that has not had fix-003 run on it.
+    if (noResultsFn)
+      return send({code:'PGRST202', message:'Could not find the function public.mp_results'}, 404);
     S().results = a.p_results; S().results_by = a.p_participant;
     S().results_at = new Date().toISOString();
     return send(null, 204);
   }
   if (fn === 'mp_state') return send(S());
   if (fn === 'mp_update') {
+    if ('p_label' in a) pushedLabels.push(a.p_label);
     const p = S().people.find(x=>x.id===a.p_participant);
     if (p) { p.name = a.p_name ?? p.name; p.label = a.p_label ?? p.label;
              p.lat = a.p_lat; p.lon = a.p_lon; }
@@ -183,7 +189,13 @@ await stubFonts(c);
 const errs = [];
 const page = await ctx.newPage();
 page.on('pageerror', e => errs.push('PAGEERROR: '+e.message));
-page.on('console', m => { if(m.type()==='error') errs.push('CONSOLE: '+m.text()); });
+page.on('console', m => {
+  if (m.type() !== 'error') return;
+  // The missing-migration test provokes a real 404 on purpose; everything else
+  // logged as an error is still a failure.
+  if (noResultsFn && /404|mp_results/i.test(m.text())) return;
+  errs.push('CONSOLE: ' + m.text());
+});
 
 let pass=0, fail=0;
 const ok=(n,c,extra='')=>{ c?(pass++,console.log('  ok   '+n)):(fail++,console.log('  FAIL '+n+(extra?'  | '+extra:''))); };
@@ -466,6 +478,33 @@ ok("host's vote reaches the other device within one poll cycle",
      await p2.locator('#log').textContent());
 }
 
+/* ---- "Locating…" must never be stored as a place name ------------------
+   Sal saw both phones stuck on "Locating…" over a map whose pins were in the
+   right places. The placeholder was being pushed as the label, so whichever of
+   the two writes landed last won -- and when it was the placeholder, every
+   later poll overwrote each phone's own correct label with it. */
+{
+  ok('no device ever pushed the placeholder as a label',
+     !pushedLabels.includes('Locating…'), JSON.stringify(pushedLabels.slice(0, 8)));
+
+  // A session poisoned by an older client must heal, not strand anyone.
+  const sess = db.sessions.get('abc1234567');
+  const mineBefore = await page.locator('.person.me').locator('.lc').inputValue();
+  for (const person of sess.people) person.label = 'Locating…';
+  await page.waitForTimeout(4800);
+  await p2.waitForTimeout(500);
+
+  ok('a stale placeholder on the server does not overwrite our own label',
+     (await page.locator('.person.me').locator('.lc').inputValue()) === mineBefore,
+     `was "${mineBefore}", now "${await page.locator('.person.me').locator('.lc').inputValue()}"`);
+  ok('and it is never shown as somebody else\'s location',
+     !(await page.locator('#people').textContent()).includes('Locating…'),
+     await page.locator('#people').textContent());
+  ok('the server gets corrected rather than left broken',
+     sess.people.find(x => x.label === 'Locating…') === undefined,
+     JSON.stringify(sess.people.map(x => x.label)));
+}
+
 // ---- a thumbs-up pins it to the top for everyone ------------------------
 {
   // clear votes left by earlier blocks, so "top" means what this test means
@@ -559,6 +598,45 @@ ok("host's vote reaches the other device within one poll cycle",
   await p2.locator('.venue', {hasText: shunned}).first().locator('.vote.up').click();  // undo
   await page.locator('.venue', {hasText: shunned}).first().locator('.vote.down').click();
   await page.waitForTimeout(400);
+}
+
+/* ---- a reload picks the session's search back up ------------------------
+   Sal: "I had to run find meetup spots to see everything." A device holding no
+   results refused to adopt the session's published list if it was the one that
+   published it, so a reload meant an empty screen and a second identical
+   search -- and any shortlist the others had built was invisible. */
+{
+  const had = await page.locator('.venue').count();
+  await page.reload({waitUntil:'networkidle'});
+  await page.waitForTimeout(5200);          // resume, then one poll
+  ok('results come back after a reload without searching again',
+     await page.locator('.venue').count() > 0,
+     await page.locator('#log').textContent());
+  ok('and it is the same list, not a fresh search',
+     await page.locator('.venue').count() === had,
+     `had ${had}, now ${await page.locator('.venue').count()}`);
+  ok('the shortlist the group built is there too, not just the raw list',
+     await page.locator('.shortlist-head').count() >= 1,
+     await page.locator('#results').textContent());
+}
+
+/* ---- a server without fix-003 says so, instead of blaming the wifi -------
+   Shared results need a migration. Reported as a generic write failure, the
+   banner read "check your connection", which is the wrong thing to go and
+   look at when the real problem is one un-run SQL file. */
+{
+  noResultsFn = true;
+  await page.locator('#find').click();
+  await page.waitForSelector('.venue', {timeout:8000});
+  await page.waitForTimeout(600);
+  const trouble = await page.locator('#trouble').textContent();
+  ok('the banner names the missing migration', trouble.includes('fix-003'), trouble);
+  ok('and explains the consequence in plain terms',
+     /stay on this phone/i.test(trouble), trouble);
+  ok('it does not blame the connection', !/check your connection/i.test(trouble), trouble);
+  ok('the search itself still works locally',
+     await page.locator('.venue').count() > 0);
+  noResultsFn = false;
 }
 
 // leaving
