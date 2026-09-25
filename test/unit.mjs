@@ -2,7 +2,7 @@ import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
 src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
-src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED,groupFromPeople,suggestGroupName,codename,TOGETHER_M,TOGETHER_RADIUS};\n';
+src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED,groupFromPeople,suggestGroupName,codename,TOGETHER_M,TOGETHER_RADIUS,placeName};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');
 
@@ -164,6 +164,26 @@ ok('every catalogue tag compiles to a filter',
      evenFlex[0].name === '0%', evenFlex[0].name);
 }
 
+// ---- volunteering has to work for a pair, the commonest group ------------
+{
+  const A={lat:42.52,lon:-71.76}, B={lat:42.55,lon:-71.90};
+  const v=[{key:'1',name:'Near B',lat:42.552,lon:-71.898},
+           {key:'2',name:'Near A',lat:42.522,lon:-71.762}];
+  const top = ps => m.scoreVenues(v, ps, null, m.SPEED.drive)[0].name;
+  ok('a balanced pair gets a balanced answer', top([A,B])==='Near A', top([A,B]));
+  ok('A volunteering moves the answer toward B',
+     top([{...A,flex:true},B])==='Near B', top([{...A,flex:true},B]));
+  ok('B volunteering keeps it near A',
+     top([A,{...B,flex:true}])==='Near A', top([A,{...B,flex:true}]));
+  const spread = ps => m.scoreVenues(v, ps, null, m.SPEED.drive)[0].spread;
+  ok('one volunteer in a pair leaves no fairness spread to balance',
+     spread([{...A,flex:true},B]) === 0, String(spread([{...A,flex:true},B])));
+  ok('but a pair with nobody volunteering still has one',
+     spread([A,B]) > 0);
+  ok('everyone volunteering falls back to plain averages',
+     spread([{...A,flex:true},{...B,flex:true}]) > 0);
+}
+
 // ---- walking vs driving --------------------------------------------------
 {
   const people=[{lat:41.880,lon:-87.630},{lat:41.890,lon:-87.640}];
@@ -239,6 +259,23 @@ ok('every catalogue tag compiles to a filter',
   const r=m.scoreVenues(v,here,null,m.SPEED.drive);
   ok('nearest wins when nobody has further to travel', r[0].name==='Near', r[0].name);
   ok('and the spread is effectively nil', r[0].spread < 1, String(r[0].spread));
+}
+
+// ---- place names read the same however they were found -------------------
+{
+  ok('a neighbourhood names its city',
+     m.placeName({neighbourhood:'Wicker Park', city:'Chicago', state:'Illinois'})==='Wicker Park, Chicago',
+     m.placeName({neighbourhood:'Wicker Park', city:'Chicago', state:'Illinois'}));
+  ok('a whole town falls through to its state, not itself',
+     m.placeName({city:'Leominster', county:'Worcester County', state:'Massachusetts'})==='Leominster, Massachusetts',
+     m.placeName({city:'Leominster', county:'Worcester County', state:'Massachusetts'}));
+  ok('county is never used — nobody says Worcester County',
+     !m.placeName({town:'Gardner', county:'Worcester County', state:'Massachusetts'}).includes('County'),
+     m.placeName({town:'Gardner', county:'Worcester County', state:'Massachusetts'}));
+  ok('a village names its town', m.placeName({village:'Stow', state:'Massachusetts'})==='Stow, Massachusetts');
+  ok('no address details falls back to the display name',
+     m.placeName({}, 'Somewhere, Someplace, Somecountry')==='Somewhere, Someplace');
+  ok('nothing at all returns nothing', m.placeName({}, '')==='');
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

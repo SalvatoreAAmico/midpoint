@@ -237,8 +237,9 @@ ok('no "share my location" prompt once located',
 // The bug a real user hit: typing a name while polls arrive wiped it.
 // Type slowly, so at least one 4s poll lands mid-word.
 // the remembered name carries into the join, so clear before typing
-await p2.locator('.person').nth(1).locator('.nm').fill('');
+// clearing now rolls a placeholder, so select it before typing over it
 await p2.locator('.person').nth(1).locator('.nm').click();
+await p2.keyboard.press('ControlOrMeta+a');
 await p2.locator('.person').nth(1).locator('.nm').pressSequentially('Dana', {delay:900});
 ok('name survives typing across a poll',
    (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana',
@@ -391,6 +392,23 @@ ok("host's vote reaches the other device within one poll cycle",
   ok('your name survives the refresh',
      (await p2.locator('.person').nth(1).locator('.nm').inputValue()) === 'Dana',
      await p2.locator('.person').nth(1).locator('.nm').inputValue());
+}
+
+// ---- a poll must not destroy work in progress ---------------------------
+{
+  // the save-group form has to survive longer than one poll interval
+  await page.locator('#saveGroup').click();
+  await page.waitForTimeout(200);
+  ok('the group form opens', await page.locator('.g-form').count() === 1);
+  await page.waitForTimeout(5200);                       // a poll lands
+  ok('and is still open after a poll', await page.locator('.g-form').count() === 1);
+  await page.locator('.g-name').fill('Tuesday crew');
+  await page.locator('.g-ok').click();
+  await page.waitForTimeout(300);
+  ok('and still saves afterwards',
+     (await page.locator('.group-chip .g-load').textContent()).includes('Tuesday crew'));
+  await page.locator('.group-chip .g-del').click();
+  await page.waitForTimeout(200);
 }
 
 // ---- search settings travel with the session ----------------------------

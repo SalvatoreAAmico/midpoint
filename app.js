@@ -498,6 +498,20 @@ function setSessionParam(code) {
 const geoCache = new Map();
 const revCache = new Map();
 
+/* Nominatim's address fields, rendered the way people actually name places:
+   the specific part, then the wider one it sits in. County is skipped — few
+   people say "Worcester County" — and the wider part is dropped when it merely
+   repeats the specific one, which is why a whole town reads as "Leominster,
+   Massachusetts" rather than "Leominster, Leominster". */
+function placeName(addr = {}, displayName = '') {
+  const local = addr.neighbourhood || addr.suburb || addr.quarter || addr.city_district
+             || addr.village || addr.town || addr.city || addr.municipality;
+  const wider = [addr.city, addr.town, addr.state].find(
+    x => x && x.toLowerCase() !== (local || '').toLowerCase());
+  const out = [local, wider].filter(Boolean).join(', ');
+  return out || displayName.split(',').slice(0, 2).join(',').trim();
+}
+
 /* Coordinates -> a name a human recognises. "My location" tells you nothing
    about where you actually are, which matters when several people are
    comparing rows. zoom=14 lands on neighbourhood rather than street or city. */
@@ -509,12 +523,7 @@ async function reverseGeocode(lat, lon) {
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error('Reverse geocoder ' + res.status);
   const d = await res.json();
-  const a = d.address || {};
-  const local = a.neighbourhood || a.suburb || a.quarter || a.city_district
-             || a.village || a.town || a.city || a.county;
-  const wider = a.city || a.town || a.state;
-  const out = [local, wider !== local ? wider : null].filter(Boolean).join(', ')
-           || (d.display_name || '').split(',').slice(0, 2).join(',').trim();
+  const out = placeName(d.address, d.display_name || '');
   revCache.set(key, out);
   return out;
 }
@@ -524,7 +533,7 @@ async function geocode(q) {
   if (!key) return null;
   if (geoCache.has(key)) return geoCache.get(key);
 
-  const url = `${NOMINATIM}?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`;
+  const url = `${NOMINATIM}?format=jsonv2&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
   if (!res.ok) throw new Error('Geocoder returned ' + res.status);
   const hits = await res.json();
@@ -533,7 +542,7 @@ async function geocode(q) {
   const out = {
     lat: parseFloat(hits[0].lat),
     lon: parseFloat(hits[0].lon),
-    label: hits[0].display_name.split(',').slice(0, 2).join(',').trim()
+    label: placeName(hits[0].address, hits[0].display_name)
   };
   geoCache.set(key, out);
   return out;
@@ -644,9 +653,12 @@ function scoreVenues(venues, people, matrix, speed = SPEED.drive) {
     if (costs.some(c => c == null || !Number.isFinite(c))) return null;
 
     const mean = costs.reduce((a, b, i) => a + b * w[i], 0) / wSum;
-    // Spread over the people who did not volunteer; with fewer than two of
-    // them there is no fairness question left to answer.
-    const pool = fixed.length >= 2 ? fixed.map(i => costs[i]) : costs;
+    /* Spread over the people who did not volunteer. With exactly one of them
+       the spread is zero, which is correct: there is no fairness to balance,
+       only that person's journey to minimise. The previous guard required two
+       and fell back to everyone's times, which made volunteering do almost
+       nothing in a pair — the commonest group there is. */
+    const pool = fixed.length ? fixed.map(i => costs[i]) : costs;
     const spread = Math.max(...pool) - Math.min(...pool);
     return { ...v, costs, mean, spread, score: mean + SPREAD_WEIGHT * spread };
   }).filter(Boolean).sort((a, b) => a.score - b.score);
@@ -770,6 +782,22 @@ function renderPeople() {
 
     row.querySelector('.nm').addEventListener('input', e => {
       const t = who();
+
+      // Clearing the field rolls another placeholder, so you can keep
+      // clearing until one amuses you. It is selected, so typing a real name
+      // replaces it rather than appending to it.
+      if (!e.target.value.trim()) {
+        t.nameSeed = (t.nameSeed || 0) + 1;
+        t.name = codename(t.id + ':' + t.nameSeed);
+        t.nameAuto = true;
+        e.target.value = t.name;
+        e.target.select();
+        saveName('');
+        syncURL();
+        if (isLive() && t.id === Sync.me) Sync.push(t.name, t.label, t.lat, t.lon);
+        return;
+      }
+
       t.name = e.target.value;
       t.nameAuto = false;
       if (i === 0 || t.id === Sync.me) saveName(t.name.trim());
@@ -778,15 +806,24 @@ function renderPeople() {
     });
 
     const lc = row.querySelector('.lc');
+    // Mark the field the moment typing starts, not when it is committed: a
+    // reverse lookup finishing mid-sentence used to replace what was being
+    // typed, and the old guard only noticed a location already committed.
+    lc.addEventListener('input', () => { who().locDirty = true; });
+
     lc.addEventListener('change', async () => {
       const t = who();
+      t.locDirty = false;
       const q = lc.value.trim();
       if (!q) { t.lat = t.lon = null; t.label = ''; t.status = ''; refresh(); return; }
       t.status = 'Looking up…'; renderPeople();
       try {
         const hit = await geocode(q);
         if (!hit) { t.status = '!No match — try adding the city'; t.lat = t.lon = null; }
-        else { t.lat = hit.lat; t.lon = hit.lon; t.label = hit.label; t.status = hit.label; }
+        else {
+          t.lat = hit.lat; t.lon = hit.lon; t.label = hit.label;
+          t.status = hit.label + ' — typed, not your current location';
+        }
       } catch (e) {
         t.status = '!Lookup failed: ' + e.message;
       }
@@ -817,6 +854,9 @@ function renderPeople() {
 function renderGroups() {
   const host = $('#groups');
   if (!host) return;
+  // Never rebuild over a form someone is filling in: a poll arriving mid-typing
+  // used to close it.
+  if (host.querySelector('.g-form')) return;
   const groups = loadGroups();
   const saveable = state.people.filter(p => p.name?.trim() || p.lat != null).length >= 2;
 
@@ -866,14 +906,16 @@ function beginSaveGroup() {
     if (!name) { input.focus(); return; }
     const groups = loadGroups().filter(g => g.name.toLowerCase() !== name.toLowerCase());
     storeGroups([groupFromPeople(name, state.people), ...groups]);
+    host.replaceChildren();          // the guard refuses to rebuild over a form
     renderGroups();
     log(`Saved “${name}”. Tap it next time instead of typing everyone in.`);
   };
   form.querySelector('.g-ok').addEventListener('click', save);
-  form.querySelector('.g-cancel').addEventListener('click', renderGroups);
+  const close = () => { host.replaceChildren(); renderGroups(); };
+  form.querySelector('.g-cancel').addEventListener('click', close);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); save(); }
-    if (e.key === 'Escape') renderGroups();
+    if (e.key === 'Escape') close();
   });
 }
 
@@ -1024,9 +1066,13 @@ function locateAsync(p, timeout = 10000) {
 
         // Name the place after resolving, so the pin is not held up by it.
         const settle = (label, status) => {
-          if (p.label !== 'Locating…') return;            // user has since typed
-          p.label = label; p.status = status;
-          if (isLive() && p.id === Sync.me) Sync.push(p.name, p.label, p.lat, p.lon);
+          // Resolve the person again: a poll may have replaced the roster
+          // while the lookup was in flight, and writing to the old object
+          // would leave the row showing "Locating…" for good.
+          const t = state.people.find(x => x.id === p.id) || p;
+          if (t.label !== 'Locating…' || t.locDirty) return;   // being typed, or already set
+          t.label = label; t.status = status;
+          if (isLive() && t.id === Sync.me) Sync.push(t.name, t.label, t.lat, t.lon);
           renderPeople(); syncURL();
         };
         reverseGeocode(p.lat, p.lon)
@@ -1097,8 +1143,11 @@ function applyRemote(remote, err) {
               : (p.name || codename(p.id)),
       nameAuto: prev?.nameAuto ?? !p.name,
       lat: p.lat, lon: p.lon,
-      label: (keepLocal && prev ? prev.label : (p.label || prev?.label || ''))
+      label: (keepLocal && prev ? prev.label
+              : (mine && prev?.label === 'Locating…' ? 'Locating…'
+                 : (p.label || prev?.label || '')))
              || (p.lat != null ? 'Shared location' : ''),
+      locDirty: prev?.locDirty || false,
       flex: prev?.flex || false,
       status: p.lat != null
         ? (mine ? 'You — on the map' : (p.label || 'On the map'))
@@ -1659,7 +1708,7 @@ function wireLive() {
       me.name = savedName() || codename(me.id); me.nameAuto = !savedName();
       renderPeople();
     }
-    if (me && me.lat == null) {
+    if (me && me.lat == null && !me.locDirty) {
       log('Getting your location…', true);
       try { await locateAsync(me); }
       catch { /* denied or unavailable — go live anyway, the row says why */ }
@@ -1770,7 +1819,7 @@ async function joinSession(code, fromLink) {
     // Joining is the same promise as going live — that you land on the map.
     // Without this the joiner sits in the session invisibly, waiting to notice
     // a Locate button they have no reason to look for.
-    if (me && me.lat == null) {
+    if (me && me.lat == null && !me.locDirty) {
       // Show the manual button straight away rather than only after the
       // automatic attempt fails — a dismissed prompt otherwise looks like a
       // dead end for several seconds.

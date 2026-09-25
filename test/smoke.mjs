@@ -330,6 +330,67 @@ for (const t of ['Pizza','Sushi']) {
 }
 await page.waitForTimeout(150);
 
+// ---- clearing a name rolls another --------------------------------------
+{
+  const nm = page.locator('.person').nth(1).locator('.nm');
+  await nm.fill('');
+  await page.waitForTimeout(200);
+  const first = await nm.inputValue();
+  ok('clearing the name fills in a placeholder', first.split(' ').length === 2, first);
+
+  await nm.fill('');
+  await page.waitForTimeout(200);
+  const second = await nm.inputValue();
+  ok('clearing again rolls a different one', second !== first, `${first} then ${second}`);
+
+  ok('the new name is selected, so typing replaces it',
+     await page.evaluate(() => {
+       const e = document.activeElement;
+       return e && e.selectionStart === 0 && e.selectionEnd === e.value.length;
+     }));
+  await nm.fill('Dana');
+  await page.waitForTimeout(200);
+  ok('typing a real name sticks', (await nm.inputValue()) === 'Dana');
+}
+
+// ---- a typed place is not overwritten by a lookup landing late ----------
+{
+  const slow = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,
+    hasTouch:true, permissions:['geolocation'], geolocation:{latitude:41.9,longitude:-87.63}});
+  await stubFonts(slow);
+  await slow.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await slow.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  await slow.route('**/nominatim.openstreetmap.org/**', async r => {
+    // the reverse lookup lands well after the user starts typing
+    if (r.request().url().includes('/reverse')) {
+      await new Promise(res => setTimeout(res, 1800));
+      return r.fulfill({status:200, contentType:'application/json',
+        body: JSON.stringify({display_name:'Somewhere Else, Chicago',
+                              address:{neighbourhood:'Somewhere Else', city:'Chicago'}})});
+    }
+    return r.fulfill({status:200, contentType:'application/json',
+      body: JSON.stringify([{lat:'41.7943',lon:'-87.5907',display_name:'Hyde Park, Chicago'}])});
+  });
+  const ps = await slow.newPage();
+  await ps.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await ps.locator('.person').nth(0).locator('.loc').click();
+  await ps.waitForTimeout(250);                    // lookup is in flight
+  await ps.locator('.person').nth(0).locator('.lc').fill('Hyde Park, Chicago');
+  await ps.locator('.person').nth(0).locator('.lc').press('Tab');
+  await ps.waitForTimeout(2600);                   // lookup has now landed
+
+  ok('a typed place survives a lookup that lands after it',
+     (await ps.locator('.person').nth(0).locator('.lc').inputValue()) === 'Hyde Park, Chicago',
+     await ps.locator('.person').nth(0).locator('.lc').inputValue());
+  ok('and the row says it was typed rather than measured',
+     (await ps.locator('.person').nth(0).locator('.status').textContent()).includes('typed'),
+     await ps.locator('.person').nth(0).locator('.status').textContent());
+  await slow.close();
+}
+
 // ---- saved groups -------------------------------------------------------
 {
   ok('the save prompt appears once there are people worth saving',
