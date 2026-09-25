@@ -32,6 +32,18 @@ long-tail wants resolve *upward*: "axe throwing" offers bars instead of
 offering nothing. Only categories dense enough in OSM to return results are
 listed. See `docs/osm-categories.md`.
 
+**Everyone in one place** is handled rather than degenerating. Two phones on a
+sofa, or a group already together deciding where to go next: there is no
+fairness question left, so the search widens (the constraint becomes what is
+worth walking out to, not who travels) and the per-person bars collapse into a
+single line, because eight identical bars say nothing.
+
+**Names default to a placeholder** like *Punctual Otter* rather than "Me",
+derived deterministically from the participant id so every device shows the
+same name for the same person with no coordination. If two devices belonging to
+one person both recall the same saved name, whoever did not type it this
+session gives way to a placeholder.
+
 **Saved groups** keep the people you meet most often. Save the current set
 under a name, tap it next time, and everyone is back with their places already
 filled in. Stored on the device: no account, no backend, nothing to sign up

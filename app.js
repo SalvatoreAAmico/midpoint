@@ -21,6 +21,37 @@ const COLORS = ['#4FB07A', '#3E8FC4', '#2FA5A5', '#9A86C4',
 const SPEED = { drive: 13.4, walk: 1.05 };
 const MAX_RADIUS = { drive: 20000, walk: 2500 };
 
+/* Everyone in the same place is a real case — two phones on one sofa, or a
+   group already together deciding where to go next. There is no fairness
+   question left to answer, so the constraint stops being "who travels" and
+   becomes "what is worth going to". Search wider than the usual floor. */
+const TOGETHER_M = 250;
+const TOGETHER_RADIUS = { drive: 4000, walk: 1500 };
+
+/* Placeholder names, so a session is not four rows of "Me". Deterministic from
+   the participant id: every device derives the same name for the same person
+   with no coordination, and it survives a reload. 48 x 40 combinations, so a
+   clash inside a group of eight is vanishingly unlikely. Adjective plus animal
+   — nothing trademarked, nothing anyone could object to, and obviously a
+   placeholder so people replace it. */
+const CODE_ADJ = ['Brisk','Sleepy','Punctual','Hungry','Lost','Casual','Eager','Patient',
+  'Restless','Curious','Mellow','Rowdy','Polite','Distant','Nimble','Sturdy','Cheerful',
+  'Grumpy','Sunny','Foggy','Lucky','Late','Early','Wandering','Dapper','Humble','Bold',
+  'Quiet','Swift','Idle','Keen','Jolly','Crisp','Bright','Solemn','Breezy','Tidy',
+  'Scruffy','Gallant','Modest','Chipper','Drowsy','Spry','Stoic','Fussy','Zesty',
+  'Amiable','Weary'];
+const CODE_ANIMAL = ['Otter','Badger','Heron','Marmot','Puffin','Ferret','Walrus','Gibbon',
+  'Lemur','Wombat','Tapir','Beaver','Raccoon','Magpie','Kestrel','Newt','Pelican','Ibex',
+  'Okapi','Quokka','Narwhal','Meerkat','Capybara','Hedgehog','Mongoose','Albatross',
+  'Stoat','Vole','Weasel','Bison','Moose','Osprey','Falcon','Toucan','Iguana','Gecko',
+  'Axolotl','Manatee','Platypus','Dormouse'];
+
+function codename(id) {
+  let h = 0;
+  for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return CODE_ADJ[h % CODE_ADJ.length] + ' ' + CODE_ANIMAL[(h >>> 8) % CODE_ANIMAL.length];
+}
+
 const LUCKY_CATS = 3;    // how many activity types a roll picks
 const LUCKY_POOL = 12;   // shuffle within this many of the fairest spots
 
@@ -186,7 +217,8 @@ const state = {
   liveErr: '',
   geoBlocked: false,
   showVetoed: false,
-  searching: false
+  searching: false,
+  together: false
 };
 
 const isLive = () => window.Sync?.live;
@@ -222,7 +254,7 @@ function groupFromPeople(name, people) {
     name: name.trim().slice(0, 40),
     people: people
       .filter(p => p.name?.trim() || p.lat != null)
-      .map(p => ({ name: p.name || '', label: p.label || '',
+      .map(p => ({ name: p.nameAuto ? '' : (p.name || ''), label: p.label || '',
                    lat: p.lat ?? null, lon: p.lon ?? null, flex: !!p.flex }))
       .slice(0, MAX_PEOPLE)
   };
@@ -688,8 +720,9 @@ function drawMap(selectedKey) {
 
 function addPerson(name) {
   if (state.people.length >= MAX_PEOPLE) return;
-  const p = { id: uid(), name: name || '', lat: null, lon: null, label: '',
-              flex: false, status: '' };
+  const id = uid();
+  const p = { id, name: name || codename(id), lat: null, lon: null, label: '',
+              flex: false, status: '', nameAuto: !name };
   state.people.push(p);
   return p;
 }
@@ -738,6 +771,7 @@ function renderPeople() {
     row.querySelector('.nm').addEventListener('input', e => {
       const t = who();
       t.name = e.target.value;
+      t.nameAuto = false;
       if (i === 0 || t.id === Sync.me) saveName(t.name.trim());
       syncURL();
       if (isLive() && t.id === Sync.me) Sync.push(t.name, t.label, t.lat, t.lon);
@@ -848,11 +882,13 @@ function applyGroup(g) {
     log('People join a live session themselves — leave it first to load a group.');
     return;
   }
-  state.people = g.people.map(p => ({
-    id: uid(), name: p.name || '', label: p.label || '',
+  state.people = g.people.map(p => {
+    const id = uid();
+    return {
+    id, name: p.name || codename(id), nameAuto: !p.name, label: p.label || '',
     lat: p.lat ?? null, lon: p.lon ?? null, flex: !!p.flex,
     status: p.lat != null ? (p.label || 'Location set') : 'Tap Locate, or type a place'
-  }));
+  };});
   if (!state.people.length) addPerson();
   state.me = state.people[0].id;
   $('#people').dataset.sig = '';          // roster changed wholesale
@@ -1056,7 +1092,10 @@ function applyRemote(remote, err) {
       id: p.id,
       // Also keep a local name the server has not echoed yet: the push is in
       // flight, and accepting the stale empty value would wipe it.
-      name: (keepLocal || (mine && prev?.name && !p.name)) ? prev.name : (p.name || ''),
+      name: (keepLocal || (mine && prev?.name && !p.name))
+              ? prev.name
+              : (p.name || codename(p.id)),
+      nameAuto: prev?.nameAuto ?? !p.name,
       lat: p.lat, lon: p.lon,
       label: (keepLocal && prev ? prev.label : (p.label || prev?.label || ''))
              || (p.lat != null ? 'Shared location' : ''),
@@ -1067,6 +1106,17 @@ function applyRemote(remote, err) {
     };
   });
   state.me = Sync.me;
+
+  /* Two devices belonging to one person both recall the same saved name, so a
+     session shows the same name twice. Whoever did not type it this session
+     gives way to a placeholder. */
+  const mineRow = state.people.find(p => p.id === Sync.me);
+  if (mineRow?.nameAuto && mineRow.name &&
+      state.people.some(p => p.id !== mineRow.id &&
+                             p.name.trim().toLowerCase() === mineRow.name.trim().toLowerCase())) {
+    mineRow.name = codename(mineRow.id);
+    Sync.push(mineRow.name, mineRow.label, mineRow.lat, mineRow.lon);
+  }
 
   state.votes = {};
   for (const v of (remote.votes || [])) {
@@ -1338,13 +1388,19 @@ function renderResults(selectedKey) {
         <span class="pill ${v.spread < 300 ? 'good' : v.spread < 600 ? 'warn' : ''}">±${approx}${unit(v.spread)} spread</span>
         ${openPill}${pricePill}${chainPill}
       </div>
+      ${state.together ? `
+      <div class="fair one">
+        <span class="nm">Everyone</span>
+        <span class="bar"><i style="width:100%;background:var(--accent)"></i></span>
+        <span class="tm">${approx}${unit(v.mean)}</span>
+      </div>` : `
       <div class="fair">${state.people.map((p, pi) => `
         <div class="fairrow">
           <span class="nm">${esc(p.name || 'P' + (pi + 1))}</span>
           <span class="bar"><i style="width:${Math.max(4, 100 * v.costs[pi] / worst)}%;background:${COLORS[pi % COLORS.length]}"></i></span>
           <span class="tm">${approx}${unit(v.costs[pi])}</span>
         </div>`).join('')}
-      </div>
+      </div>`}
       <div class="vactions">
         <button class="vote up ${myVote > 0 ? 'on' : ''}" title="Up for it">Yes</button>
         <button class="vote down ${myVote < 0 ? 'on' : ''}" title="Rule it out">No</button>
@@ -1414,8 +1470,12 @@ async function search() {
 
     const walking = state.travel === 'walk';
     const maxFromCenter = Math.max(...located.map(p => haversine(p, center)), 0);
-    const radius = Math.min(MAX_RADIUS[state.travel],
-                            Math.max(walking ? 600 : 1500, maxFromCenter * 0.45));
+    // Already together: search wider, because the question is no longer who
+    // travels but what is worth walking out to.
+    const together = located.length > 1 && maxFromCenter < TOGETHER_M;
+    state.together = together;
+    const floor = together ? TOGETHER_RADIUS[state.travel] : (walking ? 600 : 1500);
+    const radius = Math.min(MAX_RADIUS[state.travel], Math.max(floor, maxFromCenter * 0.45));
 
     log('Searching OpenStreetMap near the midpoint…', true);
     let venues = await fetchVenues(center, radius);
@@ -1469,6 +1529,8 @@ async function search() {
     }
     else if (chainsHidden === -1)
       log(`Only chains near this midpoint — showing them anyway.`);
+    else if (together)
+      log(`You're all in the same place — ${state.results.length} spots near you, nearest first.`);
     else if (matrix)
       log(`${state.results.length} spots, ranked by real ${walking ? 'walking' : 'drive'} time.`
           + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : ''));
@@ -1593,7 +1655,10 @@ function wireLive() {
 
     // Put yourself on the map before anyone joins: an empty map after tapping
     // Go live reads as a failure, even though the session was created fine.
-    if (me && !me.name.trim()) { me.name = savedName() || 'Me'; renderPeople(); }
+    if (me && !me.name.trim()) {
+      me.name = savedName() || codename(me.id); me.nameAuto = !savedName();
+      renderPeople();
+    }
     if (me && me.lat == null) {
       log('Getting your location…', true);
       try { await locateAsync(me); }

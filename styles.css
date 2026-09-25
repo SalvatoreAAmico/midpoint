@@ -286,3 +286,6 @@ input[type=time]{width:auto;font-size:14px;padding:8px 11px}
   display:flex;flex-direction:column;gap:3px}
 #trouble .tr b{color:var(--ink);font-weight:600}
 #trouble .tr span{color:var(--muted)}
+
+/* When everyone is in the same place, eight identical bars say nothing. */
+.fair.one .nm{width:auto;color:var(--muted)}

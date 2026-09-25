@@ -2,7 +2,7 @@ import fs from 'fs';
 let src = fs.readFileSync(new URL('../app.js', import.meta.url),'utf8');
 // strip the DOM bootstrap so we can exercise the pure functions
 src = src.replace(/\n(?:window|document)\.addEventListener\([\s\S]*$/,'');
-src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED,groupFromPeople,suggestGroupName};\n';
+src += '\nexport {haversine,centroid,isOpenNow,priceLevel,scoreVenues,fmtMin,isChain,shuffle,pickRandom,searchCats,tagFilter,CATALOG,CHIP_CATS,findOutliers,SPEED,groupFromPeople,suggestGroupName,codename,TOGETHER_M,TOGETHER_RADIUS};\n';
 fs.writeFileSync(new URL('./.tmp-module.mjs', import.meta.url),src);
 const m = await import('./.tmp-module.mjs');
 
@@ -202,6 +202,43 @@ ok('every catalogue tag compiles to a filter',
   ok('no names gives no suggestion', m.suggestGroupName([{name:''},{name:'  '}])==='');
   ok('a group of unnamed people with locations still saves',
      m.groupFromPeople('x',[{name:'',lat:1,lon:2}]).people.length===1);
+}
+
+// ---- codenames -----------------------------------------------------------
+{
+  ok('a codename is two words', m.codename('abc123').split(' ').length===2, m.codename('abc123'));
+  ok('the same id always gives the same name', m.codename('xyz')===m.codename('xyz'));
+  ok('different ids usually differ', m.codename('aaa')!==m.codename('bbb'));
+  const seen=new Set();
+  for(let i=0;i<2000;i++) seen.add(m.codename('id'+i));
+  ok(`2000 ids spread across ${seen.size} names`, seen.size>800, String(seen.size));
+  // eight people in one session should not collide in practice
+  let clashes=0;
+  for(let t=0;t<400;t++){
+    const names=new Set();
+    for(let i=0;i<8;i++) names.add(m.codename(Math.random().toString(36).slice(2,8)));
+    if(names.size<8) clashes++;
+  }
+  ok(`clashes in a group of 8: ${clashes}/400 trials`, clashes<20, String(clashes));
+}
+
+// ---- everyone in one place ------------------------------------------------
+{
+  const here=[{lat:41.90000,lon:-87.67000},{lat:41.90003,lon:-87.67002}];
+  const c=m.centroid(here);
+  const maxFrom=Math.max(...here.map(p=>m.haversine(p,c)));
+  ok('two phones in one house count as together', maxFrom < m.TOGETHER_M, maxFrom.toFixed(1)+'m');
+  ok('and the search widens rather than using the usual floor',
+     m.TOGETHER_RADIUS.drive > 1500 && m.TOGETHER_RADIUS.walk > 600);
+  const far=[{lat:41.90,lon:-87.67},{lat:41.86,lon:-87.62}];
+  const c2=m.centroid(far);
+  ok('a normally spread pair is not "together"',
+     Math.max(...far.map(p=>m.haversine(p,c2))) > m.TOGETHER_M);
+  // ranking still behaves when everyone is at one point
+  const v=[{key:'a',name:'Near',lat:41.9010,lon:-87.6710},{key:'b',name:'Far',lat:41.9120,lon:-87.6810}];
+  const r=m.scoreVenues(v,here,null,m.SPEED.drive);
+  ok('nearest wins when nobody has further to travel', r[0].name==='Near', r[0].name);
+  ok('and the spread is effectively nil', r[0].spread < 1, String(r[0].spread));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

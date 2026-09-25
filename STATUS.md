@@ -15,6 +15,9 @@ rather than merely central — a spot close for one person and far for another
 loses. Chains hidden by default. Filter by a day and time, not just "open now".
 Vote, veto, and get a declared winner. Save a group and load it next time.
 
+**Live sessions** are confirmed working across two real devices: names typed on
+one appear on the other, both directions.
+
 **Live sessions** work: one link, everyone's pin and votes update in place,
 no accounts, 12-hour expiry, database locked down so the public key can read
 nothing without the session code.
