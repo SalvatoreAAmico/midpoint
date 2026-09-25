@@ -88,7 +88,8 @@ const rpcHandler = async r => {
 
   if (fn === 'mp_create') {
     const code = 'abc1234567';
-    db.sessions.set(code, {code, cats:['coffee'], filters:{}, people:[], votes:[]});
+    db.sessions.set(code, {code, cats:['coffee'], filters:{}, people:[], votes:[],
+                           results:null, results_by:null, results_at:null});
     const pid = 'p-host';
     db.sessions.get(code).people.push({id:pid, name:a.p_name||'', label:a.p_label||'', lat:a.p_lat, lon:a.p_lon});
     return send({code, participant_id:pid});
@@ -99,6 +100,11 @@ const rpcHandler = async r => {
     const pid = 'p-' + S().people.length;
     S().people.push({id:pid, name:a.p_name||'', label:a.p_label||'', lat:a.p_lat, lon:a.p_lon});
     return send({participant_id:pid});
+  }
+  if (fn === 'mp_results') {
+    S().results = a.p_results; S().results_by = a.p_participant;
+    S().results_at = new Date().toISOString();
+    return send(null, 204);
   }
   if (fn === 'mp_state') return send(S());
   if (fn === 'mp_update') {
@@ -434,6 +440,60 @@ ok("host's vote reaches the other device within one poll cycle",
      (await p2.locator('#travel').inputValue()) === 'drive');
 }
 
+// ---- one search serves the whole session --------------------------------
+{
+  await page.locator('#find').click();
+  await page.waitForSelector('.venue', {timeout:8000});
+  await page.waitForTimeout(500);
+  ok('searching publishes the result to the session',
+     !!db.sessions.get('abc1234567').results,
+     String(!!db.sessions.get('abc1234567').results));
+  ok('and it carries the ids the times were computed for',
+     Array.isArray(db.sessions.get('abc1234567').results.people),
+     JSON.stringify(db.sessions.get('abc1234567').results?.people));
+
+  const before = calls.overpass;
+  await p2.waitForTimeout(5000);          // p2 polls the shared result in
+  ok('the other device shows the same spots without searching',
+     await p2.locator('.venue').count() > 0);
+  ok('and did not call Overpass again to do it',
+     calls.overpass === before, `${before} -> ${calls.overpass}`);
+  const hostTop = await page.locator('.venue').first().locator('.vname').textContent();
+  const p2Top   = await p2.locator('.venue').first().locator('.vname').textContent();
+  ok('both devices lead with the same place', hostTop === p2Top, `${hostTop} / ${p2Top}`);
+  ok('and it says who searched',
+     (await p2.locator('#log').textContent()).toLowerCase().includes('searched'),
+     await p2.locator('#log').textContent());
+}
+
+// ---- a thumbs-up pins it to the top for everyone ------------------------
+{
+  // clear votes left by earlier blocks, so "top" means what this test means
+  db.sessions.get('abc1234567').votes = [];
+  await page.waitForTimeout(4800);
+  await p2.waitForTimeout(500);
+  ok('with no votes, nothing is shortlisted',
+     await page.locator('.shortlist-head').count() === 0);
+
+  const third = await page.locator('.venue').nth(2).locator('.vname').textContent();
+  await page.locator('.venue').nth(2).locator('.vote.up').click();
+  await page.waitForTimeout(400);
+  ok('liking moves it to the top on your own phone',
+     (await page.locator('.venue').first().locator('.vname').textContent()) === third,
+     third);
+  ok('and a shortlist heading appears', await page.locator('.shortlist-head').count() >= 1);
+
+  await p2.waitForTimeout(5000);
+  ok('and it reaches the top on the other phone too',
+     (await p2.locator('.venue').first().locator('.vname').textContent()) === third,
+     await p2.locator('.venue').first().locator('.vname').textContent());
+  ok('the rest are still listed below',
+     await p2.locator('.shortlist-head.rest').count() === 1);
+
+  await page.locator('.venue').first().locator('.vote.up').click();   // undo
+  await page.waitForTimeout(400);
+}
+
 // ---- the group reaches a decision ---------------------------------------
 {
   ok('no winner announced before everyone has voted',
@@ -444,8 +504,10 @@ ok("host's vote reaches the other device within one poll cycle",
   await p2.waitForSelector('.venue', {timeout:8000});
   await p2.waitForTimeout(300);
 
-  // Dana votes for the same place the host did.
+  // Vote from both devices explicitly: earlier blocks no longer leave one behind.
   const top = await p2.locator('.venue').first().locator('.vname').textContent();
+  await page.locator('.venue', {hasText: top}).first().locator('.vote.up').click();
+  await page.waitForTimeout(400);
   await p2.locator('.venue').first().locator('.vote.up').click();
   await p2.waitForTimeout(400);
   await page.waitForTimeout(4800);          // host polls it in
@@ -503,9 +565,9 @@ ok('leaving clears the code from the URL', !p2.url().includes('?s='));
   await pd.waitForTimeout(1500);
   ok('the button appears immediately, not only after the prompt times out',
      await pd.locator('#shareLoc').isVisible());
-  ok('and the message names it right away',
-     (await pd.locator('#log').textContent()).toLowerCase().includes('share my location'),
-     await pd.locator('#log').textContent());
+  ok('and the button is the obvious way forward',
+     (await pd.locator('#shareLoc').textContent()).toLowerCase().includes('share my location'),
+     await pd.locator('#shareLoc').textContent());
   await pd.waitForTimeout(6500);   // the 6s auto-attempt gives up
   ok('after the attempt gives up, the button is still the way forward',
      await pd.locator('#shareLoc').isVisible());

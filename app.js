@@ -218,7 +218,8 @@ const state = {
   geoBlocked: false,
   showVetoed: false,
   searching: false,
-  together: false
+  together: false,
+  resultsAt: 0
 };
 
 const isLive = () => window.Sync?.live;
@@ -1175,12 +1176,22 @@ function applyRemote(remote, err) {
   if (Array.isArray(remote.cats) && remote.cats.length) state.cats = remote.cats;
   const changed = applyRemoteFilters(remote.filters) || state.cats.join(',') !== catsBefore;
 
+  // Someone else searched: show their list rather than running our own.
+  const adopted = remote.results_by !== Sync.me && adoptResults(remote.results);
+  if (adopted) {
+    const who = state.people.find(p => p.id === remote.results_by);
+    log(`${who?.name || 'Someone'} searched — showing the same ${state.results.length} spots.`);
+  }
+
   renderPeople(); renderCats(); renderLive(); drawMap();
   if (state.results.length) renderResults();
 
   // Someone changed the search: re-run it so everyone is looking at the same
   // list, rather than at whatever they last searched for themselves.
-  if (changed && state.results.length && !state.searching) {
+  if (adopted) { drawMap(state.results[0]?.key); renderResults(state.results[0]?.key); }
+
+  // Only re-run when the settings moved and nobody has already searched for us.
+  if (changed && state.results.length && !state.searching && !adopted) {
     log('Search settings changed by someone in the session — updating…');
     search();
   }
@@ -1301,6 +1312,53 @@ function catRow(list, heading) {
   return frag;
 }
 
+/* A search already computes travel times for everyone in the session, so its
+   result belongs to the group rather than to whoever tapped the button.
+   Sharing it keeps everybody on one list — two people voting on different
+   lists was the quiet failure — and halves the calls to the free services. */
+function shareResults(located) {
+  Sync.results({
+    at: state.resultsAt,
+    people: located.map(p => p.id),
+    together: state.together,
+    estimated: state.estimated,
+    travel: state.travel,
+    venues: state.results.slice(0, MAX_VENUES).map(v => ({
+      key: v.key, name: v.name, kind: v.kind, lat: v.lat, lon: v.lon,
+      open: v.open, hours: v.hours, price: v.price, chain: v.chain,
+      costs: v.costs.map(c => Math.round(c))
+    }))
+  });
+}
+
+/* Adopt someone else's search. Costs are stored against the ids they were
+   computed for, so they are re-mapped onto the current roster rather than
+   trusted by position. */
+function adoptResults(r) {
+  if (!r || !Array.isArray(r.venues) || !r.venues.length) return false;
+  if (r.at && state.resultsAt && r.at <= state.resultsAt) return false;
+
+  const idx = new Map((r.people || []).map((id, i) => [id, i]));
+  state.results = r.venues.map(v => ({
+    ...v,
+    costs: state.people.map(p => {
+      const i = idx.get(p.id);
+      return i == null ? null : v.costs[i];
+    })
+  })).filter(v => v.costs.some(c => c != null));
+
+  // Someone who joined after the search has no time of their own yet.
+  for (const v of state.results) {
+    const known = v.costs.filter(c => c != null);
+    v.mean = known.reduce((a, b) => a + b, 0) / (known.length || 1);
+    v.spread = known.length ? Math.max(...known) - Math.min(...known) : 0;
+  }
+  state.together = !!r.together;
+  state.estimated = !!r.estimated;
+  state.resultsAt = r.at || Date.now();
+  return true;
+}
+
 /* Everything that shapes a search travels with the session, not just the
    categories. Otherwise one person sets "Tuesday 6pm, walking, no chains",
    searches, and everyone else is quietly looking at different results. */
@@ -1395,7 +1453,22 @@ function renderResults(selectedKey) {
   if (!state.results.length) return;
 
   const vetoed = state.results.filter(v => isVetoed(v.key));
-  const shown = state.showVetoed ? state.results : state.results.filter(v => !isVetoed(v.key));
+  let shown = state.showVetoed ? state.results : state.results.filter(v => !isVetoed(v.key));
+
+  /* Anything anyone likes rises to the top, on every device. A vote that only
+     changed a tally was decoration; this is the group actually narrowing
+     things down together. */
+  const liked = shown.filter(v => tally(v.key).up > 0)
+                     .sort((a, b) => tally(b.key).up - tally(a.key).up || a.score - b.score);
+  const rest = shown.filter(v => tally(v.key).up === 0);
+  shown = [...liked, ...rest];
+
+  if (liked.length) {
+    const h = document.createElement('div');
+    h.className = 'shortlist-head';
+    h.innerHTML = `<b>Shortlist</b><span>${liked.length} liked by someone in the group</span>`;
+    host.appendChild(h);
+  }
 
   const win = winner();
   if (win) {
@@ -1415,7 +1488,14 @@ function renderResults(selectedKey) {
     const t = tally(v.key);
     const myVote = (state.votes[v.key] || {})[state.me];
     const card = document.createElement('div');
+    if (liked.length && i === liked.length) {
+      const h = document.createElement('div');
+      h.className = 'shortlist-head rest';
+      h.innerHTML = `<b>Everything else</b>`;
+      host.appendChild(h);
+    }
     card.className = 'venue' + (v.key === selectedKey ? ' sel' : '')
+                   + (tally(v.key).up > 0 ? ' liked' : '')
                    + (isVetoed(v.key) ? ' vetoed' : '')
                    + (win && v.key === win.key ? ' won' : '');
 
@@ -1584,6 +1664,9 @@ async function search() {
       log(`${state.results.length} spots, ranked by real ${walking ? 'walking' : 'drive'} time.`
           + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : ''));
     else { /* fallback message already set */ }
+
+    state.resultsAt = Date.now();
+    if (isLive()) shareResults(located);
 
     drawMap(state.results[0]?.key);
     renderResults(state.results[0]?.key);

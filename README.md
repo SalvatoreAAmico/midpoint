@@ -70,6 +70,14 @@ take the longer trip. Anyone can also volunteer at any time with **I can travel
 further**, which drops them out of the fairness spread and reduces their weight
 in the average.
 
+In a live session **one search serves everybody**. A search already computes
+travel times for every person in the session, so the result belongs to the
+group rather than to whoever tapped the button: it is published to the session,
+every phone shows the same list in the same order, and the group makes half as
+many calls to the free services. Anything anyone gives a thumbs-up rises into a
+**shortlist** pinned to the top of every phone, so voting narrows the choice
+instead of only moving a tally.
+
 Every suggestion shows a **fairness breakdown**: a bar per person with their
 individual travel time, so the group can see at a glance if one person is eating
 the whole trip.

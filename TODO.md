@@ -8,6 +8,12 @@ rather than documents and are marked as such.
 
 ## Right now
 
+- [ ] **Run `supabase/fix-003-shared-results.sql`.** Without it, each phone
+      searches separately, so two people can vote on different lists. With it,
+      one search serves the session and a thumbs-up pins a spot to the top on
+      everyone's phone. Verified against a real Postgres.
+
+
 - [ ] **Run `supabase/fix-002-participant-label.sql`** in the Supabase SQL
       editor. Without it, live sessions show everyone's pin but not where they
       are, and a person's own typed location looks lost on reload. Verified

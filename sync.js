@@ -151,6 +151,16 @@ const Sync = {
       { p_code: this.code, p_cats: cats, p_filters: filters }).catch(() => {});
   },
 
+  /* One search serves the session. The payload carries the participant ids it
+     was computed for, so each device can map travel times to the right person
+     even if the roster has changed since. */
+  results(payload) {
+    if (!this.live) return Promise.resolve();
+    return this.rpc('mp_results',
+      { p_code: this.code, p_participant: this.me, p_results: payload })
+      .catch(e => { this.onWriteError?.(e); });
+  },
+
   vote(venueKey, dir) {
     if (!this.live) return Promise.resolve();
     return this.rpc('mp_vote', {

@@ -20,7 +20,11 @@ create table if not exists public.sessions (
   cats       jsonb not null default '["coffee"]'::jsonb,
   filters    jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
-  expires_at timestamptz not null default (now() + interval '12 hours')
+  expires_at timestamptz not null default (now() + interval '12 hours'),
+  -- One search serves the whole session: the result already covers everyone.
+  results    jsonb,
+  results_by uuid,
+  results_at timestamptz
 );
 
 create table if not exists public.participants (
@@ -84,6 +88,9 @@ begin
     'cats',       s.cats,
     'filters',    s.filters,
     'expires_at', s.expires_at,
+    'results',    s.results,
+    'results_by', s.results_by,
+    'results_at', s.results_at,
     'people', coalesce((
       select json_agg(json_build_object(
                'id', p.id, 'name', p.name, 'label', p.label,
@@ -185,6 +192,21 @@ begin
   end if;
 end $$;
 
+create or replace function public.mp_results(
+  p_code text, p_participant uuid, p_results jsonb)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare s public.sessions;
+begin
+  s := public.mp_session(p_code);
+  if p_results is not null and length(p_results::text) > 200000 then
+    raise exception 'results_too_large' using errcode = 'program_limit_exceeded';
+  end if;
+  update public.sessions
+     set results = p_results, results_by = p_participant, results_at = now()
+   where id = s.id;
+end $$;
+
 create or replace function public.mp_leave(p_code text, p_participant uuid)
 returns void
 language plpgsql security definer set search_path = public as $$
@@ -211,3 +233,4 @@ grant execute on function public.mp_update(text, uuid, text, text, double precis
 grant execute on function public.mp_prefs(text, jsonb, jsonb)       to anon, authenticated;
 grant execute on function public.mp_vote(text, uuid, text, int)     to anon, authenticated;
 grant execute on function public.mp_leave(text, uuid)               to anon, authenticated;
+grant execute on function public.mp_results(text, uuid, jsonb)      to anon, authenticated;
