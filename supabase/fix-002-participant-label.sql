@@ -15,12 +15,14 @@ alter table public.participants
 
 -- The argument lists change, so the old versions are dropped rather than
 -- overloaded: two functions of the same name with different signatures would
--- make every call ambiguous.
+-- make every call ambiguous. The replacements use "or replace" so that running
+-- this file on a project that already has it is a harmless no-op rather than an
+-- error a third of the way through, with the rest of the file unapplied.
 drop function if exists public.mp_create(text, double precision, double precision);
 drop function if exists public.mp_join(text, text, double precision, double precision);
 drop function if exists public.mp_update(text, uuid, text, double precision, double precision);
 
-create function public.mp_create(
+create or replace function public.mp_create(
   p_name text, p_label text, p_lat double precision, p_lon double precision)
 returns json
 language plpgsql security definer set search_path = public as $$
@@ -38,7 +40,7 @@ begin
   return json_build_object('code', v_code, 'participant_id', v_pid);
 end $$;
 
-create function public.mp_join(
+create or replace function public.mp_join(
   p_code text, p_name text, p_label text,
   p_lat double precision, p_lon double precision)
 returns json
@@ -56,7 +58,7 @@ begin
   return json_build_object('participant_id', v_pid);
 end $$;
 
-create function public.mp_update(
+create or replace function public.mp_update(
   p_code text, p_participant uuid, p_name text, p_label text,
   p_lat double precision, p_lon double precision)
 returns void
