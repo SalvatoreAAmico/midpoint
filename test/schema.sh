@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Verifies supabase/schema.sql against a real Postgres, as the anon role.
-#   createdb mp && psql -d mp -f supabase/schema.sql && bash test/schema.sh
-# Set PGHOST/PGPORT/MPDB as needed. Mirrors Supabase by expecting an `anon` role.
+#   bash test/pg-up.sh && bash test/schema.sh
+# The host/port are fixed at /tmp:5433 to match pg-up.sh; MPDB picks the database.
 set -u
 P="psql -h /tmp -p 5433 -U postgres -d ${MPDB:-mp} -qAt"
 pass=0; fail=0
@@ -59,6 +59,25 @@ E5=$($P -c "set role anon; select public.mp_session('$CODE');" 2>&1 | grep -c "p
 ok "internal helper mp_session is not callable by anon" "$([ "$E5" -ge 1 ] && echo 1 || echo 0)" "$E5"
 E6=$($P -c "set role anon; select public.mp_gc();" 2>&1 | grep -c "permission denied")
 ok "internal helper mp_gc is not callable by anon" "$([ "$E6" -ge 1 ] && echo 1 || echo 0)" "$E6"
+
+# shared search results
+PID1=$($P -c "set role anon; select public.mp_state('$CODE')->'people'->0->>'id';")
+$P -c "set role anon; select public.mp_results('$CODE','$PID1','[{\"key\":\"n/1\",\"name\":\"Cafe\"}]'::jsonb);" >/dev/null
+R=$($P -c "set role anon; select public.mp_state('$CODE')->'results'->0->>'name';")
+ok "search results are shared to the whole session" "$([ "$R" = "Cafe" ] && echo 1 || echo 0)" "got '$R'"
+RB=$($P -c "set role anon; select public.mp_state('$CODE')->>'results_by';")
+ok "results record who searched" "$([ "$RB" = "$PID1" ] && echo 1 || echo 0)" "got '$RB'"
+RA=$($P -c "set role anon; select (public.mp_state('$CODE')->>'results_at') is not null;")
+ok "results carry a timestamp" "$([ "$RA" = "t" ] && echo 1 || echo 0)" "got '$RA'"
+ERR=$($P -c "set role anon; select public.mp_results('nosuchcode','$PID1','[]'::jsonb);" 2>&1 | grep -c session_not_found)
+ok "mp_results on an unknown code raises session_not_found" "$([ "$ERR" -ge 1 ] && echo 1 || echo 0)" "$ERR"
+ERR=$($P -c "set role anon; select public.mp_results('$CODE','$PID1', to_jsonb(repeat('x',200001)));" 2>&1 | grep -c results_too_large)
+ok "oversized results are refused" "$([ "$ERR" -ge 1 ] && echo 1 || echo 0)" "$ERR"
+R=$($P -c "set role anon; select public.mp_state('$CODE')->'results'->0->>'name';")
+ok "a refused publish leaves the previous results intact" "$([ "$R" = "Cafe" ] && echo 1 || echo 0)" "got '$R'"
+$P -c "set role anon; select public.mp_results('$CODE','$PID1',null);" >/dev/null
+R=$($P -c "set role anon; select public.mp_state('$CODE')->>'results' is null;")
+ok "results can be cleared" "$([ "$R" = "t" ] && echo 1 || echo 0)" "got '$R'"
 
 # expiry + cascade
 $P -c "update public.sessions set expires_at = now() - interval '1 hour' where code='$CODE';" >/dev/null

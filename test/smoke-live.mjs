@@ -526,10 +526,39 @@ ok("host's vote reaches the other device within one poll cycle",
      await p2.locator('.winner').textContent());
 
   // a veto from one person removes it for everyone
+  const shunned = await page.locator('.venue').nth(1).locator('.vname').textContent();
   await page.locator('.venue').nth(1).locator('.vote.down').click();
   await page.waitForTimeout(4800);
   ok('one person vetoing hides it on the other device too',
      await p2.locator('.vetoed-toggle').count() === 1);
+
+  /* ...but only while nobody wants it. The moment one person says yes, a no
+     from someone else must not delete the place off their phone: that is a
+     disagreement for the group to have, not for the app to settle quietly. */
+  await p2.locator('.vetoed-toggle').click();          // reveal the ruled-out one
+  await p2.waitForTimeout(300);
+  await p2.locator('.venue', {hasText: shunned}).first().locator('.vote.up').click();
+  await p2.waitForTimeout(400);
+  ok('one yes against one no keeps the place on the list',
+     await p2.locator('.venue', {hasText: shunned}).count() === 1, shunned);
+  ok('a contested place is shortlisted, not struck through',
+     await p2.locator('.venue.contested', {hasText: shunned}).count() === 1);
+  ok('the objection is still shown on the card',
+     (await p2.locator('.venue', {hasText: shunned}).first().locator('.vmeta').textContent())
+       .includes('said no'),
+     await p2.locator('.venue', {hasText: shunned}).first().locator('.vmeta').textContent());
+
+  await page.waitForTimeout(4800);                     // host polls the yes in
+  ok('it comes back on the phone that said no, without needing the toggle',
+     await page.locator('.venue.contested', {hasText: shunned}).count() === 1,
+     await page.locator('#results').textContent());
+  ok('an unopposed no still hides a place nobody wants',
+     await page.locator('.venue', {hasText: shunned}).count() === 1
+       && await page.locator('.venue.vetoed').count() === 0);
+
+  await p2.locator('.venue', {hasText: shunned}).first().locator('.vote.up').click();  // undo
+  await page.locator('.venue', {hasText: shunned}).first().locator('.vote.down').click();
+  await page.waitForTimeout(400);
 }
 
 // leaving

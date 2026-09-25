@@ -297,3 +297,6 @@ input[type=time]{width:auto;font-size:14px;padding:8px 11px}
 .shortlist-head.rest b{color:var(--dim)}
 .shortlist-head span{font-size:12px;color:var(--dim)}
 .venue.liked{border-color:#2f4a3d}
+/* Someone wants it and someone doesn't. Shown plainly rather than hidden or
+   struck through, so the group can settle it themselves. */
+.venue.contested{border-color:var(--warn)}

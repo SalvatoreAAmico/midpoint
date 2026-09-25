@@ -1430,9 +1430,16 @@ function tally(key) {
   return { up, down };
 }
 
-/* A thumbs-down is a veto. "Not there, it's terrible" is the commonest thing
-   anyone says while choosing, and one objection is usually enough. */
-const isVetoed = key => tally(key).down > 0;
+/* A thumbs-down rules a place out only while nobody wants it. "Not there,
+   it's terrible" is the commonest thing anyone says while choosing, and one
+   objection is enough to drop a place no one is arguing for. But once someone
+   has said yes, hiding it is the app taking a side in a disagreement the group
+   should be having: the place stays on the shortlist, carrying its no, and the
+   two of them can talk. */
+const isVetoed = key => { const t = tally(key); return t.down > 0 && t.up === 0; };
+
+/* Anyone objecting is still enough to stop the app declaring a winner. */
+const isContested = key => tally(key).down > 0;
 
 /* Once everyone with a location has voted, the group has decided. Announcing
    it gives the session an ending, which it otherwise lacks. */
@@ -1442,7 +1449,7 @@ function winner() {
   const present = state.people.filter(p => p.lat != null);
   if (present.length < 2 || !present.every(p => voters.has(p.id))) return null;
 
-  const live = state.results.filter(v => !isVetoed(v.key) && tally(v.key).up > 0);
+  const live = state.results.filter(v => !isContested(v.key) && tally(v.key).up > 0);
   if (!live.length) return null;
   return live.reduce((a, b) => (tally(b.key).up > tally(a.key).up ? b : a));
 }
@@ -1459,7 +1466,9 @@ function renderResults(selectedKey) {
      changed a tally was decoration; this is the group actually narrowing
      things down together. */
   const liked = shown.filter(v => tally(v.key).up > 0)
-                     .sort((a, b) => tally(b.key).up - tally(a.key).up || a.score - b.score);
+                     .sort((a, b) => tally(b.key).up - tally(a.key).up
+                                  || tally(a.key).down - tally(b.key).down
+                                  || a.score - b.score);
   const rest = shown.filter(v => tally(v.key).up === 0);
   shown = [...liked, ...rest];
 
@@ -1497,6 +1506,7 @@ function renderResults(selectedKey) {
     card.className = 'venue' + (v.key === selectedKey ? ' sel' : '')
                    + (tally(v.key).up > 0 ? ' liked' : '')
                    + (isVetoed(v.key) ? ' vetoed' : '')
+                   + (t.up > 0 && t.down > 0 ? ' contested' : '')
                    + (win && v.key === win.key ? ' won' : '');
 
     const at = whenLabel() || 'now';
@@ -1505,6 +1515,8 @@ function renderResults(selectedKey) {
                    : '<span class="pill">Hours unknown</span>';
     const pricePill = v.price ? `<span class="pill">${'$'.repeat(v.price)}</span>` : '';
     const chainPill = v.chain ? '<span class="pill warn">Chain</span>' : '';
+    const contestPill = t.up > 0 && t.down > 0
+      ? `<span class="pill warn">${t.down} said no</span>` : '';
 
     card.innerHTML = `
       <div class="vhead">
@@ -1515,7 +1527,7 @@ function renderResults(selectedKey) {
       <div class="vmeta">
         <span class="pill">avg ${approx}${unit(v.mean)}</span>
         <span class="pill ${v.spread < 300 ? 'good' : v.spread < 600 ? 'warn' : ''}">±${approx}${unit(v.spread)} spread</span>
-        ${openPill}${pricePill}${chainPill}
+        ${openPill}${pricePill}${chainPill}${contestPill}
       </div>
       ${state.together ? `
       <div class="fair one">
