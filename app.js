@@ -218,6 +218,7 @@ const state = {
   geoBlocked: false,
   showVetoed: false,
   nudgedVotes: false,
+  hashMe: null,
   searching: false,
   together: false,
   resultsAt: 0
@@ -229,6 +230,10 @@ const isLive = () => window.Sync?.live;
    is remember what you called yourself last time. Storage can throw in private
    browsing, so every access is guarded. */
 const NAME_KEY = 'midpoint.name';
+/* Which person-rows this device has ever been. A hash link carries the id of
+   whoever made it; if this device has never been that id, the link is someone
+   else's plan and none of the rows in it is you. */
+const MINE_KEY = 'midpoint.mine';
 const GROUPS_KEY = 'midpoint.groups';
 const MAX_GROUPS = 12;
 
@@ -270,6 +275,24 @@ function suggestGroupName(people) {
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
 const savedName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
+const ownIds = () => {
+  try { const v = JSON.parse(localStorage.getItem(MINE_KEY) || '[]');
+        return new Set(Array.isArray(v) ? v : []); } catch { return new Set(); }
+};
+/* Every route to "this row is me" goes through here, so a device never ends up
+   unable to recognise its own shared link. Four separate assignments meant
+   loading a saved group, or locating, quietly produced an id the device had no
+   record of. */
+function setMe(id) { state.me = id; rememberOwnId(id); return id; }
+
+function rememberOwnId(id) {
+  if (!id) return;
+  try {
+    const list = [...ownIds()].filter(x => x !== id);
+    list.push(id);                       // keep the last 20; ids are cheap
+    localStorage.setItem(MINE_KEY, JSON.stringify(list.slice(-20)));
+  } catch {}
+}
 const saveName  = n => { try { n ? localStorage.setItem(NAME_KEY, n) : localStorage.removeItem(NAME_KEY); } catch {} };
 
 /* ------------------------------------------------------------------ utils */
@@ -453,7 +476,8 @@ function encodeState() {
                               p.lon == null ? null : +p.lon.toFixed(5), p.label || '',
                               p.flex ? 1 : 0]),
     c: state.cats, tv: state.travel, w: state.when, wt: state.whenTime, r: state.maxPrice,
-    v: state.votes, l: state.lucky ? 1 : 0, n: state.noChains ? 1 : 0
+    v: state.votes, l: state.lucky ? 1 : 0, n: state.noChains ? 1 : 0,
+    m: state.me
   };
   const json = JSON.stringify(payload);
   return btoa(unescape(encodeURIComponent(json)))
@@ -478,6 +502,7 @@ function decodeState(hash) {
     // Absent in links made before this filter existed; default it on.
     state.noChains = d.n === undefined ? true : !!d.n;
     state.votes   = d.v && typeof d.v === 'object' ? d.v : {};
+    state.hashMe  = typeof d.m === 'string' ? d.m : null;
     return true;
   } catch { return false; }
 }
@@ -939,7 +964,7 @@ function applyGroup(g) {
     status: p.lat != null ? (p.label || 'Location set') : 'Tap Locate, or type a place'
   };});
   if (!state.people.length) addPerson();
-  state.me = state.people[0].id;
+  setMe(state.people[0].id);
   $('#people').dataset.sig = '';          // roster changed wholesale
   refresh();
   log(`Loaded “${g.name}”. Check everyone is still in the right place.`);
@@ -1079,7 +1104,9 @@ function locateAsync(p, timeout = 10000) {
         p.locating = true; p.label = ''; p.status = 'Found you — naming the area…';
         if (!p.name.trim()) p.name = savedName() || '';
         if (isLive() && p.id === Sync.me) Sync.push(p.name, p.label, p.lat, p.lon);
-        else state.me = p.id;
+        // Locating a row makes it yours, on this device, for good: a link you
+        // later share must still be recognisable as your own.
+        else setMe(p.id);
         refresh();
         resolve(p);
 
@@ -1182,7 +1209,7 @@ function applyRemote(remote, err) {
         : (mine ? 'Tap Locate to add yourself' : 'Joined, no location shared yet')
     };
   });
-  state.me = Sync.me;
+  setMe(Sync.me);
 
   /* If the session is still holding the old placeholder for us while we know
      the real name, correct the server rather than waiting for the next locate. */
@@ -1635,7 +1662,7 @@ function renderResults(selectedKey) {
 }
 
 function vote(key, dir) {
-  if (!state.me) state.me = state.people[0]?.id;
+  if (!state.me) setMe(state.people[0]?.id);
   if (!state.me) return;
   state.votes[key] = state.votes[key] || {};
   if (state.votes[key][state.me] === dir) delete state.votes[key][state.me];
@@ -1759,7 +1786,18 @@ function boot() {
   if (!restored || !state.people.length) {
     addPerson(savedName()); addPerson();
   }
-  if (!state.me) state.me = state.people[0].id;
+
+  /* Someone else's snapshot: every row in it belongs to them, so taking the
+     first as yours hands you their location and leaves you with nowhere to put
+     your own. Give yourself a row instead. Links made before this carry no
+     author and keep the old behaviour. */
+  const notMine = restored && state.hashMe && !ownIds().has(state.hashMe);
+  if (notMine) {
+    const spare = state.people.find(p => p.lat == null && !p.label);
+    const mine = spare || addPerson(savedName());
+    if (mine) setMe(mine.id);
+  }
+  if (!state.me) setMe(state.people[0].id);
 
   $('#noChains').classList.toggle('on', state.noChains);
   $('#travel').value = state.travel;
@@ -1821,9 +1859,24 @@ function boot() {
   });
   $('#price').addEventListener('change', e => { state.maxPrice = e.target.value; syncURL(); pushPrefs(); });
 
+  /* "Copy invite link" used to mean two different things. Live, it shared
+     ?s=code and worked. Not live, it shared location.href -- the hash, holding
+     a snapshot of your own rows and no session code at all. The other phone
+     then opened a link that was not joined to anything, restored your people as
+     if they were its own, and treated your located row as itself: nothing to
+     locate, nothing syncing, and no row of their own to fill in. Sal hit
+     exactly that, and there is no way to tell from the link that it is dead.
+     An invite now always invites, creating the session first if needed. */
   $('#share').addEventListener('click', async () => {
+    if (!isLive()) {
+      log('Starting a live session so the link works…', true);
+      if (!(await goLive())) {
+        log('Could not start a live session, so there is nothing to invite to yet.');
+        return;
+      }
+    }
     syncURL();
-    const url = isLive() ? Sync.shareURL() : location.href;
+    const url = Sync.shareURL();
     try {
       if (navigator.share) await navigator.share({ title: 'Midpoint', url });
       else { await navigator.clipboard.writeText(url); log('Invite link copied.'); }
@@ -1831,8 +1884,44 @@ function boot() {
   });
 
   if (restored && state.people.some(p => p.lat != null)) {
-    log('Session loaded. Tap Locate on your row to add yourself.');
+    log(new URLSearchParams(location.search).get('s')
+      ? 'Session loaded. Tap Locate on your row to add yourself.'
+      : 'Opened a shared plan. It is not a live session — tap Locate to add yourself, '
+        + 'or Copy invite link to start one.');
   }
+}
+
+/* Going live is also what "Copy invite link" needs, so it is a function rather
+   than only a click handler. */
+async function goLive() {
+  const me = myRow();
+  $('#goLive').disabled = true;
+
+  // Put yourself on the map before anyone joins: an empty map after tapping
+  // Go live reads as a failure, even though the session was created fine.
+  if (me && !me.name.trim()) {
+    me.name = savedName() || codename(me.id); me.nameAuto = !savedName();
+    renderPeople();
+  }
+  if (me && me.lat == null && !me.locDirty) {
+    log('Getting your location…', true);
+    try { await locateAsync(me); }
+    catch { /* denied or unavailable — go live anyway, the row says why */ }
+  }
+
+  try {
+    await Sync.create(me?.name || 'Me', me?.label || '', me?.lat ?? null, me?.lon ?? null);
+    state.liveErr = '';
+    setSessionParam(Sync.code);
+    log(me?.lat != null
+      ? 'You are on the map. Send the invite link to your friends.'
+      : 'Live session started — tap Locate to put yourself on the map.');
+  } catch (e) {
+    state.liveErr = e.message;
+  }
+  $('#goLive').disabled = false;
+  renderLive();
+  return isLive();
 }
 
 function myRow() {
@@ -1846,35 +1935,7 @@ function wireLive() {
     renderLive();     // the banner says what is wrong and how to fix it
   };
 
-  $('#goLive').addEventListener('click', async () => {
-    const me = myRow();
-    $('#goLive').disabled = true;
-
-    // Put yourself on the map before anyone joins: an empty map after tapping
-    // Go live reads as a failure, even though the session was created fine.
-    if (me && !me.name.trim()) {
-      me.name = savedName() || codename(me.id); me.nameAuto = !savedName();
-      renderPeople();
-    }
-    if (me && me.lat == null && !me.locDirty) {
-      log('Getting your location…', true);
-      try { await locateAsync(me); }
-      catch { /* denied or unavailable — go live anyway, the row says why */ }
-    }
-
-    try {
-      await Sync.create(me?.name || 'Me', me?.label || '', me?.lat ?? null, me?.lon ?? null);
-      state.liveErr = '';
-      setSessionParam(Sync.code);
-      log(me?.lat != null
-        ? 'You are on the map. Send the invite link to your friends.'
-        : 'Live session started — tap Locate to put yourself on the map.');
-    } catch (e) {
-      state.liveErr = e.message;
-    }
-    $('#goLive').disabled = false;
-    renderLive();
-  });
+  $('#goLive').addEventListener('click', () => goLive());
 
   $('#joinLive').addEventListener('click', async () => {
     const code = prompt('Session code?');

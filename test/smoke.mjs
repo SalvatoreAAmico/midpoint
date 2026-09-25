@@ -666,7 +666,40 @@ ok('session encoded into URL hash', url.includes('#') && url.length>60);
 const p2 = await ctx.newPage();
 await p2.goto(url, {waitUntil:'networkidle'});
 await p2.waitForTimeout(400);
-ok('shared link restores both people', await p2.locator('.person').count()===2);
+ok('shared link restores both people', await p2.locator('.person').count()===2,
+   `count=${await p2.locator('.person').count()}`);
+/* Sal sent a link before tapping Go live. That link was location.href -- his
+   own rows in the hash, no session code -- so the other phone restored his
+   located row, treated it as itself, never offered to locate, and was not
+   joined to anything. A link from a device that has never been the author of
+   the snapshot must leave you a row of your own. */
+{
+  const foreign = await browser.newContext({viewport:{width:390,height:844},
+    isMobile:true, hasTouch:true});
+  await stubFonts(foreign);
+  await foreign.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await foreign.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  const pf = await foreign.newPage();
+  await pf.goto(url, {waitUntil:'networkidle'});     // fresh device, empty storage
+  await pf.waitForTimeout(400);
+  ok("someone else's plan does not steal their first row as you",
+     await pf.locator('.person.me').count() === 1,
+     `rows=${await pf.locator('.person').count()} me=${await pf.locator('.person.me').count()}`);
+  const mineLoc = await pf.locator('.person.me').locator('.lc').inputValue();
+  ok('and the row that is yours is empty, ready to locate',
+     mineLoc === '', `got "${mineLoc}"`);
+  ok('their people are still all shown',
+     await pf.locator('.person').count() === 3,
+     String(await pf.locator('.person').count()));
+  ok('and it says plainly that this is not a live session',
+     /not a live session/i.test(await pf.locator('#log').textContent()),
+     await pf.locator('#log').textContent());
+  await foreign.close();
+}
+
 ok('shared link restores names',
    (await p2.locator('.person').nth(1).locator('.nm').inputValue())==='Dana');
 ok('shared link restores coordinates (no re-geocoding needed)', calls.nominatim===2,

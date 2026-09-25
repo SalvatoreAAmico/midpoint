@@ -682,6 +682,35 @@ ok('leaving clears the code from the URL', !p2.url().includes('?s='));
   db.sessions.get('abc1234567').people = db.sessions.get('abc1234567').people.filter(p=>p.id!=='p-denied');
 }
 
+/* ---- an invite link is always something you can actually join ------------
+   Tapped before Go live, Copy invite link used to hand over location.href: the
+   sender's own rows in the hash and no session code. The other phone opened a
+   link joined to nothing. */
+{
+  const host = await newDevice();
+  const ph = await host.newPage();
+  await ph.addInitScript(() => {
+    window.__shared = null;
+    // Headless Chromium has neither a share sheet nor a real clipboard.
+    Object.defineProperty(navigator, 'share', { value: async o => { window.__shared = o.url; } });
+  });
+  await ph.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await ph.waitForTimeout(300);
+
+  ok('sharing before going live is not offering a dead link',
+     await ph.locator('#share').isVisible());
+  await ph.locator('#share').click();
+  await ph.waitForTimeout(2500);          // locate, create, then share
+
+  const shared = await ph.evaluate(() => window.__shared);
+  ok('the invite carries a session code', /\?s=[a-z0-9]{6,}/.test(shared || ''), String(shared));
+  ok('and not a snapshot of the sender in the hash',
+     !(shared || '').includes('#'), String(shared));
+  ok('tapping it started the session, so there is something to join',
+     await ph.locator('#endLive').isVisible());
+  await host.close();
+}
+
 // ---- tap the code to copy it -------------------------------------------
 {
   // Headless Chromium has no real clipboard permission, so capture the write.
