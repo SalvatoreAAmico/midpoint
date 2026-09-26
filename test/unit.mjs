@@ -278,5 +278,32 @@ ok('every catalogue tag compiles to a filter',
   ok('nothing at all returns nothing', m.placeName({}, '')==='');
 }
 
+/* ---- every colour is a token -------------------------------------------
+   Light mode is one block that restates the palette. That only works while no
+   rule carries a raw colour of its own: a single hardcoded hex is invisible in
+   dark mode and then glares in light mode, which is the hardest kind of visual
+   bug to notice. Checked here rather than by eye. */
+{
+  const css = fs.readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const root = css.slice(0, css.indexOf('}') + 1);
+  const rest = css.slice(css.indexOf('}') + 1);
+
+  // Strip comments, then ID selectors (#addPerson is not a colour).
+  const clean = rest.replace(/\/\*[\s\S]*?\*\//g, '')
+                    .replace(/#[A-Za-z][\w-]*/g, '');
+  const raw = clean.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
+  ok('no rule outside :root carries a raw hex colour', raw.length === 0, raw.join(' '));
+
+  // rgba(0,0,0,...) shadows are fine: a shadow is black in both themes.
+  const rgba = (clean.match(/rgba?\([^)]*\)/g) || [])
+                 .filter(v => !/^rgba?\(0,\s*0,\s*0/.test(v));
+  ok('no rule outside :root carries a raw rgb colour', rgba.length === 0, rgba.join(' '));
+
+  ok(':root defines the inset-surface tokens', /--field:/.test(root) && /--field-active:/.test(root));
+  ok(':root defines the state-border tokens',
+     ['--accent-line:', '--good-line:', '--warn-line:'].every(t => root.includes(t)));
+  ok(':root defines the map-surface tokens', /--map-bg:/.test(root) && /--pin-ring:/.test(root));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);
