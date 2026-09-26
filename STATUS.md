@@ -22,14 +22,17 @@ one appear on the other, both directions.
 no accounts, 12-hour expiry, database locked down so the public key can read
 nothing without the session code.
 
-**254 assertions** across four suites: unit, browser UI, live sessions against
-a mocked Supabase, and the schema against a real Postgres.
+**Both database updates are run** (fix-002 and fix-003). Live sessions share one
+search: whoever searches first, everyone sees that list, and a thumbs-up from
+anyone pins a spot to a Shortlist on every phone.
 
-## Waiting on Sal — about 10 minutes in total
+**259 assertions** across five suites: unit, browser UI, live sessions against a
+mocked Supabase, the schema against a real Postgres, and a check that the
+migration files and `schema.sql` have not drifted apart. `bash test/pg-up.sh`
+brings up the Postgres the last two need.
 
-- [ ] Run `supabase/fix-002-participant-label.sql` in the Supabase SQL editor.
-      Without it other people see your pin but not where you are. The app works
-      either way and says so when the update is missing.
+## Waiting on Sal
+
 - [ ] Put a real email address in `PRIVACY.md`, `TERMS.md`, `SECURITY.md`.
       They are unpublishable with the placeholder.
 - [ ] Pick a licence. Recommendation: MIT. Currently all rights reserved by
@@ -42,7 +45,8 @@ a mocked Supabase, and the schema against a real Postgres.
 1. **Light mode.** Asked for once, never built; the most visible change left.
 2. **Decision log.** Fifteen architectural decisions live only in commit
    messages.
-3. **Flaky live test.** Real 4-second waits; should wait on conditions.
+3. **Flaky live test.** Real 4-second waits; should wait on conditions. The
+   live suite now takes over a minute of pure sleeping.
 4. Parking near the chosen spot · transit times (needs a self-hosted router) ·
    recurring hangouts.
 

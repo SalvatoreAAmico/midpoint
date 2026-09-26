@@ -8,17 +8,13 @@ rather than documents and are marked as such.
 
 ## Right now
 
-- [ ] **Run `supabase/fix-003-shared-results.sql`.** Without it, each phone
-      searches separately, so two people can vote on different lists. With it,
-      one search serves the session and a thumbs-up pins a spot to the top on
-      everyone's phone. Verified against a real Postgres.
-
-
-- [ ] **Run `supabase/fix-002-participant-label.sql`** in the Supabase SQL
-      editor. Without it, live sessions show everyone's pin but not where they
-      are, and a person's own typed location looks lost on reload. Verified
-      against a real Postgres from both a fresh install and the existing
-      schema; sessions already running keep working.
+- [x] ~~Run `supabase/fix-002-participant-label.sql`.~~ Done.
+- [x] ~~Run `supabase/fix-003-shared-results.sql`.~~ Done. Verified afterwards
+      that applying it to a pre-003 database gives a database identical to a
+      fresh install, and that all 27 schema assertions pass against it.
+- [ ] **Use it for one real meetup.** The only open question that matters. Every
+      bug worth fixing in the last few rounds came from you and a friend holding
+      two phones, not from building.
 
 ## Before anyone else uses this
 
