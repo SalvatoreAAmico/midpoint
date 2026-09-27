@@ -200,8 +200,16 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
   await pl.goto('http://localhost:8099/', {waitUntil:'networkidle'});
   ok('a phone set to light gets the light palette', await bgOf(pl) === LIGHT, await bgOf(pl));
   ok('and the status bar colour follows it', await metaOf(pl) === LIGHT, await metaOf(pl));
-  ok('the control says it is following the phone',
-     (await pl.locator('#theme').textContent()).trim() === 'Auto');
+  const choice = pg => pg.locator('#theme').getAttribute('data-choice');
+  ok('the control says it is following the phone', await choice(pl) === 'auto');
+  ok('and it is drawn, not spelled out',
+     await pl.locator('#theme svg').count() === 1);
+  ok('with a label a screen reader can read',
+     /following your phone/i.test(await pl.locator('#theme').getAttribute('aria-label')),
+     await pl.locator('#theme').getAttribute('aria-label'));
+  ok('and a tap target that meets the 44px guideline',
+     await pl.locator('#theme').boundingBox().then(b => b.width >= 44 && b.height >= 44),
+     JSON.stringify(await pl.locator('#theme').boundingBox()));
 
   const cd = await mk('dark'); const pd = await cd.newPage();
   await pd.goto('http://localhost:8099/', {waitUntil:'networkidle'});
@@ -210,20 +218,23 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
 
   // Auto -> Light -> Dark -> Auto
   await pl.locator('#theme').click(); await pl.waitForTimeout(120);
-  ok('one tap forces light', (await pl.locator('#theme').textContent()).trim() === 'Light');
+  ok('one tap forces light', await choice(pl) === 'light');
   await pl.locator('#theme').click(); await pl.waitForTimeout(120);
-  ok('two taps force dark', (await pl.locator('#theme').textContent()).trim() === 'Dark');
+  ok('two taps force dark', await choice(pl) === 'dark');
   ok('chosen dark beats a phone set to light', await bgOf(pl) === DARK, await bgOf(pl));
   ok('and the status bar goes dark with it', await metaOf(pl) === DARK, await metaOf(pl));
 
   await pl.reload({waitUntil:'networkidle'});
   ok('the choice survives a reload', await bgOf(pl) === DARK, await bgOf(pl));
-  ok('and the control still says so',
-     (await pl.locator('#theme').textContent()).trim() === 'Dark');
+  ok('and the control still says so', await choice(pl) === 'dark');
 
   await pl.locator('#theme').click(); await pl.waitForTimeout(120);
-  ok('a third tap hands it back to the phone',
-     (await pl.locator('#theme').textContent()).trim() === 'Auto');
+  ok('a third tap hands it back to the phone', await choice(pl) === 'auto');
+  ok('each state has its own glyph', await pl.evaluate(async () => {
+    const b = document.querySelector('#theme'), seen = new Set();
+    for (let i = 0; i < 3; i++) { seen.add(b.innerHTML); b.click(); await new Promise(r=>setTimeout(r,20)); }
+    return seen.size === 3;
+  }));
   ok('and the phone wins again', await bgOf(pl) === LIGHT, await bgOf(pl));
 
   // the reverse guard: choosing light on a dark phone

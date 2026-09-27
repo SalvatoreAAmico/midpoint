@@ -283,6 +283,17 @@ function suggestGroupName(people) {
    than a switch, because a two-state switch cannot express "follow the phone".
 */
 const THEMES = ['auto', 'light', 'dark'];
+
+/* Drawn in the mark's language -- stroke, round caps, no fill except where a
+   fill carries meaning. The half-filled circle is the established glyph for
+   "follow the system"; a sun or a moon alone cannot say it, which is the whole
+   reason a three-state control needs three symbols rather than a switch. */
+const THEME_ICON = {
+  light: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2'
+       + 'M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/>',
+  dark:  '<path d="M20.2 14.6A8.6 8.6 0 1 1 9.4 3.8a6.7 6.7 0 0 0 10.8 10.8Z"/>',
+  auto:  '<circle cx="12" cy="12" r="8.6"/><path d="M12 3.4a8.6 8.6 0 0 0 0 17.2Z" fill="currentColor" stroke="none"/>'
+};
 const savedTheme = () => {
   try { const v = localStorage.getItem(THEME_KEY); return THEMES.includes(v) ? v : 'auto'; }
   catch { return 'auto'; }
@@ -295,7 +306,12 @@ function applyTheme(t) {
 
   const btn = $('#theme');
   if (btn) {
-    btn.textContent = t === 'auto' ? 'Auto' : t === 'light' ? 'Light' : 'Dark';
+    /* The choice lives in an attribute rather than the label, because the
+       label is now a picture. */
+    btn.dataset.choice = t;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true">${THEME_ICON[t]}</svg>`;
     btn.setAttribute('aria-label', t === 'auto'
       ? 'Appearance: following your phone. Tap to force light.'
       : `Appearance: always ${t}. Tap to change.`);

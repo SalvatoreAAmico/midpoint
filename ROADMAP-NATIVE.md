@@ -54,6 +54,16 @@ check the third section: several things that *feel* native-only aren't.
 - [ ] **Better suggestions, fairness tuning, filters.** All algorithm work —
       platform-independent, and the most valuable work available.
 
+- [x] ~~**Light and dark mode.**~~ Shipped on the web, following the phone's
+      Appearance setting with an override. **Native note:** in an iOS app the
+      override belongs in Settings, not in the header — and it is worth
+      considering not shipping one at all. iOS has offered a system-wide
+      Appearance switch since iOS 13, so a per-app override is redundant for
+      almost everyone; most of Apple's own apps do not have one. Native gets
+      the following behaviour free through semantic colours. The web header
+      control exists because there is no settings screen to put it in, and
+      because forcing a theme is genuinely useful while testing.
+
 ## 3b. Known gaps, not native-related
 
 - [ ] **Transit times.** No free transit-routing API worth using; needs a
