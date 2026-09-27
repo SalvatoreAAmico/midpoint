@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body>
 <div id="app">
@@ -21,7 +21,10 @@
     <div class="grabber"></div>
     <div id="trouble" hidden></div>
 
-    <h1><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><g stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 L18 24 L6 36"/><path d="M42 12 L30 24 L42 36"/></g></svg></span>Midpoint</h1>
+    <div class="headrow">
+      <h1><span class="logo" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><g stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 L18 24 L6 36"/><path d="M42 12 L30 24 L42 36"/></g></svg></span>Midpoint</h1>
+      <button id="theme" class="mini" aria-live="polite">Auto</button>
+    </div>
     <p class="tagline">Somewhere that works for everyone.</p>
 
     <div id="liveBar" hidden>
@@ -113,8 +116,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="config.js?v=26"></script>
-<script src="sync.js?v=26"></script>
-<script src="app.js?v=26"></script>
+<script src="config.js?v=27"></script>
+<script src="sync.js?v=27"></script>
+<script src="app.js?v=27"></script>
 </body>
 </html>

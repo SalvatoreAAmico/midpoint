@@ -278,31 +278,75 @@ ok('every catalogue tag compiles to a filter',
   ok('nothing at all returns nothing', m.placeName({}, '')==='');
 }
 
-/* ---- every colour is a token -------------------------------------------
-   Light mode is one block that restates the palette. That only works while no
-   rule carries a raw colour of its own: a single hardcoded hex is invisible in
-   dark mode and then glares in light mode, which is the hardest kind of visual
-   bug to notice. Checked here rather than by eye. */
+/* ---- the palette ---------------------------------------------------------
+   Light mode is two blocks restating the same tokens. That only works while
+   no rule carries a colour of its own, and while the two blocks agree. Both
+   are invisible to the eye in the theme you happen to be looking at, so they
+   are checked here instead. */
 {
   const css = fs.readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
-  const root = css.slice(0, css.indexOf('}') + 1);
-  const rest = css.slice(css.indexOf('}') + 1);
+  const nc = css.replace(/\/\*[\s\S]*?\*\//g, '');          // no comments
 
-  // Strip comments, then ID selectors (#addPerson is not a colour).
-  const clean = rest.replace(/\/\*[\s\S]*?\*\//g, '')
-                    .replace(/#[A-Za-z][\w-]*/g, '');
-  const raw = clean.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
-  ok('no rule outside :root carries a raw hex colour', raw.length === 0, raw.join(' '));
+  /* A palette block is any rule selecting :root. Strip them all, then nothing
+     coloured may remain. */
+  const paletteRe = /:root[^{]*\{([^}]*)\}/g;
+  const palettes = [...nc.matchAll(paletteRe)];
+  const stripped = nc.replace(paletteRe, '').replace(/#[A-Za-z][\w-]*/g, '');
 
-  // rgba(0,0,0,...) shadows are fine: a shadow is black in both themes.
-  const rgba = (clean.match(/rgba?\([^)]*\)/g) || [])
+  const raw = stripped.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
+  ok('no rule outside a :root palette carries a raw hex colour', raw.length === 0, raw.join(' '));
+  const rgba = (stripped.match(/rgba?\([^)]*\)/g) || [])
                  .filter(v => !/^rgba?\(0,\s*0,\s*0/.test(v));
-  ok('no rule outside :root carries a raw rgb colour', rgba.length === 0, rgba.join(' '));
+  ok('no rule outside a :root palette carries a raw rgb colour', rgba.length === 0, rgba.join(' '));
 
-  ok(':root defines the inset-surface tokens', /--field:/.test(root) && /--field-active:/.test(root));
-  ok(':root defines the state-border tokens',
-     ['--accent-line:', '--good-line:', '--warn-line:'].every(t => root.includes(t)));
-  ok(':root defines the map-surface tokens', /--map-bg:/.test(root) && /--pin-ring:/.test(root));
+  ok('there are three palette blocks: dark, light-by-phone, light-by-choice',
+     palettes.length === 3, String(palettes.length));
+
+  const decls = t => t.split(';').map(x => x.trim()).filter(Boolean).sort().join(';');
+  const [dark, byPhone, byChoice] = palettes.map(m => decls(m[1]));
+  ok('the two light blocks are identical, so neither can drift',
+     byPhone === byChoice);
+
+  const names = t => new Set(t.split(';').map(d => d.split(':')[0].trim()).filter(n => n.startsWith('--')));
+  const dn = names(dark), ln = names(byPhone);
+  const missing = [...dn].filter(n => !ln.has(n) && n !== '--r' && n !== '--safe-b');
+  ok('light restates every colour token dark defines', missing.length === 0, missing.join(' '));
+
+  /* Contrast. The brief was "easy on eyes"; this is the only part of that
+     which can be measured rather than argued about. */
+  const val = (block, name) => {
+    const m = block.match(new RegExp('(?:^|;)\\s*' + name + '\\s*:\\s*([^;]+)'));
+    return m ? m[1].trim() : null;
+  };
+  const lum = h => {
+    const n = h.replace('#','');
+    const p = [0,2,4].map(i => parseInt(n.slice(i,i+2),16)/255)
+      .map(c => c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4));
+    return 0.2126*p[0] + 0.7152*p[1] + 0.0722*p[2];
+  };
+  const ratio = (a,b) => { const x=lum(a), y=lum(b), hi=Math.max(x,y), lo=Math.min(x,y);
+                           return (hi+0.05)/(lo+0.05); };
+
+  for (const [label, block] of [['dark', dark], ['light', byPhone]]) {
+    const c = n => val(block, n);
+    const checks = [
+      ['body text on the sheet',        c('--ink'),        c('--panel'), 4.5],
+      ['body text on the page',         c('--ink'),        c('--bg'),    4.5],
+      ['text you type into a field',    c('--ink'),        c('--field'), 4.5],
+      ['secondary text',                c('--muted'),      c('--panel'), 4.5],
+      ['faint text',                    c('--dim'),        c('--panel'), 3.0],
+      ['label on the primary button',   c('--accent-ink'), c('--accent'),4.5],
+      ['accent text on the sheet',      c('--accent'),     c('--panel'), 4.5],
+      ['accent text in a pill',         c('--accent'),     c('--field'), 4.5],
+      ['warning text in a pill',        c('--warn'),       c('--field'), 4.5],
+      ['error text on the sheet',       c('--bad'),        c('--panel'), 4.5],
+    ];
+    for (const [what, fg, bg, need] of checks) {
+      const r = fg && bg ? ratio(fg, bg) : 0;
+      ok(`${label}: ${what} is legible`, r >= need,
+         `${fg} on ${bg} = ${r.toFixed(2)}, need ${need}`);
+    }
+  }
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

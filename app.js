@@ -234,6 +234,7 @@ const NAME_KEY = 'midpoint.name';
    whoever made it; if this device has never been that id, the link is someone
    else's plan and none of the rows in it is you. */
 const MINE_KEY = 'midpoint.mine';
+const THEME_KEY = 'midpoint.theme';
 const GROUPS_KEY = 'midpoint.groups';
 const MAX_GROUPS = 12;
 
@@ -274,6 +275,58 @@ function suggestGroupName(people) {
   if (names.length <= 3) return names.join(', ');
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
+/* ---------------------------------------------------------------- appearance
+   The phone already knows whether you want light or dark, and switches at
+   sunset. Following it is what makes an app feel like it belongs on the device,
+   so "auto" is the default and the override exists only for the times you want
+   to force one -- checking a change in daylight, mostly. Three states rather
+   than a switch, because a two-state switch cannot express "follow the phone".
+*/
+const THEMES = ['auto', 'light', 'dark'];
+const savedTheme = () => {
+  try { const v = localStorage.getItem(THEME_KEY); return THEMES.includes(v) ? v : 'auto'; }
+  catch { return 'auto'; }
+};
+
+function applyTheme(t) {
+  const root = document.documentElement;
+  if (t === 'auto') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', t);
+
+  const btn = $('#theme');
+  if (btn) {
+    btn.textContent = t === 'auto' ? 'Auto' : t === 'light' ? 'Light' : 'Dark';
+    btn.setAttribute('aria-label', t === 'auto'
+      ? 'Appearance: following your phone. Tap to force light.'
+      : `Appearance: always ${t}. Tap to change.`);
+  }
+  /* The status bar and the browser's own chrome read this, so leaving it at the
+     dark value put a black bar above a white app. Take the colour the page has
+     actually resolved to rather than guessing it twice. */
+  const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta && bg) meta.setAttribute('content', bg);
+}
+
+function wireTheme() {
+  let t = savedTheme();
+  applyTheme(t);
+  $('#theme')?.addEventListener('click', () => {
+    t = THEMES[(THEMES.indexOf(t) + 1) % THEMES.length];
+    try { localStorage.setItem(THEME_KEY, t); } catch {}
+    applyTheme(t);
+    /* Leaflet caches nothing about our colours, but the pins are ours and are
+       drawn with inline styles, so they need redrawing to pick up the new ring
+       and the recoloured first-person dot. */
+    drawMap();
+  });
+  /* Follow the phone while it changes under us -- at sunset, or when someone
+     flips the setting in Control Centre with the app still open. */
+  matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', () => {
+    if (savedTheme() === 'auto') { applyTheme('auto'); drawMap(); }
+  });
+}
+
 const savedName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
 const ownIds = () => {
   try { const v = JSON.parse(localStorage.getItem(MINE_KEY) || '[]');
@@ -1780,6 +1833,7 @@ function refresh() {
 }
 
 function boot() {
+  wireTheme();          // before the first paint, so nothing flashes dark
   initMap();
 
   const restored = location.hash.length > 1 && decodeState(location.hash.slice(1));

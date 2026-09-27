@@ -172,6 +172,67 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
     .filter(sel => { const e=document.querySelector(sel);
       return e && e.hasAttribute('hidden') && getComputedStyle(e).display !== 'none'; }).join(',')));
 
+/* ---- appearance follows the phone, and can be overridden ----------------
+   Three states, because a two-state switch cannot say "follow the phone". The
+   thing most likely to break silently is the :not([data-theme="dark"]) guard:
+   without it a phone set to light would drag the app light even when someone
+   has explicitly chosen dark. */
+{
+  const bgOf = pg => pg.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--bg').trim().toUpperCase());
+  const metaOf = pg => pg.evaluate(() =>
+    document.querySelector('meta[name="theme-color"]')?.content?.toUpperCase());
+  const DARK = '#0F1211', LIGHT = '#F7F9F6';
+
+  const mk = async scheme => {
+    const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,
+      hasTouch:true, colorScheme: scheme});
+    await stubFonts(c);
+    await c.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+      r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+        body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+    await c.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+      body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+    return c;
+  };
+
+  const cl = await mk('light'); const pl = await cl.newPage();
+  await pl.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  ok('a phone set to light gets the light palette', await bgOf(pl) === LIGHT, await bgOf(pl));
+  ok('and the status bar colour follows it', await metaOf(pl) === LIGHT, await metaOf(pl));
+  ok('the control says it is following the phone',
+     (await pl.locator('#theme').textContent()).trim() === 'Auto');
+
+  const cd = await mk('dark'); const pd = await cd.newPage();
+  await pd.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  ok('a phone set to dark gets the dark palette', await bgOf(pd) === DARK, await bgOf(pd));
+  ok('and the status bar colour follows that too', await metaOf(pd) === DARK, await metaOf(pd));
+
+  // Auto -> Light -> Dark -> Auto
+  await pl.locator('#theme').click(); await pl.waitForTimeout(120);
+  ok('one tap forces light', (await pl.locator('#theme').textContent()).trim() === 'Light');
+  await pl.locator('#theme').click(); await pl.waitForTimeout(120);
+  ok('two taps force dark', (await pl.locator('#theme').textContent()).trim() === 'Dark');
+  ok('chosen dark beats a phone set to light', await bgOf(pl) === DARK, await bgOf(pl));
+  ok('and the status bar goes dark with it', await metaOf(pl) === DARK, await metaOf(pl));
+
+  await pl.reload({waitUntil:'networkidle'});
+  ok('the choice survives a reload', await bgOf(pl) === DARK, await bgOf(pl));
+  ok('and the control still says so',
+     (await pl.locator('#theme').textContent()).trim() === 'Dark');
+
+  await pl.locator('#theme').click(); await pl.waitForTimeout(120);
+  ok('a third tap hands it back to the phone',
+     (await pl.locator('#theme').textContent()).trim() === 'Auto');
+  ok('and the phone wins again', await bgOf(pl) === LIGHT, await bgOf(pl));
+
+  // the reverse guard: choosing light on a dark phone
+  await pd.locator('#theme').click(); await pd.waitForTimeout(120);
+  ok('chosen light beats a phone set to dark', await bgOf(pd) === LIGHT, await bgOf(pd));
+
+  await cl.close(); await cd.close();
+}
+
 // ---- the located row always settles on a real label ---------------------
 {
   const odd = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,

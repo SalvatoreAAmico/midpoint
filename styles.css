@@ -25,7 +25,54 @@
   --attrib-bg:rgba(15,17,21,.8); --attrib-ink:#6b7487; --attrib-link:#8fa3bf;
 
   --r:14px; --safe-b:env(safe-area-inset-bottom,0px);
+  color-scheme: dark light;
 }
+/* ---------- light ----------
+   Two blocks, not one: the media query follows the phone's Appearance setting,
+   and the attribute selector lets someone override it in the app. They carry
+   identical declarations, and a test asserts that byte for byte -- the failure
+   mode otherwise is a value fixed in one and forgotten in the other, visible
+   only to whichever users are on the branch nobody checked.
+   The :not() guard is what makes "Dark" win over a phone set to light. */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+  /* Paper, not screen: an off-white with the faintest green in it, because a
+     pure #fff panel on a pure #fff ground has no depth and glares outdoors.
+     The accent darkens to #0E7449 -- the mint that glows on near-black washes
+     out on white. Every pair here is contrast-checked in test/unit.mjs. */
+  --bg:#F7F9F6; --panel:#FFFFFF; --panel-2:#F1F5F0; --line:#DCE4DC;
+  --ink:#12201A; --muted:#5A6B60; --dim:#87958B;
+  --accent:#0E7449; --accent-ink:#FFFFFF;
+  --good:#0E7449; --warn:#8C5A00; --bad:#B3261E;
+  /* Inset surfaces go DARKER than the panel here, where in dark mode they go
+     darker than the panel too -- recessed either way up. */
+  --field:#EEF2EC; --field-active:#E4EAE2;
+  --accent-line:#A9D3BD; --good-line:#A9D3BD; --warn-line:#E0CB96;
+  --note-bg:#F0F4F8; --good-bg:#E8F5EE; --bad-bg:#FDECEA;
+  --warn-ink:#3A2A00;
+  --map-bg:#E8EDE8; --pin-ring:#FFFFFF;
+  --attrib-bg:rgba(255,255,255,.85); --attrib-ink:#5A6B60; --attrib-link:#0E7449;
+  }
+}
+:root[data-theme="light"]{
+  /* Paper, not screen: an off-white with the faintest green in it, because a
+     pure #fff panel on a pure #fff ground has no depth and glares outdoors.
+     The accent darkens to #0E7449 -- the mint that glows on near-black washes
+     out on white. Every pair here is contrast-checked in test/unit.mjs. */
+  --bg:#F7F9F6; --panel:#FFFFFF; --panel-2:#F1F5F0; --line:#DCE4DC;
+  --ink:#12201A; --muted:#5A6B60; --dim:#87958B;
+  --accent:#0E7449; --accent-ink:#FFFFFF;
+  --good:#0E7449; --warn:#8C5A00; --bad:#B3261E;
+  /* Inset surfaces go DARKER than the panel here, where in dark mode they go
+     darker than the panel too -- recessed either way up. */
+  --field:#EEF2EC; --field-active:#E4EAE2;
+  --accent-line:#A9D3BD; --good-line:#A9D3BD; --warn-line:#E0CB96;
+  --note-bg:#F0F4F8; --good-bg:#E8F5EE; --bad-bg:#FDECEA;
+  --warn-ink:#3A2A00;
+  --map-bg:#E8EDE8; --pin-ring:#FFFFFF;
+  --attrib-bg:rgba(255,255,255,.85); --attrib-ink:#5A6B60; --attrib-link:#0E7449;
+}
+
 /* A `display` rule beats the browser's default [hidden] styling, which
    silently breaks anything hidden by attribute. Assert it once. */
 [hidden]{display:none!important}
@@ -53,6 +100,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 }
 .grabber{width:38px;height:4px;border-radius:99px;background:var(--line);margin:9px auto 4px}
 
+/* The appearance control sits with the wordmark rather than in a settings
+   screen there is no room for: it is one tap, and people look for it here. */
+.headrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.headrow #theme{flex:0 0 auto;min-width:64px;text-align:center}
 h1{display:flex;align-items:center;gap:9px;font-size:19px;margin:6px 0 2px;
    letter-spacing:-.2px}
 .logo{display:inline-flex;width:19px;flex:0 0 auto;color:var(--accent)}
