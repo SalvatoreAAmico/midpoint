@@ -20,7 +20,7 @@ const PLACES = {
 };
 // name, lat, lon, tags -> and the drive time we want OSRM to report per person
 const VENUES = [
-  ['Fair Grounds',   41.8516,-87.6352, {amenity:'cafe', opening_hours:'24/7'},                 [600, 600]],
+  ['Fair Grounds',   41.8516,-87.6352, {amenity:'cafe', opening_hours:'24/7', 'addr:city':'Leominster'}, [600, 600]],
   ['Lopsided Latte', 41.9080,-87.6790, {amenity:'cafe', opening_hours:'24/7'},                 [120,1500]],
   ['Shuttered Bean', 41.8500,-87.6300, {amenity:'cafe', opening_hours:'Mo-Fr 08:00-18:00'},    [640, 660]],
   ['Mystery Mug',    41.8530,-87.6400, {amenity:'cafe'},                                       [660, 640]],
@@ -598,6 +598,21 @@ ok("host's vote reaches the other device within one poll cycle",
   await p2.locator('.venue', {hasText: shunned}).first().locator('.vote.up').click();  // undo
   await page.locator('.venue', {hasText: shunned}).first().locator('.vote.down').click();
   await page.waitForTimeout(400);
+}
+
+/* ---- the town has to survive the trip to the other phone ----------------
+   Shared results are re-encoded into a payload, so a field that is not listed
+   there is silently dropped -- the searching phone shows the town and the
+   other one does not, which is the kind of difference nobody reports as a bug
+   because each person assumes they are seeing the same thing. */
+{
+  const withTown = p2.locator('.venue', {hasText:'Fair Grounds'}).first();
+  ok('the town reaches the phone that did not search',
+     await withTown.locator('.vtown').count() === 1,
+     await withTown.locator('.vname').textContent());
+  ok('and it is the same town',
+     (await withTown.locator('.vtown').textContent()).includes('Leominster'),
+     await withTown.locator('.vtown').textContent());
 }
 
 /* ---- a reload picks the session's search back up ------------------------

@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="styles.css?v=34">
 </head>
 <body>
 <div id="app">
@@ -64,10 +64,14 @@
     <div class="chips" id="groups" hidden></div>
 
     <h2>What are you in the mood for</h2>
-    <input type="search" id="catSearch" placeholder="Search: pizza, hiking, bowling…"
+    <!-- The chips come first and the search box after them. Above, it read as
+         the only way in and people still missed it; below, it answers the
+         question the chips raise -- "none of these is what I want" -- which is
+         the moment anyone actually looks for a search box. -->
+    <div class="chips" id="cats"></div>
+    <input type="search" id="catSearch" placeholder="Search 40+ more: breakfast, sushi, mini golf…"
            autocomplete="off" autocorrect="off" spellcheck="false">
     <div id="catResults" hidden></div>
-    <div class="chips" id="cats"></div>
 
     <h2>Filters</h2>
     <div class="filters">
@@ -120,8 +124,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="config.js?v=33"></script>
-<script src="sync.js?v=33"></script>
-<script src="app.js?v=33"></script>
+<script src="config.js?v=34"></script>
+<script src="sync.js?v=34"></script>
+<script src="app.js?v=34"></script>
 </body>
 </html>

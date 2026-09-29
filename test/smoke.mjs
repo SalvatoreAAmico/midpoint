@@ -20,7 +20,7 @@ const PLACES = {
 };
 // name, lat, lon, tags -> and the drive time we want OSRM to report per person
 const VENUES = [
-  ['Fair Grounds',   41.8516,-87.6352, {amenity:'cafe', opening_hours:'24/7'},                 [600, 600]],
+  ['Fair Grounds',   41.8516,-87.6352, {amenity:'cafe', opening_hours:'24/7', 'addr:city':'Leominster'}, [600, 600]],
   ['Lopsided Latte', 41.9080,-87.6790, {amenity:'cafe', opening_hours:'24/7'},                 [120,1500]],
   ['Shuttered Bean', 41.8500,-87.6300, {amenity:'cafe', opening_hours:'Mo-Fr 08:00-18:00'},    [640, 660]],
   ['Mystery Mug',    41.8530,-87.6400, {amenity:'cafe'},                                       [660, 640]],
@@ -80,6 +80,9 @@ const page = await ctx.newPage();
 page.on('pageerror', e => errs.push('PAGEERROR: '+e.message));
 page.on('console', m => { if(m.type()==='error') errs.push('CONSOLE: '+m.text()); });
 
+/* The venue name now carries its town as a child span, so a test that wants
+   the name alone must read the text node rather than the whole element. */
+const venueName = loc => loc.locator('.vname').evaluate(e => e.childNodes[0].textContent.trim());
 let pass=0, fail=0;
 const ok=(n,c,extra='')=>{ c?(pass++,console.log('  ok   '+n)):(fail++,console.log('  FAIL '+n+(extra?'  | '+extra:''))); };
 
@@ -121,7 +124,7 @@ ok('overpass queried once', calls.overpass===1, `overpass=${calls.overpass}`);
 ok('OSRM matrix queried exactly once (not per-pair)', calls.osrm===1, `osrm=${calls.osrm}`);
 ok('results rendered', await page.locator('.venue').count()>0);
 
-const first = await page.locator('.venue').first().locator('.vname').textContent();
+const first = await venueName(page.locator('.venue').first());
 ok('fairest venue ranks #1, not the closest-to-one-person', first==='Fair Grounds', `got "${first}"`);
 
 const lop = page.locator('.venue', {hasText:'Lopsided Latte'});
@@ -519,8 +522,41 @@ await stubFonts(blocked);
   await shy.close();
 }
 
+/* ---- a name alone does not say where it is ------------------------------
+   "Pizza House" tells you nothing about whether it is near you. OSM's addr:*
+   keys carry the town where a mapper filled them in; it rides along in the
+   same request, so it costs nothing. Coverage is partial and there is no
+   honest fallback -- reverse geocoding each result would be one Nominatim
+   call per venue, which their policy forbids -- so it is shown where known
+   and absent where not, never guessed. */
+{
+  const card = page.locator('.venue', {hasText:'Fair Grounds'}).first();
+  ok('a venue with a town in OSM shows it beside the name',
+     (await card.locator('.vname').textContent()).includes('Leominster'),
+     await card.locator('.vname').textContent());
+  ok('and it reads as part of the name, not a separate column',
+     await card.locator('.vname .vtown').count() === 1);
+  ok('a venue with no town in OSM shows none rather than a guess',
+     await page.locator('.venue', {hasText:'Mystery Mug'}).first()
+       .locator('.vtown').count() === 0);
+  ok('the town is quieter than the name it qualifies',
+     await card.locator('.vtown').evaluate(e => {
+       const t = getComputedStyle(e), n = getComputedStyle(e.parentElement);
+       return Number(t.fontWeight) < Number(n.fontWeight);
+     }));
+}
+
 // ---- category search ----------------------------------------------------
 ok('search box present', await page.locator('#catSearch').count()===1);
+ok('the search box sits below the chips, where you look once none of them fit',
+   await page.evaluate(() => {
+     const chips = document.querySelector('#cats').getBoundingClientRect();
+     const box = document.querySelector('#catSearch').getBoundingClientRect();
+     return box.top >= chips.bottom - 1;
+   }));
+ok('and its placeholder says there is more than the chips show',
+   /40\+|more/i.test(await page.locator('#catSearch').getAttribute('placeholder')),
+   await page.locator('#catSearch').getAttribute('placeholder'));
 ok('no results panel before typing', await page.locator('#catResults').isHidden());
 
 await page.locator('#catSearch').fill('pizza');
@@ -744,7 +780,7 @@ ok('tapping away closes the list', await page.locator('#catResults').isHidden())
      await page.locator('#maps').count() === 0 && await page.locator('#mapsPref').count() === 0);
   ok('the sheet is closed until asked for', await page.locator('#mapsSheet').isHidden());
 
-  const name = await page.locator('.venue').first().locator('.vname').textContent();
+  const name = await venueName(page.locator('.venue').first());
   await page.locator('.venue').first().locator('.maplink').click();
   await page.waitForTimeout(250);
   ok('tapping Directions asks which app', await page.locator('#mapsSheet').isVisible());

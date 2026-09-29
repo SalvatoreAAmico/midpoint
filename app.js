@@ -752,6 +752,16 @@ async function fetchVenues(center, radiusM) {
           name: tags.name,
           kind: tags.amenity || tags.leisure || tags.tourism || tags.shop || '',
           lat, lon,
+          /* "Pizza House" tells you nothing about whether it is near you.
+             OSM's addr:* keys carry the town where a mapper filled them in,
+             which is free -- it arrives with the venue in the same request.
+             Coverage is partial and there is no honest fallback: reverse
+             geocoding every result would mean one Nominatim call per venue,
+             which their usage policy forbids and our rate limit could not
+             take. So the town is shown where it is known and simply absent
+             where it is not, rather than guessed. */
+          town: tags['addr:city'] || tags['addr:town'] || tags['addr:village']
+             || tags['addr:hamlet'] || tags['addr:suburb'] || '',
           hours: tags.opening_hours || '',
           price: priceLevel(tags),
           chain: isChain(tags, tags.name)
@@ -1567,7 +1577,7 @@ function shareResults(located) {
     estimated: state.estimated,
     travel: state.travel,
     venues: state.results.slice(0, MAX_VENUES).map(v => ({
-      key: v.key, name: v.name, kind: v.kind, lat: v.lat, lon: v.lon,
+      key: v.key, name: v.name, kind: v.kind, town: v.town, lat: v.lat, lon: v.lon,
       open: v.open, hours: v.hours, price: v.price, chain: v.chain,
       costs: v.costs.map(c => Math.round(c))
     }))
@@ -1726,7 +1736,9 @@ function renderResults(selectedKey) {
   if (win) {
     const b = document.createElement('div');
     b.className = 'winner';
-    b.innerHTML = `<b>${esc(win.name)}</b>`
+    /* The banner is the "go here" moment, so it wants the town more than the
+       list does -- the list is being scanned, this is being acted on. */
+    b.innerHTML = `<b>${esc(win.name)}${win.town ? ', ' + esc(win.town) : ''}</b>`
       + `<p>Everyone has voted. ${tally(win.key).up} in favour.</p>`
       + `<button class="maplink" data-venue="${esc(win.key)}">Directions ↗</button>`;
     host.appendChild(b);
@@ -1764,7 +1776,7 @@ function renderResults(selectedKey) {
     card.innerHTML = `
       <div class="vhead">
         <span class="rank">${i + 1}</span>
-        <span class="vname">${esc(v.name)}</span>
+        <span class="vname">${esc(v.name)}${v.town ? `<span class="vtown">, ${esc(v.town)}</span>` : ''}</span>
         <span class="vkind">${esc(v.kind.replace(/_/g, ' '))}</span>
       </div>
       <div class="vmeta">
