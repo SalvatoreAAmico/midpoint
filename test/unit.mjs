@@ -361,6 +361,17 @@ ok('every catalogue tag compiles to a filter',
   const ratio = (a,b) => { const x=lum(a), y=lum(b), hi=Math.max(x,y), lo=Math.min(x,y);
                            return (hi+0.05)/(lo+0.05); };
 
+  /* An input has to look like an input before anyone can read what is in it.
+     Neither the fill nor the border alone carries that -- a faint box with a
+     faint outline is still invisible -- so require one of them to separate
+     from the sheet by a visible margin. */
+  for (const [label, block] of [['dark', dark], ['light', byPhone]]) {
+    const c = n => val(block, n);
+    const sep = Math.max(ratio(c('--field'), c('--panel')), ratio(c('--line'), c('--panel')));
+    ok(`${label}: a text field is distinguishable from the sheet behind it`,
+       sep >= 1.4, `best of fill/border = ${sep.toFixed(2)}, need 1.40`);
+  }
+
   for (const [label, block] of [['dark', dark], ['light', byPhone]]) {
     const c = n => val(block, n);
     const checks = [
@@ -374,6 +385,11 @@ ok('every catalogue tag compiles to a filter',
       ['accent text in a pill',         c('--accent'),     c('--field'), 4.5],
       ['warning text in a pill',        c('--warn'),       c('--field'), 4.5],
       ['error text on the sheet',       c('--bad'),        c('--panel'), 4.5],
+      /* A placeholder is the only thing in an empty input. At 2.77:1 the
+         category search read as blank space on a bright screen and Sal could
+         not find it at all -- twice, while I insisted from a headless browser
+         that it was there. Placeholders are text and are held to text rules. */
+      ['placeholder text in a field',   c('--muted'),      c('--field'), 4.5],
     ];
     for (const [what, fg, bg, need] of checks) {
       const r = fg && bg ? ratio(fg, bg) : 0;

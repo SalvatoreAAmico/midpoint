@@ -4,7 +4,7 @@
    anything you type into or read a value from, and stays that whichever way up
    the palette is. Nothing below this block may contain a raw colour. */
 :root{
-  --bg:#0F1211; --panel:#171B18; --panel-2:#1E2320; --line:#2A322C;
+  --bg:#0F1211; --panel:#171B18; --panel-2:#1E2320; --line:#313A34;
   --ink:#E9EFEA; --muted:#9BA89F; --dim:#6E7A72;
   /* The brand green, at a value that reads on a dark ground. "Good" is the
      accent: a second green would be indistinguishable from it. */
@@ -40,13 +40,13 @@
      pure #fff panel on a pure #fff ground has no depth and glares outdoors.
      The accent darkens to #0E7449 -- the mint that glows on near-black washes
      out on white. Every pair here is contrast-checked in test/unit.mjs. */
-  --bg:#F7F9F6; --panel:#FFFFFF; --panel-2:#F1F5F0; --line:#DCE4DC;
+  --bg:#F7F9F6; --panel:#FFFFFF; --panel-2:#F1F5F0; --line:#C4D2C6;
   --ink:#12201A; --muted:#5A6B60; --dim:#87958B;
   --accent:#0E7449; --accent-ink:#FFFFFF;
   --good:#0E7449; --warn:#8C5A00; --bad:#B3261E;
   /* Inset surfaces go DARKER than the panel here, where in dark mode they go
      darker than the panel too -- recessed either way up. */
-  --field:#EEF2EC; --field-active:#E4EAE2;
+  --field:#E6ECE4; --field-active:#DCE4D8;
   --accent-line:#A9D3BD; --good-line:#A9D3BD; --warn-line:#E0CB96;
   --note-bg:#F0F4F8; --good-bg:#E8F5EE; --bad-bg:#FDECEA;
   --warn-ink:#3A2A00;
@@ -59,13 +59,13 @@
      pure #fff panel on a pure #fff ground has no depth and glares outdoors.
      The accent darkens to #0E7449 -- the mint that glows on near-black washes
      out on white. Every pair here is contrast-checked in test/unit.mjs. */
-  --bg:#F7F9F6; --panel:#FFFFFF; --panel-2:#F1F5F0; --line:#DCE4DC;
+  --bg:#F7F9F6; --panel:#FFFFFF; --panel-2:#F1F5F0; --line:#C4D2C6;
   --ink:#12201A; --muted:#5A6B60; --dim:#87958B;
   --accent:#0E7449; --accent-ink:#FFFFFF;
   --good:#0E7449; --warn:#8C5A00; --bad:#B3261E;
   /* Inset surfaces go DARKER than the panel here, where in dark mode they go
      darker than the panel too -- recessed either way up. */
-  --field:#EEF2EC; --field-active:#E4EAE2;
+  --field:#E6ECE4; --field-active:#DCE4D8;
   --accent-line:#A9D3BD; --good-line:#A9D3BD; --warn-line:#E0CB96;
   --note-bg:#F0F4F8; --good-bg:#E8F5EE; --bad-bg:#FDECEA;
   --warn-ink:#3A2A00;
@@ -139,7 +139,10 @@ input[type=text]{
   border-radius:9px;padding:9px 10px;font:inherit;outline:none;
 }
 input[type=text]:focus{border-color:var(--accent)}
-input::placeholder{color:var(--dim)}
+/* --dim came out at 2.77:1 on the light field -- a placeholder nobody can see
+   makes an empty input look like blank space, which is exactly how Sal lost
+   the category search. --muted clears 4.5:1 in both themes. */
+input::placeholder{color:var(--muted)}
 .loc-row{display:flex;gap:6px}
 .loc-row input{flex:1}
 .mini{
