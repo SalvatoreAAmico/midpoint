@@ -302,6 +302,42 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
   await c.close();
 }
 
+/* ---- the sheet must actually scroll ------------------------------------
+   Sal could not find the category search in either theme. #sheet is a column
+   flex item with overflow-y:auto and no min-height:0, which in WebKit means it
+   never shrinks below its content, the inner scroll never engages, and
+   everything past the fold is unreachable -- there is no page scroll to fall
+   back on because html and body are pinned to 100%. */
+{
+  const sheet = page.locator('#sheet');
+  const canScroll = await sheet.evaluate(e => e.scrollHeight > e.clientHeight + 40);
+  ok('the sheet has more content than fits, as it should', canScroll,
+     await sheet.evaluate(e => `scrollHeight=${e.scrollHeight} clientHeight=${e.clientHeight}`));
+  ok('and it is a scroll container rather than an overflowing block',
+     await sheet.evaluate(e => {
+       const s = getComputedStyle(e);
+       return s.overflowY === 'auto' && s.minHeight === '0px';
+     }),
+     await sheet.evaluate(e => { const s = getComputedStyle(e);
+       return `overflowY=${s.overflowY} minHeight=${s.minHeight}`; }));
+  ok('it does not grow past the window, which is what hides the bottom half',
+     await sheet.evaluate(e => e.clientHeight <= window.innerHeight + 1),
+     await sheet.evaluate(e => `clientHeight=${e.clientHeight} window=${window.innerHeight}`));
+
+  // scrolling it must actually reach the search box
+  await sheet.evaluate(e => { e.scrollTop = e.scrollHeight; });
+  await page.waitForTimeout(150);
+  ok('scrolling to the bottom reaches the category search',
+     await page.locator('#catSearch').evaluate(e => {
+       const r = e.getBoundingClientRect();
+       return r.top < window.innerHeight && r.bottom > 0;
+     }) || await page.locator('#catSearch').isVisible());
+
+  ok('the build number is shown, so a stale page can be spotted',
+     /build \d+/.test(await page.locator('#build').textContent()),
+     await page.locator('#build').textContent());
+}
+
 // ---- the located row always settles on a real label ---------------------
 {
   const odd = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,

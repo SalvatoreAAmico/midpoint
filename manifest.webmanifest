@@ -3,9 +3,9 @@
   "short_name": "Midpoint",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0f1115",
-  "theme_color": "#0f1115",
-  "description": "Add up to 4 people, pick an activity, get meetup spots ranked by fairness.",
+  "background_color": "#0F1211",
+  "theme_color": "#0F1211",
+  "description": "Add up to 8 people, pick an activity, get meetup spots ranked by how fair they are for everyone.",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]

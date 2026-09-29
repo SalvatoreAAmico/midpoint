@@ -1888,8 +1888,17 @@ function refresh() {
   syncURL();
 }
 
+/* One source of truth: the ?v= already on our own script tag. Bumping the
+   cache-buster updates what the footer says, with nothing to keep in step. */
+function buildId() {
+  const src = document.querySelector('script[src*="app.js"]')?.getAttribute('src') || '';
+  return (src.match(/[?&]v=(\d+)/) || [,'?'])[1];
+}
+
 function boot() {
   wireTheme();          // before the first paint, so nothing flashes dark
+  const b = $('#build');
+  if (b) b.textContent = `Midpoint · build ${buildId()}`;
   initMap();
 
   const restored = location.hash.length > 1 && decodeState(location.hash.slice(1));

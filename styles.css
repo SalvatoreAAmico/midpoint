@@ -92,7 +92,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 #app{display:flex;flex-direction:column;height:100dvh}
 #map{flex:0 0 38dvh;min-height:200px;background:var(--map-bg);z-index:0}
 #sheet{
-  flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  /* min-height:0 is load-bearing. A flex item defaults to min-height:auto,
+     which refuses to shrink below its content, so overflow-y:auto never
+     engages and everything past the fold becomes unreachable -- no inner
+     scroll, and no page scroll either because html/body are locked to 100%.
+     Chromium is forgiving about this; WebKit is not. */
+  flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   background:var(--panel);border-radius:18px 18px 0 0;
   margin-top:-18px;position:relative;z-index:400;
   box-shadow:0 -8px 30px rgba(0,0,0,.45);
@@ -188,6 +193,11 @@ select{
 
 /* ---------- results ---------- */
 #log{font-size:12.5px;color:var(--muted);margin-top:12px;min-height:18px}
+/* Which build am I looking at? Without this, "I don't see it" is unanswerable:
+   a phone can serve a cached page for days, and everything below is invisible
+   until someone knows they are three versions behind. */
+#build{margin-top:22px;text-align:center;font-size:11px;color:var(--dim);
+  letter-spacing:.04em}
 .venue{
   background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);
   padding:12px;margin-bottom:9px;
