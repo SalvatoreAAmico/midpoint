@@ -100,6 +100,40 @@ ok('the sport=* match compiles to a loose filter',
    m.tagFilter('sport~laser_tag|paintball'));
 // multi-word narrows rather than widens
 ok('"mini golf" finds games', ids('mini golf')[0]==='games', ids('mini golf').join());
+/* ---- meals ---------------------------------------------------------------
+   "Food" already carried lunch and dinner as synonyms, so the risk is the new
+   entries losing to it: typing "dinner" must offer Dinner first, not Food. */
+ok('typing breakfast offers Breakfast first', ids('breakfast')[0] === 'breakfast', ids('breakfast').join());
+ok('typing lunch offers Lunch first',         ids('lunch')[0]     === 'lunch',     ids('lunch').join());
+ok('typing dinner offers Dinner first',       ids('dinner')[0]    === 'dinner',    ids('dinner').join());
+ok('brunch still finds breakfast', ids('brunch').includes('breakfast'), ids('brunch').join());
+ok('supper finds dinner',          ids('supper').includes('dinner'),    ids('supper').join());
+
+{
+  const meal = id => m.CATALOG.find(c => c.id === id);
+  ok('each meal carries a time', ['breakfast','lunch','dinner'].every(id => /^\d\d:\d\d$/.test(meal(id).meal || '')),
+     ['breakfast','lunch','dinner'].map(id => id + '=' + meal(id).meal).join(' '));
+  ok('the times are in the right order',
+     meal('breakfast').meal < meal('lunch').meal && meal('lunch').meal < meal('dinner').meal);
+
+  /* Tags alone cannot tell lunch from dinner -- that is what the mealtime is
+     for -- but they should not be identical either, or the categories are
+     three names for one search. */
+  const t = id => meal(id).tags.join('|');
+  ok('the three meals do not share one tag set',
+     new Set(['breakfast','lunch','dinner'].map(t)).size === 3);
+  ok('breakfast reaches cafes and bakeries',
+     t('breakfast').includes('amenity=cafe') && t('breakfast').includes('shop=bakery'));
+  ok('lunch reaches delis and counters',
+     t('lunch').includes('shop=deli') && t('lunch').includes('amenity=fast_food'));
+  ok('dinner is sit-down, not fast food',
+     t('dinner').includes('amenity=restaurant') && !t('dinner').includes('fast_food'));
+  ok('every meal tag compiles to a real Overpass filter',
+     ['breakfast','lunch','dinner'].every(id =>
+       meal(id).tags.every(tag => m.tagFilter(tag).startsWith('['))),
+     ['breakfast','lunch','dinner'].flatMap(id => meal(id).tags.map(m.tagFilter)).join(' '));
+}
+
 ok('empty query returns nothing', m.searchCats('   ').length===0);
 ok('gibberish returns nothing', m.searchCats('zzzqqq').length===0);
 ok('results are capped at 8', m.searchCats('a').length<=8, String(m.searchCats('a').length));

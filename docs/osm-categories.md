@@ -31,6 +31,28 @@ returns nothing across a few real metros does not belong here.
 `coffee_shop`). Good for synonym matching — "sushi", "tacos", "curry" — but
 never rely on it alone; always pair with `amenity=restaurant`.
 
+### Breakfast, lunch, dinner — meals are times, not places
+
+OSM has no dependable "serves lunch" tag. `cuisine=breakfast|brunch` exists but
+is thinly used, and nothing at all marks a place as a dinner spot. Built from
+tags alone, **Dinner would return the same list as Food, and Lunch very nearly
+the same** — three names for one search.
+
+What actually separates them is the hour, and the app already filters by day and
+time. So each meal carries a mealtime, and selecting one fills in the time
+**only when no day has been chosen**, never overwriting a deliberate choice, and
+says in the log that it did. The tags then do the part tags can do — skew the
+results — rather than pretending to a precision the data does not have:
+
+| Category | Time | Tags | Skew |
+|---|---|---|---|
+| Breakfast | 08:30 | `amenity=cafe`, `shop=bakery`, `cuisine~breakfast\|brunch\|bagel\|donut\|pancake\|waffle\|diner\|crepe` | cafes and bakeries |
+| Lunch | 12:30 | `shop=deli`, `amenity=fast_food`, `cuisine~sandwich\|salad\|soup\|deli\|bagel\|noodle\|poke\|burrito` | counters and sandwiches |
+| Dinner | 19:00 | `amenity=restaurant` | sit-down; fast food deliberately excluded |
+
+The opening-hours filter does the rest: a bakery that shuts at 2pm drops out of
+a 7pm search on its own, without anyone having to tag it as "not dinner".
+
 ## 2. Coffee & bakery
 
 | Tag | Tier | Notes |

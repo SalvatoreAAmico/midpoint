@@ -244,6 +244,64 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
   await cl.close(); await cd.close();
 }
 
+/* ---- picking a meal picks a time ----------------------------------------
+   Dinner and Food return nearly the same places; what makes Dinner mean
+   anything is the hour. The rule that matters is the one that stops it being
+   annoying: it must never overwrite a day and time already chosen. */
+{
+  const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+  await stubFonts(c);
+  await c.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await c.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  const pm = await c.newPage();
+  await pm.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+
+  const pick = async name => {
+    await pm.locator('#catSearch').fill(name);
+    await pm.waitForTimeout(200);
+    await pm.locator('.cat-hit', {hasText:new RegExp(name,'i')}).first().click();
+    await pm.waitForTimeout(200);
+  };
+
+  ok('no day is set to begin with', await pm.locator('#whenDay').inputValue() === '');
+  await pick('Dinner');
+  ok('choosing Dinner sets the time to the evening',
+     await pm.locator('#whenTime').inputValue() === '19:00',
+     await pm.locator('#whenTime').inputValue());
+  ok('and sets a day, so the time actually applies',
+     /^[0-6]$/.test(await pm.locator('#whenDay').inputValue()),
+     await pm.locator('#whenDay').inputValue());
+  ok('and reveals the time control', await pm.locator('#whenTime').isVisible());
+  ok('and says what it did rather than doing it silently',
+     /change the day or time/i.test(await pm.locator('#log').textContent()),
+     await pm.locator('#log').textContent());
+
+  // an explicit choice must win
+  await pm.locator('#whenDay').selectOption('6');           // Saturday
+  await pm.locator('#whenTime').fill('14:00');
+  await pm.locator('#whenTime').dispatchEvent('change');
+  await pm.waitForTimeout(150);
+  await pick('Breakfast');
+  ok('a day you chose yourself is never overwritten',
+     await pm.locator('#whenDay').inputValue() === '6',
+     await pm.locator('#whenDay').inputValue());
+  ok('nor is the time you chose',
+     await pm.locator('#whenTime').inputValue() === '14:00',
+     await pm.locator('#whenTime').inputValue());
+
+  // a non-meal category leaves the time alone entirely
+  await pm.locator('#whenDay').selectOption('');
+  await pm.waitForTimeout(150);
+  await pick('Games');
+  ok('a category that is not a meal sets no time at all',
+     await pm.locator('#whenDay').inputValue() === '',
+     await pm.locator('#whenDay').inputValue());
+  await c.close();
+}
+
 // ---- the located row always settles on a real label ---------------------
 {
   const odd = await browser.newContext({viewport:{width:390,height:844}, isMobile:true,

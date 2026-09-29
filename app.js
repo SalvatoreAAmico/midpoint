@@ -138,6 +138,29 @@ const CATALOG = [
   { id:'deli',     label:'🥪 Deli', tags:['shop=deli'],
     syn:'deli sandwich sandwiches sub hoagie lunch counter' },
 
+  /* ---- meals -----------------------------------------------------------
+     A meal is a time, not a kind of place. OSM has no reliable "serves lunch"
+     tag, and if these were tag sets alone, Dinner would return the same list
+     as Food and Lunch would very nearly do the same. What separates them is
+     WHEN, and the app already filters by day and time -- so each of these
+     carries a mealtime and sets it when no time has been chosen yet. The tags
+     below then do the part tags can do: skew breakfast toward cafes and
+     bakeries, lunch toward counters and sandwiches, dinner toward sit-down
+     places rather than fast food. */
+  { id:'breakfast', label:'🥐 Breakfast', meal:'08:30', lucky:1,
+    tags:['amenity=cafe','shop=bakery',
+          'amenity=restaurant&cuisine~breakfast|brunch|bagel|donut|pancake|waffle|diner|crepe',
+          'amenity=fast_food&cuisine~breakfast|bagel|donut|coffee_shop'],
+    syn:'breakfast brunch morning early bagel bagels donut doughnut pancakes waffles '
+       +'diner eggs omelette omelet coffee pastry croissant crepe' },
+  { id:'lunch',     label:'🥙 Lunch', meal:'12:30', lucky:1,
+    tags:['shop=deli','amenity=fast_food',
+          'amenity=restaurant&cuisine~sandwich|salad|soup|deli|bagel|noodle|poke|burrito'],
+    syn:'lunch midday noon sandwich sandwiches salad soup deli wrap bowl quick bite counter' },
+  { id:'dinner',    label:'🍽 Dinner', meal:'19:00', lucky:1,
+    tags:['amenity=restaurant'],
+    syn:'dinner supper evening night sit down sitdown meal out restaurant date night' },
+
   // ---- cuisines: restaurant/fast food narrowed by cuisine --------------
   { id:'pizza',   label:'🍕 Pizza', cuisine:1,     tags:['amenity=restaurant&cuisine~pizza','amenity=fast_food&cuisine~pizza'], syn:'pizza pizzeria slice' },
   { id:'sushi',   label:'🍣 Sushi', cuisine:1,     tags:['amenity=restaurant&cuisine~sushi|japanese'], syn:'sushi japanese sashimi ramen izakaya' },
@@ -513,6 +536,22 @@ function whenDate() {
   d.setDate(d.getDate() + ((+state.when - d.getDay() + 7) % 7));
   d.setHours(h || 0, m || 0, 0, 0);
   return d;
+}
+
+/* Choosing a meal means choosing a time. Only fill it in when no day has been
+   picked, so it never overrides a deliberate "Saturday at 2pm", and always say
+   so -- a filter that changes itself silently is the kind of thing you notice
+   three searches later and cannot explain. */
+function applyMealTime(id) {
+  const meal = CATS[id]?.meal;
+  if (!meal || state.when) return false;
+  state.when = String(new Date().getDay());     // today
+  state.whenTime = meal;
+  $('#whenDay').value = state.when;
+  $('#whenTime').value = state.whenTime;
+  $('#whenTime').hidden = false;
+  log(`Checking what's open ${whenLabel()}. Change the day or time if you meant another day.`);
+  return true;
 }
 
 function whenLabel() {
@@ -1364,6 +1403,7 @@ function renderCats() {
         : [...state.cats, k];
       if (!state.cats.length) state.cats = [k];
       state.lucky = false;            // an explicit choice ends lucky mode
+      if (state.cats.includes(k)) applyMealTime(k);
       renderCats(); syncURL();
       pushPrefs();
     });
@@ -1453,7 +1493,7 @@ function catRow(list, heading) {
       state.cats = on ? state.cats.filter(x => x !== c.id) : [...state.cats, c.id];
       if (!state.cats.length) state.cats = [c.id];
       state.lucky = false;
-      if (!on) $('#catSearch').value = '';
+      if (!on) { $('#catSearch').value = ''; applyMealTime(c.id); }
       renderCats(); syncURL(); pushPrefs();
     });
     frag.appendChild(b);
