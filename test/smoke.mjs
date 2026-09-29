@@ -438,9 +438,13 @@ await stubFonts(blocked);
     r.fulfill({status:200, contentType:'application/json',
       body: JSON.stringify(hit ? [{lat:String(hit.lat), lon:String(hit.lon), display_name:hit.display_name}] : [])});
   });
+  /* A real block is two facts, not one: the call fails with code 1 AND the
+     permission is actually "denied". Stubbing only the call modelled a
+     dismissed prompt, which is a different thing and now reads differently. */
   await blocked.addInitScript(() => {
     navigator.geolocation.getCurrentPosition = (_ok, err) =>
       err({ code: 1, message: 'User denied Geolocation' });
+    navigator.permissions.query = async () => ({ state: 'denied', onchange: null });
   });
   const pb = await blocked.newPage();
   await pb.goto('http://localhost:8099/', {waitUntil:'networkidle'});
@@ -470,6 +474,49 @@ await stubFonts(blocked);
      (await pb.locator('.person').nth(0).locator('.status').textContent()).includes('Wicker Park'),
      await pb.locator('.person').nth(0).locator('.status').textContent());
   await blocked.close();
+}
+
+/* ---- dismissing the prompt is not being blocked -------------------------
+   iOS reports a dismissed prompt with the same code 1 as a refusal. Sal's
+   tester opened an invite link, tapped away from the prompt, and was told in
+   red that their location was BLOCKED -- along with a banner promising iPhone
+   would never ask again, which was not true. Declining is a choice, and the
+   app has a perfectly good alternative. */
+{
+  const shy = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+  await stubFonts(shy);
+  await shy.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await shy.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  // the call fails, but the permission is still "prompt": they only tapped away
+  await shy.addInitScript(() => {
+    navigator.geolocation.getCurrentPosition = (_ok, err) =>
+      err({ code: 1, message: 'User denied Geolocation' });
+    navigator.permissions.query = async () => ({ state: 'prompt', onchange: null });
+  });
+  const psh = await shy.newPage();
+  await psh.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await psh.locator('.person').nth(0).locator('.loc').click();
+  await psh.waitForTimeout(500);
+
+  const row = psh.locator('.person').nth(0);
+  const txt = await row.locator('.status').textContent();
+  ok('a dismissed prompt is not called blocked', !/blocked|off for this site/i.test(txt), txt);
+  ok('it just says no location was shared', /no location shared/i.test(txt), txt);
+  ok('and still points at the box that works', /type a neighborhood/i.test(txt), txt);
+  ok('it is not shown in red, because nothing is broken',
+     !(await row.locator('.status').getAttribute('class')).includes('err'),
+     await row.locator('.status').getAttribute('class'));
+  ok('no recovery instructions for a permission that is not denied',
+     await psh.locator('#geoHelp').isHidden());
+  ok('and no banner claiming iPhone will never ask again',
+     !/never ask again|will not ask again/i.test(await psh.locator('#trouble').textContent()),
+     await psh.locator('#trouble').textContent());
+  ok('focus still moves to the box that works',
+     await psh.evaluate(() => document.activeElement?.classList.contains('lc')));
+  await shy.close();
 }
 
 // ---- category search ----------------------------------------------------

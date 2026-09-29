@@ -103,6 +103,40 @@ ok('"mini golf" finds games', ids('mini golf')[0]==='games', ids('mini golf').jo
 /* ---- meals ---------------------------------------------------------------
    "Food" already carried lunch and dinner as synonyms, so the risk is the new
    entries losing to it: typing "dinner" must offer Dinner first, not Food. */
+/* Sal searched Breakfast and got "Romano's Pizza Pasta", tagged amenity=cafe.
+   OSM's cafe bucket holds anything counter-ish, pizzerias included. */
+{
+  ok('a negated regex filter compiles',
+     m.tagFilter('cuisine!~pizza') === '["cuisine"!~"pizza",i]', m.tagFilter('cuisine!~pizza'));
+  ok('a negated equality filter compiles',
+     m.tagFilter('brand!=Starbucks') === '["brand"!="Starbucks"]', m.tagFilter('brand!=Starbucks'));
+  ok('negation composes with a positive term',
+     m.tagFilter('amenity=cafe&cuisine!~pizza') === '["amenity"="cafe"]["cuisine"!~"pizza",i]',
+     m.tagFilter('amenity=cafe&cuisine!~pizza'));
+  ok('plain filters are unchanged by the new parser',
+     m.tagFilter('amenity=cafe') === '["amenity"="cafe"]' &&
+     m.tagFilter('sport~laser_tag|paintball') === '["sport"~"laser_tag|paintball",i]');
+
+  const bf = m.CATALOG.find(c => c.id === 'breakfast');
+  const cafeRule = bf.tags.find(t => t.startsWith('amenity=cafe'));
+  ok('breakfast still reaches cafes', !!cafeRule, bf.tags.join(' | '));
+  ok('but excludes the plainly-dinner cuisines',
+     /cuisine!~/.test(cafeRule) && /pizza/.test(cafeRule), cafeRule);
+  ok('and the exclusion compiles to a real Overpass filter',
+     m.tagFilter(cafeRule).includes('["cuisine"!~'), m.tagFilter(cafeRule));
+  /* A cuisine exclusion only bites where a cuisine was tagged, and Romano's
+     may carry none -- hence the name guard as well. */
+  ok('a name guard catches the ones with no cuisine tag',
+     /name!~/.test(cafeRule) && m.tagFilter(cafeRule).includes('["name"!~'),
+     m.tagFilter(cafeRule));
+  ok('the name guard stays short, since each word is a place it may drop',
+     (cafeRule.match(/name!~([^&]*)/)?.[1].split('|').length || 99) <= 6,
+     cafeRule.match(/name!~([^&]*)/)?.[1]);
+  ok('no other category filters on name, which is a last resort',
+     m.CATALOG.filter(c => c.tags?.some(t => t.includes('name!~'))).length === 1,
+     m.CATALOG.filter(c => c.tags?.some(t => t.includes('name!~'))).map(c=>c.id).join());
+}
+
 ok('typing breakfast offers Breakfast first', ids('breakfast')[0] === 'breakfast', ids('breakfast').join());
 ok('typing lunch offers Lunch first',         ids('lunch')[0]     === 'lunch',     ids('lunch').join());
 ok('typing dinner offers Dinner first',       ids('dinner')[0]    === 'dinner',    ids('dinner').join());

@@ -148,7 +148,20 @@ const CATALOG = [
      bakeries, lunch toward counters and sandwiches, dinner toward sit-down
      places rather than fast food. */
   { id:'breakfast', label:'🥐 Breakfast', meal:'08:30', lucky:1,
-    tags:['amenity=cafe','shop=bakery',
+    /* amenity=cafe is where mappers put anything counter-ish, pizzerias
+       included -- a breakfast search returned "Romano's Pizza Pasta", tagged
+       cafe. Excluding the plainly-dinner cuisines fixes that without losing
+       the many small cafes that carry no cuisine tag at all. */
+    tags:['amenity=cafe&cuisine!~pizza|pasta|burger|kebab|sushi|chinese|thai|mexican|'
+          + 'indian|korean|ramen|noodle|steak|seafood|wings|barbecue|bbq|pub'
+          /* A cuisine exclusion only bites where a cuisine was tagged, and
+             plenty of cafes carry none -- which is how a place called
+             "Romano's Pizza Pasta" can slip through. These few words in a NAME
+             are high enough signal to act on. Kept deliberately short: name
+             matching is a blunt instrument and every word added is a legitimate
+             place it might silently drop. */
+          + '&name!~pizza|pizzeria|steakhouse|sushi|taqueria',
+          'shop=bakery',
           'amenity=restaurant&cuisine~breakfast|brunch|bagel|donut|pancake|waffle|diner|crepe',
           'amenity=fast_food&cuisine~breakfast|bagel|donut|coffee_shop'],
     syn:'breakfast brunch morning early bagel bagels donut doughnut pancakes waffles '
@@ -688,12 +701,21 @@ async function geocode(q) {
 /* "amenity=restaurant&cuisine~pizza" -> ["amenity"="restaurant"]["cuisine"~"pizza",i]
    `=` is exact, `~` is a case-insensitive regex, which is what cuisine needs
    since it is often a semicolon-separated list. */
+/* Supports = and ~, and their negations != and !~. Negation matters because
+   some categories are defined as much by what they are NOT: OSM's
+   amenity=cafe is a broad bucket that mappers put pizzerias in, and Breakfast
+   has to be able to say "a cafe, but not a pizza place". In Overpass a !~
+   also matches elements with the key absent, so an untagged cafe still
+   passes -- which is what we want, since most small cafes have no cuisine. */
 function tagFilter(spec) {
   return spec.split('&').map(part => {
-    const m = part.match(/^([^=~]+)([=~])(.+)$/);
+    const m = part.match(/^([^=~!]+)(!?[=~])(.+)$/);
     if (!m) return '';
     const [, k, op, v] = m;
-    return op === '=' ? `["${k}"="${v}"]` : `["${k}"~"${v}",i]`;
+    return op === '='  ? `["${k}"="${v}"]`
+         : op === '!=' ? `["${k}"!="${v}"]`
+         : op === '~'  ? `["${k}"~"${v}",i]`
+         :               `["${k}"!~"${v}",i]`;
   }).join('');
 }
 
@@ -1245,15 +1267,38 @@ function locateAsync(p, timeout = 10000) {
           .catch(() => settle('My location', 'Using your current location'));
       },
       err => {
-        if (err.code === 1) { state.geoBlocked = true; renderGeoHelp(); }
-        p.status = '!' + (err.code === 1
-          ? 'Location blocked — type a neighborhood here instead'
-          : 'Could not get location — type a neighborhood here instead');
-        renderPeople();
-        // Point them at the box that still works.
-        const row = [...$('#people').children][state.people.indexOf(p)];
-        row?.querySelector('.lc')?.focus();
-        reject(err);
+        /* Two faults here, and a tester hit both on the first screen they ever
+           saw of this app.
+
+           Code 1 is PERMISSION_DENIED, which iOS also reports when the prompt
+           is merely DISMISSED. Calling that "blocked" tells someone their
+           phone has shut us out for good when they may have just tapped away,
+           and it raised a banner promising iPhone would never ask again --
+           false in that case. Ask the browser what the permission actually is
+           before making the claim.
+
+           And it was red. Red is for something broken that you must act on.
+           Declining to share your location is a choice, the app has a good
+           alternative, and this line is the first thing a friend sees after
+           opening an invite link. No leading "!", so the row stays quiet. */
+        const report = blocked => {
+          if (blocked) { state.geoBlocked = true; renderGeoHelp(); }
+          p.status = blocked
+            ? 'Location is off for this site — type a neighborhood here instead'
+            : err.code === 1
+              ? 'No location shared — type a neighborhood here instead'
+              : 'Could not get a location fix — type a neighborhood here instead';
+          renderPeople();
+          // Point them at the box that still works.
+          const row = [...$('#people').children][state.people.indexOf(p)];
+          row?.querySelector('.lc')?.focus();
+          reject(err);
+        };
+        if (err.code !== 1) return report(false);
+        // Permissions API missing: understate it rather than overclaim.
+        Promise.resolve(navigator.permissions?.query({ name: 'geolocation' }))
+          .then(st => report(st?.state === 'denied'))
+          .catch(() => report(false));
       },
       { enableHighAccuracy: true, timeout, maximumAge: 60000 }
     );
