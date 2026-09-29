@@ -302,6 +302,59 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
   await c.close();
 }
 
+/* ---- a place that does not exist ----------------------------------------
+   Reported by one of Sal's testers: they typed a place, were told it was not
+   where they are, and then watched the box empty itself. Two faults. The row
+   is redrawn from the person's label, so leaving the label unset on a failed
+   lookup wiped what they had typed -- the app rejecting them twice. And the
+   message on SUCCESS read "typed, not your current location", which sounds
+   like a correction when the app has simply done as it was asked. */
+{
+  const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+  await stubFonts(c);
+  await c.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await c.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  await c.route('**/nominatim.openstreetmap.org/**', r => {
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get('q')||'').toLowerCase().trim();
+    const hit = PLACES[q];
+    r.fulfill({status:200, contentType:'application/json',
+      body: JSON.stringify(hit ? [{lat:String(hit.lat), lon:String(hit.lon), display_name:hit.display_name}] : [])});
+  });
+  const pn = await c.newPage();
+  await pn.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  const row = pn.locator('.person').nth(0);
+
+  await row.locator('.lc').fill('Zzyzx Notaplace');
+  await row.locator('.lc').dispatchEvent('change');
+  await pn.waitForTimeout(500);
+
+  ok('a place that does not exist keeps what you typed',
+     await row.locator('.lc').inputValue() === 'Zzyzx Notaplace',
+     `field is now "${await row.locator('.lc').inputValue()}"`);
+  ok('and says what it could not find, with a way forward',
+     /no match/i.test(await row.locator('.status').textContent())
+     && /city|state/i.test(await row.locator('.status').textContent()),
+     await row.locator('.status').textContent());
+  ok('and puts nobody on the map for it',
+     await row.locator('.status').textContent().then(t => !/on the map/i.test(t)));
+
+  // and a place that does exist must not be told off for existing
+  await row.locator('.lc').fill('Wicker Park, Chicago');
+  await row.locator('.lc').dispatchEvent('change');
+  await pn.waitForTimeout(500);
+  const good = await row.locator('.status').textContent();
+  ok('a place that does exist is accepted, not corrected',
+     !/not your current location|not where you are/i.test(good), good);
+  ok('and the row says which place it used',
+     /wicker park/i.test(good) && !/no match/i.test(good), good);
+  ok('while still making clear it came from the box, not from GPS',
+     /you typed/i.test(good), good);
+  await c.close();
+}
+
 /* ---- the sheet must actually scroll ------------------------------------
    Sal could not find the category search in either theme. #sheet is a column
    flex item with overflow-y:auto and no min-height:0, which in WebKit means it
@@ -551,6 +604,8 @@ await page.waitForTimeout(150);
   ok('a typed place survives a lookup that lands after it',
      (await ps.locator('.person').nth(0).locator('.lc').inputValue()) === 'Hyde Park, Chicago',
      await ps.locator('.person').nth(0).locator('.lc').inputValue());
+  /* It must still be clear this came from the box and not from GPS -- just
+     without reading as a correction. */
   ok('and the row says it was typed rather than measured',
      (await ps.locator('.person').nth(0).locator('.status').textContent()).includes('typed'),
      await ps.locator('.person').nth(0).locator('.status').textContent());

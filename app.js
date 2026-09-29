@@ -959,10 +959,19 @@ function renderPeople() {
       t.status = 'Looking up…'; renderPeople();
       try {
         const hit = await geocode(q);
-        if (!hit) { t.status = '!No match — try adding the city'; t.lat = t.lon = null; }
-        else {
+        if (!hit) {
+          /* Keep what they typed. The row is redrawn from t.label, so leaving
+             it unset wiped the box the moment the lookup came back empty --
+             a tester typed a place, was told it was not found, and watched
+             their text vanish, which reads as the app rejecting them twice. */
+          t.label = q; t.lat = t.lon = null;
+          t.status = '!No match for “' + q + '” — try adding the city or state';
+        } else {
           t.lat = hit.lat; t.lon = hit.lon; t.label = hit.label;
-          t.status = hit.label + ' — typed, not your current location';
+          /* "typed, not your current location" was meant to distinguish this
+             from a GPS fix. It read as a correction -- "this is not where you
+             are" -- when the app had simply done what it was asked. */
+          t.status = hit.label + ' — from what you typed';
         }
       } catch (e) {
         t.status = '!Lookup failed: ' + e.message;
