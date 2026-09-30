@@ -305,6 +305,89 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
   await c.close();
 }
 
+/* ---- searching with nobody located must not wedge the app ---------------
+   Reported as "the app gets hung up". The guard that returns early sat AFTER
+   state.searching was set, and the finally that clears it is inside the try
+   below it -- so one search with no locations left the flag true forever and
+   every later search returned at the first line. The button stayed alive and
+   nothing ever happened again. */
+{
+  const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+  await stubFonts(c);
+  await c.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await c.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  await c.route('**/nominatim.openstreetmap.org/**', r => {
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get('q')||'').toLowerCase().trim();
+    const hit = PLACES[q];
+    r.fulfill({status:200, contentType:'application/json',
+      body: JSON.stringify(hit ? [{lat:String(hit.lat), lon:String(hit.lon), display_name:hit.display_name}] : [])});
+  });
+  await c.route('**/api/interpreter', r => r.fulfill({status:200, contentType:'application/json',
+    body: JSON.stringify({elements: VENUES.map((v,i)=>({type:'node', id:1000+i, lat:v[1], lon:v[2], tags:{name:v[0], ...v[3]}}))})}));
+  await c.route('**/router.project-osrm.org/**', r => {
+    const u = new URL(r.request().url());
+    const n = u.searchParams.get('sources').split(';').length;
+    const m = u.pathname.split('/').pop().split(';').length - n;
+    r.fulfill({status:200, contentType:'application/json',
+      body: JSON.stringify({code:'Ok', durations: Array.from({length:n}, () => Array(m).fill(600))})});
+  });
+  const ph = await c.newPage();
+  await ph.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+
+  await ph.locator('#find').click();          // nobody has a location yet
+  await ph.waitForTimeout(400);
+  ok('searching with nobody located says what is missing',
+     /at least one location/i.test(await ph.locator('#log').textContent()),
+     await ph.locator('#log').textContent());
+  ok('and leaves the button usable', !(await ph.locator('#find').isDisabled()));
+
+  // the thing that actually broke: the NEXT search must still work
+  await ph.locator('.person').nth(0).locator('.lc').fill('Wicker Park, Chicago');
+  await ph.locator('.person').nth(0).locator('.lc').dispatchEvent('change');
+  await ph.waitForTimeout(600);
+  await ph.locator('#find').click();
+  await ph.waitForSelector('.venue', {timeout:8000});
+  ok('a later search still runs, rather than returning at the first line',
+     await ph.locator('.venue').count() > 0);
+  await c.close();
+}
+
+/* ---- someone in the session with no location ----------------------------
+   They are ignored by the scoring, which is right -- but costs used to be
+   indexed by the located people while the rows are drawn per person, so a
+   joiner with no location made every row below them show somebody else's
+   travel time, and the last row show NaN. */
+{
+  await page.locator('#addPerson').click();
+  await page.locator('.person').nth(2).locator('.nm').fill('Ghost');
+  await page.waitForTimeout(150);
+  await page.locator('#find').click();
+  await page.waitForSelector('.venue', {timeout:8000});
+  await page.waitForTimeout(300);
+
+  const card = page.locator('.venue').first();
+  ok('a person with no location gets a row, not silence',
+     await card.locator('.fairrow').count() === 3,
+     String(await card.locator('.fairrow').count()));
+  ok('their row says waiting rather than a time',
+     await card.locator('.fairrow.waiting').count() === 1);
+  ok('and no row anywhere shows NaN',
+     !/NaN/.test(await page.locator('#results').textContent()));
+  ok('the people who are located still show real times',
+     (await card.locator('.fairrow:not(.waiting) .tm').first().textContent()).includes('min'),
+     await card.locator('.fairrow:not(.waiting) .tm').first().textContent());
+  ok('and the log names who is not counted',
+     /ghost/i.test(await page.locator('#log').textContent())
+     && /not counted/i.test(await page.locator('#log').textContent()),
+     await page.locator('#log').textContent());
+
+  await page.locator('.person').nth(2).locator('.rm').click();   // tidy up
+  await page.waitForTimeout(200);
+}
+
 /* ---- a place that does not exist ----------------------------------------
    Reported by one of Sal's testers: they typed a place, were told it was not
    where they are, and then watched the box empty itself. Two faults. The row

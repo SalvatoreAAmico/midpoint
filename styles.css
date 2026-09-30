@@ -222,6 +222,10 @@ select{
 .fairrow .nm{width:62px;flex:0 0 auto;color:var(--muted);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .bar{flex:1;height:6px;background:var(--field);border-radius:99px;overflow:hidden}
+/* Present in the group, absent from the maths. Dimmed rather than hidden, and
+   with an empty trough, so nobody reads a missing person as a short journey. */
+.fairrow.waiting{opacity:.55}
+.fairrow.waiting .tm{font-style:italic;color:var(--dim)}
 .bar > i{display:block;height:100%;border-radius:99px}
 .fairrow .tm{width:50px;text-align:right;flex:0 0 auto;
   font-variant-numeric:tabular-nums;color:var(--muted)}

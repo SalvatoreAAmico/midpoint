@@ -1569,6 +1569,17 @@ function catRow(list, heading) {
    result belongs to the group rather than to whoever tapped the button.
    Sharing it keeps everybody on one list — two people voting on different
    lists was the quiet failure — and halves the calls to the free services. */
+/* Someone in the session with no location is ignored by the scoring, which is
+   the only sane thing to do -- but silently ignoring a person is how a group
+   ends up at a spot that is hopeless for whoever was still typing. Name them. */
+function waitingNote() {
+  const waiting = state.people.filter(p => p.lat == null);
+  if (!waiting.length) return '';
+  const names = waiting.map(p => p.name?.trim() || 'someone').join(' and ');
+  return ` ${names} ${waiting.length > 1 ? 'have' : 'has'} no location yet`
+       + ` — not counted until ${waiting.length > 1 ? 'they add one' : 'they do'}.`;
+}
+
 function shareResults(located) {
   Sync.results({
     at: state.resultsAt,
@@ -1744,7 +1755,8 @@ function renderResults(selectedKey) {
     host.appendChild(b);
   }
 
-  const worst = Math.max(...state.results.flatMap(v => v.costs));
+  // null means "has not shared a location", and null coerces to 0 in Math.max.
+  const worst = Math.max(...state.results.flatMap(v => v.costs).filter(c => c != null), 1);
   const unit = fmtMin;
   const approx = state.estimated ? '~' : '';
 
@@ -1790,12 +1802,24 @@ function renderResults(selectedKey) {
         <span class="bar"><i style="width:100%;background:var(--accent)"></i></span>
         <span class="tm">${approx}${unit(v.mean)}</span>
       </div>` : `
-      <div class="fair">${state.people.map((p, pi) => `
+      <div class="fair">${state.people.map((p, pi) => {
+        const c = v.costs[pi];
+        /* Somebody who has not shared a location is shown, but plainly not
+           counted -- leaving them out entirely makes the group look smaller
+           than it is, and drawing them a bar would be inventing a journey. */
+        if (c == null) return `
+        <div class="fairrow waiting">
+          <span class="nm">${esc(p.name || 'P' + (pi + 1))}</span>
+          <span class="bar"></span>
+          <span class="tm">waiting</span>
+        </div>`;
+        return `
         <div class="fairrow">
           <span class="nm">${esc(p.name || 'P' + (pi + 1))}</span>
-          <span class="bar"><i style="width:${Math.max(4, 100 * v.costs[pi] / worst)}%;background:${COLORS[pi % COLORS.length]}"></i></span>
-          <span class="tm">${approx}${unit(v.costs[pi])}</span>
-        </div>`).join('')}
+          <span class="bar"><i style="width:${Math.max(4, 100 * c / worst)}%;background:${COLORS[pi % COLORS.length]}"></i></span>
+          <span class="tm">${approx}${unit(c)}</span>
+        </div>`;
+      }).join('')}
       </div>`}
       <div class="vactions">
         <button class="vote up ${myVote > 0 ? 'on' : ''}" title="Up for it">Yes</button>
@@ -1852,9 +1876,14 @@ function vote(key, dir) {
 
 async function search() {
   if (state.searching) return;
-  state.searching = true;
   const located = state.people.filter(p => p.lat != null);
+  /* This guard used to sit AFTER state.searching was set, and the finally that
+     clears it lives inside the try below -- so returning here left the flag
+     true for the rest of the session and every later search returned at the
+     first line. The button still looked alive and nothing happened again,
+     which is exactly "the app gets hung up". */
   if (!located.length) { log('Add at least one location first.'); return; }
+  state.searching = true;
 
   $('#find').disabled = true;
   state.results = [];
@@ -1929,11 +1958,28 @@ async function search() {
       log(`You're all in the same place — ${state.results.length} spots near you, nearest first.`);
     else if (matrix)
       log(`${state.results.length} spots, ranked by real ${walking ? 'walking' : 'drive'} time.`
-          + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : ''));
+          + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : '')
+          + waitingNote());
     else { /* fallback message already set */ }
 
     state.resultsAt = Date.now();
-    if (isLive()) shareResults(located);
+    if (isLive()) shareResults(located);   // payload is indexed by `located`
+
+    /* From here on costs are indexed by state.people, with null for anyone
+       who has not shared a location. Scoring only ever looks at the people who
+       have one, but the rest of the app renders a row per person -- and with
+       two different index bases, a joiner sitting at position 1 with no
+       location made every row below them show somebody else's travel time,
+       and the last row show NaN. adoptResults already returns this shape; now
+       a local search does too. */
+    const seat = new Map(located.map((p, i) => [p.id, i]));
+    for (const v of state.results) {
+      const byPerson = state.people.map(p => {
+        const i = seat.get(p.id);
+        return i == null ? null : v.costs[i];
+      });
+      v.costs = byPerson;
+    }
 
     drawMap(state.results[0]?.key);
     renderResults(state.results[0]?.key);
