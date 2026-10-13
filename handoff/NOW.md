@@ -36,9 +36,14 @@ the other person does not pick it up at the same time.
 
 ## Known-but-unfixed
 
-- `salvatoreaamico.com/meetup/` serves a copy of the app from 11 September,
-  from a folder in the *portfolio* repo (`SalvatoreAAmico.github.io`), not this
-  one. The deletion is written and sitting on an unmerged branch there. Until
-  it is merged there are two live copies of Midpoint and it is very easy to
-  test the wrong one. If something you just shipped is "not there", check the
-  build number in the footer first.
+*(nothing right now)*
+
+## Recently killed
+
+- **The /meetup ghost.** A copy of the app from 11 September lived in a folder
+  in the *portfolio* repo and was served at `salvatoreaamico.com/meetup/`
+  alongside the real thing. Deleted 13 October. It cost several rounds of
+  debugging: a missing control was reported, the current repo was measured, and
+  the report was wrongly dismissed. The habit it leaves behind is a good one —
+  **if something you just shipped is "not there", check the build number in the
+  footer before you check the code.**
