@@ -15,6 +15,36 @@ What changed, in a sentence or two. Why, if it is not obvious.
 
 ---
 
+## 2026-10-13 — Aggregate counters, no third-party anything
+**Sal / Claude** · this commit
+
+We had no idea whether anyone had ever used this. Seven counters now answer the
+only questions that matter: does a search finish, does a group of more than one
+form, does anyone reach a decision, does anyone save a group.
+
+Deliberately NOT third-party analytics. The product's data is live location,
+and the growth loop is a friend tapping a link — an App Store label reading
+"Location, used to track you" would tax the one thing that makes this spread,
+for an app opened ninety seconds at a time with almost no ad inventory. That
+decision is a business one before it is an ethical one.
+
+The counters carry a single whitelisted word and nothing else: no id, no code,
+no coordinates, no device, no IP, no time finer than the day. The whitelist is
+enforced in the database, so the client cannot invent a metric name and
+free-text its way into storing something personal. The table is bounded by days
+x metrics, so spam inflates numbers but never the table. `anon` can count and
+cannot read; read them in the Supabase SQL editor:
+`select day, metric, n from public.stats order by day desc, metric;`
+
+**Watch out:** `mp_tally` takes no session code on purpose, so solo searches
+count. Anything that gates RPCs on a session code must let it past — the mock
+in smoke-live.mjs got this wrong first time and every counter 400'd. Also
+`countEvent()` is the app-side helper, NOT `tally()`, which is the vote counter;
+declaring both is a syntax error.
+
+Needs `supabase/fix-004-counters.sql` run on the live project before any of it
+records anything.
+
 ## 2026-10-13 — Renamed to MidPnt
 **Sal / Claude** · this commit
 

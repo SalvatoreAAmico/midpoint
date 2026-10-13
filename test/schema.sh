@@ -87,6 +87,40 @@ $P -c "set role anon; select public.mp_create('gc','x',1,1);" >/dev/null
 LEFT=$($P -c "select count(*) from public.participants p join public.sessions s on s.id=p.session_id where s.code='$CODE';")
 ok "expired session's participants are deleted (gc + cascade)" "$([ "$LEFT" = "0" ] && echo 1 || echo 0)" "left=$LEFT"
 
+# ---- counters: aggregate, bounded, unreadable ----
+# A delta, not an absolute: re-running this suite against the same database
+# would otherwise fail on the second run, and a test that only passes once is
+# worse than no test.
+B=$($P -c "select coalesce(n,0) from public.stats where metric='search_group' and day=(now() at time zone 'utc')::date;")
+B=${B:-0}
+$P -c "set role anon; select public.mp_tally('search_group');" >/dev/null
+$P -c "set role anon; select public.mp_tally('search_group');" >/dev/null
+A=$($P -c "select n from public.stats where metric='search_group' and day=(now() at time zone 'utc')::date;")
+ok "a counter counts" "$([ "$((A - B))" = "2" ] && echo 1 || echo 0)" "before=$B after=$A"
+
+# The whitelist lives in the database so a caller cannot invent a metric name.
+# Free-text in, free-text stored, and a counter quietly becomes personal data.
+$P -c "set role anon; select public.mp_tally('sal was at 42.52,-71.76');" >/dev/null 2>&1
+ERR=$($P -c "select count(*) from public.stats where metric like '%42.52%';")
+ok "an invented metric name is never stored" "$([ "$ERR" = "0" ] && echo 1 || echo 0)" "$ERR"
+ERR=$($P -c "set role anon; select public.mp_tally('nonsense');" 2>&1 | grep -c ERROR)
+ok "and is ignored rather than raising, so it cannot break a search" "$([ "$ERR" = "0" ] && echo 1 || echo 0)" "$ERR"
+
+# Bounded by days x metrics: spam inflates numbers, never the table.
+$P -c "set role anon; select public.mp_tally('vote') from generate_series(1,500);" >/dev/null
+ROWS=$($P -c "select count(*) from public.stats;")
+ok "500 calls add no rows beyond day x metric" "$([ "$ROWS" -le 7 ] && echo 1 || echo 0)" "rows=$ROWS"
+
+E=$($P -c "set role anon; select count(*) from public.stats;" 2>&1 | grep -c "permission denied")
+ok "anon CANNOT read the counters" "$([ "$E" -ge 1 ] && echo 1 || echo 0)" "$E"
+E=$($P -c "set role anon; insert into public.stats(metric,n) values ('x',999);" 2>&1 | grep -c "permission denied")
+ok "anon CANNOT write them directly either" "$([ "$E" -ge 1 ] && echo 1 || echo 0)" "$E"
+
+# Nothing in the table can point at a person.
+COLS=$($P -c "select string_agg(column_name,',' order by column_name) from information_schema.columns where table_schema='public' and table_name='stats';")
+ok "the counters table holds only day, metric and a number" \
+   "$([ "$COLS" = "day,metric,n" ] && echo 1 || echo 0)" "$COLS"
+
 # codes are unique and random
 D=$($P -c "set role anon; select count(distinct public.mp_create('x','y',1,1)::json->>'code') from generate_series(1,50);")
 ok "50 generated codes are all distinct" "$([ "$D" = "50" ] && echo 1 || echo 0)" "d=$D"

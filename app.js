@@ -254,6 +254,7 @@ const state = {
   geoBlocked: false,
   showVetoed: false,
   nudgedVotes: false,
+  winnerCounted: null,
   hashMe: null,
   searching: false,
   together: false,
@@ -311,6 +312,13 @@ function suggestGroupName(people) {
   if (names.length <= 3) return names.join(', ');
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
+/* Named countEvent, not tally: tally() is already the vote counter below,
+   and two of them is a syntax error waiting in a diff.
+   Count one aggregate event. Never awaited, never surfaced, never given
+   anything but a whitelisted word — see supabase/fix-004-counters.sql for what
+   is deliberately not stored. */
+const countEvent = m => { try { window.Sync?.tally(m); } catch {} };
+
 /* ---------------------------------------------------------------- appearance
    The phone already knows whether you want light or dark, and switches at
    sunset. Following it is what makes an app feel like it belongs on the device,
@@ -1089,6 +1097,7 @@ function beginSaveGroup() {
     storeGroups([groupFromPeople(name, state.people), ...groups]);
     host.replaceChildren();          // the guard refuses to rebuild over a form
     renderGroups();
+    countEvent('group_saved');
     log(`Saved “${name}”. Tap it next time instead of typing everyone in.`);
   };
   form.querySelector('.g-ok').addEventListener('click', save);
@@ -1744,6 +1753,10 @@ function renderResults(selectedKey) {
   }
 
   const win = winner();
+  if (win && state.winnerCounted !== win.key) {
+    state.winnerCounted = win.key;      // renderResults runs on every poll
+    countEvent('winner');
+  }
   if (win) {
     const b = document.createElement('div');
     b.className = 'winner';
@@ -1869,6 +1882,7 @@ function vote(key, dir) {
   if (!Object.keys(state.votes[key]).length) delete state.votes[key];
   syncURL();
   if (isLive()) Sync.vote(key, state.votes[key]?.[state.me] ?? 0);
+  countEvent('vote');
   renderResults(key);
 }
 
@@ -1961,6 +1975,8 @@ async function search() {
           + (chainsHidden ? ` ${chainsHidden} chain${chainsHidden > 1 ? 's' : ''} hidden.` : '')
           + waitingNote());
     else { /* fallback message already set */ }
+
+    countEvent(located.length > 1 ? 'search_group' : 'search_solo');
 
     state.resultsAt = Date.now();
     if (isLive()) shareResults(located);   // payload is indexed by `located`
@@ -2142,6 +2158,7 @@ async function goLive() {
 
   try {
     await Sync.create(me?.name || 'Me', me?.label || '', me?.lat ?? null, me?.lon ?? null);
+    countEvent('session_created');
     state.liveErr = '';
     setSessionParam(Sync.code);
     log(me?.lat != null
@@ -2253,6 +2270,7 @@ async function joinSession(code, fromLink) {
     }
 
     await Sync.join(code, me?.name || savedName() || '', me?.label || '', me?.lat ?? null, me?.lon ?? null);
+    countEvent('session_joined');
     state.liveErr = '';
     setSessionParam(code);
 

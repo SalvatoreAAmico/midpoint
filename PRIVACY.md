@@ -12,10 +12,12 @@
 MidPnt helps a group find somewhere fair to meet. To do that it needs to know
 roughly where people are. This explains what happens to that, in plain terms.
 
-**The short version.** There are no accounts, no tracking, no advertising and
-no analytics. Nothing about you is sold or shared for marketing. When you use a
-live session, your location is stored for up to twelve hours and then deleted
-automatically. When you don't, it is never stored on a server at all.
+**The short version.** There are no accounts, no tracking and no advertising.
+Nothing about you is sold or shared for marketing. When you use a live session,
+your location is stored for up to twelve hours and then deleted automatically.
+When you don't, it is never stored on a server at all. We keep seven counters —
+how many searches ran today, how many had more than one person, and so on — and
+they contain no information about you at all.
 
 ## What is collected
 
@@ -73,10 +75,28 @@ used, which maps app you prefer for directions, and your identity within a live
 session so refreshing the page does not add a duplicate of you. Clearing your
 browser data removes them.
 
+## Counting, and what it is not
+
+We need to know whether anyone uses this, so a counter goes up when a search
+finishes, when a session is created or joined, when a vote is cast, when a group
+reaches a decision, and when someone saves a set of people to reuse. Seven
+counters, one row per day each.
+
+**What goes with them: nothing.** No identifier, no session code, no
+coordinates, no place name, no device, no browser, no IP address, and no time
+more precise than the day. There is no row that belongs to anybody, and nothing
+to join them against. We cannot tell how many people used the app, only how many
+times something happened — and we have accepted that limit rather than issue
+anyone an identifier to fix it.
+
+The list of countable things is fixed inside the database, so the app cannot
+invent a new one. Whatever it sends that is not on the list is discarded.
+
 ## What is never done
 
-No cookies for tracking. No analytics or telemetry of any kind. No advertising,
-and no advertising identifiers. Nothing is sold, and nothing is shared with data
+No cookies for tracking. No third-party analytics or telemetry — nothing is sent
+to any analytics company, because there isn't one. No advertising, and no
+advertising identifiers. Nothing is sold, and nothing is shared with data
 brokers. There is no profile of you, because there is no account to attach one
 to. Location history is not retained — there is nowhere it could be retained.
 
