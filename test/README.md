@@ -4,7 +4,7 @@
 ```
 node test/unit.mjs
 ```
-No dependencies. 15 assertions covering distance, centroid, the fairness
+No dependencies. 151 assertions covering distance, centroid, the fairness
 score, `opening_hours` parsing, and price-tag reading.
 
 ## Smoke — the real UI in a headless browser
@@ -14,7 +14,7 @@ node test/smoke.mjs
 ```
 Serves the app locally and drives it in mobile-sized Chromium with **every
 OpenStreetMap response mocked**, so it runs offline and deterministically.
-27 assertions covering the person rows and the 4-person cap, geocoding,
+185 assertions covering the person rows and the 8-person cap, geocoding,
 ranking, fairness bars, the open-now and price filters, voting, the
 share-link round-trip, and straight-line fallback mode. Fails on any
 uncaught JS error.
@@ -32,10 +32,21 @@ bash test/schema.sh
 ```
 Runs `supabase/schema.sql` against a live Postgres and exercises every `mp_*`
 function **as the `anon` role**, the same role the browser's key maps to.
-18 assertions: the full create/join/state/vote/leave flow, the 8-person cap,
+27 assertions: the full create/join/state/vote/leave flow, the 8-person cap,
 expiry and cascade delete, code uniqueness, and — most importantly — that anon
 **cannot** read the tables directly or reach the internal helpers.
 
 This is the suite that would have caught both bugs the mocked tests missed:
 `gen_random_bytes` being invisible under `search_path = public`, and Postgres
 granting EXECUTE on new functions to PUBLIC by default.
+
+---
+
+## Counts drift
+
+The numbers above are a rough guide, not a contract — they were wrong by an
+order of magnitude before anyone noticed. Each suite prints its own total when
+it runs, and that is the number to trust.
+
+Current totals: **151 / 185 / 99 / 27 / 8** across unit, smoke, smoke-live,
+schema and migrations.

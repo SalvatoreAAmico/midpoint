@@ -61,6 +61,17 @@ brings up the Postgres the last two need.
 | Platform | Web for now | See `ROADMAP-NATIVE.md` |
 | Wrappers | Rejected | Guideline 4.2; passing it means building native anyway |
 
+## Working with someone else
+
+`CLAUDE.md` at the repo root is the house rules — how to run the five suites,
+the hard rules, and why the free-API budget shapes the architecture. Claude
+Code loads it automatically at the start of every session, so both people's
+agents read it without being told to.
+
+`handoff/NOW.md` is who is touching what right now; claim before you start.
+`handoff/LOG.md` is recent changes with their reasons, plus a list of things
+already tried and rejected so nobody re-proposes them.
+
 ## Documents
 
 `README.md` how it works · `TODO.md` what only Sal can do ·
