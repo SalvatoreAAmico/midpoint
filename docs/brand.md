@@ -1,6 +1,6 @@
-# Midpoint — Brand Guidelines
+# MidPnt — Brand Guidelines
 
-The identity: what Midpoint is, what it sounds like, and how it appears
+The identity: what MidPnt is, what it sounds like, and how it appears
 anywhere — in the product, on a store listing, in a screenshot someone sends a
 friend.
 
@@ -24,9 +24,9 @@ here.
 
 ---
 
-## 1. What Midpoint is
+## 1. What MidPnt is
 
-**Midpoint finds a place to meet that is fair to everyone.**
+**MidPnt finds a place to meet that is fair to everyone.**
 
 Not the geographic middle — the *fair* middle. A café five minutes from you and
 forty from your friend has a perfectly reasonable average and is the wrong
@@ -72,7 +72,7 @@ person and an answer. Speed is a brand attribute.
 
 **6. Borrow nothing from social apps.**
 No streaks, no badges, no notifications engineered for return visits. If
-someone opens Midpoint twice a month and it works both times, that is success.
+someone opens MidPnt twice a month and it works both times, that is success.
 
 ## 3. The mark
 
@@ -104,7 +104,7 @@ circle, or set it in any colour outside those above.
 
 ## 4. Wordmark and lockup
 
-**Wordmark:** *Midpoint*, Fraunces 500, `SOFT 20`, `WONK 1`, optical size to
+**Wordmark:** *MidPnt*, Fraunces 500, `SOFT 20`, `WONK 1`, optical size to
 match, tracking `-0.01em`. Always one word, always capital M, never all-caps,
 never *MidPoint* or *midPoint*.
 
@@ -234,7 +234,7 @@ or faux italic.
 
 ## 8. Voice
 
-**Midpoint sounds like a well-made instrument: precise, calm, and completely
+**MidPnt sounds like a well-made instrument: precise, calm, and completely
 uninterested in being liked.**
 
 Four dimensions, each a position not an absolute:
@@ -324,7 +324,7 @@ Nothing eases in on load, nothing bounces, nothing celebrates.
 
 ## 12. The family
 
-If Midpoint becomes the first of several apps, what carries:
+If MidPnt becomes the first of several apps, what carries:
 
 **Fixed across the family** — the three typefaces and their roles, the warm
 neutral ramp, the shape system, the space scale, the voice and its rules, the
@@ -337,7 +337,7 @@ the same warm register. That is what makes a family read as a family rather
 than as one app recoloured.
 
 **Naming.** Real words, one or two syllables, concrete, no invented
-portmanteaus, no dropped vowels, no `-ly` or `-ify`. *Midpoint* is a word that
+portmanteaus, no dropped vowels, no `-ly` or `-ify`. *MidPnt* is a word that
 already means the thing.
 
 ## 13. Accessibility

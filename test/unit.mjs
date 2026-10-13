@@ -433,5 +433,50 @@ ok('every catalogue tag compiles to a filter',
   }
 }
 
+/* ---- the name, and the things that only look like the name ---------------
+   Renaming the brand is easy to get half-right. Nothing asserted it before, so
+   a bad rename could have left the wordmark saying one thing and the manifest
+   another, and nobody would have known until an install prompt looked wrong.
+
+   The second half matters more: six localStorage keys and a config global are
+   spelled "midpoint" and are NOT the brand. Renaming midpoint.session breaks
+   Sync.resume() and brings back the duplicate-you-on-refresh bug; renaming
+   midpoint.groups deletes everyone's saved groups. They are invisible, so a
+   tidy-minded agent is exactly who would "fix" them. */
+{
+  const read = f => fs.readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+  const html = read('index.html'), mani = read('manifest.webmanifest');
+  const app = read('app.js'), sync = read('sync.js');
+
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || '';
+  const h1 = html.match(/<h1>[\s\S]*?<\/span>([^<]*)<\/h1>/)?.[1]?.trim() || '';
+  ok('the page title carries the brand', title.startsWith('MidPnt'), title);
+  ok('the wordmark carries the brand', h1 === 'MidPnt', h1);
+  ok('the manifest name agrees with the wordmark',
+     JSON.parse(mani).short_name === 'MidPnt', JSON.parse(mani).short_name);
+  ok('the build footer carries the brand', /MidPnt · build/.test(app));
+  ok('the share sheet carries the brand', /title: 'MidPnt'/.test(app));
+
+  // No user-facing surface should still say the old name.
+  const stale = [['index.html', html], ['manifest.webmanifest', mani]]
+                  .filter(([, t]) => /Midpoint/.test(t)).map(([f]) => f);
+  ok('no user-facing file still says the old brand', stale.length === 0, stale.join());
+
+  /* The map popup labels the centre of the group -- the geometric midpoint,
+     which is a real word and must NOT have been renamed with the brand. */
+  ok('the map popup still names the concept, not the brand',
+     /bindPopup\('Your midpoint'\)/.test(app));
+
+  for (const [file, text, keys] of [
+    ['app.js', app, ['midpoint.name', 'midpoint.mine', 'midpoint.theme',
+                     'midpoint.groups', 'midpoint.maps']],
+    ['sync.js', sync, ['midpoint.session']],
+  ]) for (const k of keys) {
+    ok(`${k} is untouched by the rename — it holds real data`, text.includes(`'${k}'`));
+  }
+  ok('MIDPOINT_CONFIG is untouched — config.js and app.js agree on it',
+     app.includes('MIDPOINT_CONFIG') && read('config.js').includes('MIDPOINT_CONFIG'));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

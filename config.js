@@ -1,4 +1,4 @@
-/* Midpoint configuration.
+/* MidPnt configuration.
    Leave these blank and the app works exactly as before: solo + share-a-link.
    Fill them in to enable live sessions, where everyone's pin updates in place.
 

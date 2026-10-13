@@ -1,6 +1,6 @@
-# Midpoint Design System — "Waypoint"
+# MidPnt Design System — "Waypoint"
 
-The visual language for Midpoint and anything else built alongside it.
+The visual language for MidPnt and anything else built alongside it.
 
 This document is normative. If the app and this document disagree, the app is
 wrong.
@@ -27,7 +27,7 @@ for this product.**
 
 ## 1. The idea
 
-Midpoint is a **wayfinding instrument.** Routes converge on a point. That is
+MidPnt is a **wayfinding instrument.** Routes converge on a point. That is
 the whole product, and it has a rich design tradition to draw on: transit maps,
 station signage, Swiss and Italian information design — Vignelli's New York
 subway, London Underground, airport wayfinding.
@@ -278,14 +278,14 @@ Voice is part of the visual system.
 - `prefers-reduced-motion: reduce` disables every transition.
 - Both themes meet contrast independently.
 
-## 9. Applying this beyond Midpoint
+## 9. Applying this beyond MidPnt
 
 For a shared ecosystem, what carries across:
 
 **Fixed:** the three families and their roles, the warm neutral ramp, the shape
 system, the space scale, the writing rules, the accessibility floor.
 
-**Per-product:** `--signal`. Midpoint's is Clay. A sibling app picks its own
+**Per-product:** `--signal`. MidPnt's is Clay. A sibling app picks its own
 single accent from the same warm register, keeping the neutrals and the
 signals identical.
 

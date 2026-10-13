@@ -1,4 +1,4 @@
-# Midpoint
+# MidPnt
 
 *Picking this up after a gap? Read `STATUS.md` first.*
 

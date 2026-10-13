@@ -1,4 +1,4 @@
-/* Midpoint — fair meetup spots for up to 4 people.
+/* MidPnt — fair meetup spots for up to 8 people.
    Zero backend, zero API keys, zero cost.
    Data: OpenStreetMap (Nominatim geocoding, Overpass places) + OSRM (drive times). */
 
@@ -880,7 +880,7 @@ function drawMap(selectedKey) {
 
   if (state.center) {
     L.marker([state.center.lat, state.center.lon], { icon: circleIcon('transparent', 14, true) })
-      .bindPopup('Midpoint').addTo(layer);
+      .bindPopup('Your midpoint').addTo(layer);
     pts.push([state.center.lat, state.center.lon]);
   }
 
@@ -2010,7 +2010,7 @@ function buildId() {
 function boot() {
   wireTheme();          // before the first paint, so nothing flashes dark
   const b = $('#build');
-  if (b) b.textContent = `Midpoint · build ${buildId()}`;
+  if (b) b.textContent = `MidPnt · build ${buildId()}`;
   initMap();
 
   const restored = location.hash.length > 1 && decodeState(location.hash.slice(1));
@@ -2109,7 +2109,7 @@ function boot() {
     syncURL();
     const url = Sync.shareURL();
     try {
-      if (navigator.share) await navigator.share({ title: 'Midpoint', url });
+      if (navigator.share) await navigator.share({ title: 'MidPnt', url });
       else { await navigator.clipboard.writeText(url); log('Invite link copied.'); }
     } catch { /* user dismissed the share sheet */ }
   });

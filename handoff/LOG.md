@@ -15,6 +15,26 @@ What changed, in a sentence or two. Why, if it is not obvious.
 
 ---
 
+## 2026-10-13 — Renamed to MidPnt
+**Sal / Claude** · this commit
+
+Sal's call, and it was his preference from early on. "Midpoint" is crowded and
+unownable, and it names the geographic middle — the thing every competitor
+computes and the thing this app deliberately does not do. MidPnt is clear in
+the App Store namespace. The known cost is spoken word of mouth: someone hears
+"midpoint" and searches for it. Mitigation is owning both spellings and
+titling the store listing "MidPnt — meet in the middle".
+
+The mark is unchanged. Those two chevrons converging on empty space depict
+meeting; they never spelled anything, so they work with any name.
+
+**Watch out:** the rename was case-sensitive on purpose. Capital-M "Midpoint"
+was the brand and became MidPnt. Lowercase "midpoint" is the geometric concept,
+the repo name, the live URL and **six localStorage keys** — all deliberately
+untouched. Renaming `midpoint.session` would break `Sync.resume()` and bring
+back the duplicate-you-on-refresh bug; renaming `midpoint.groups` would delete
+everyone's saved groups. Do not tidy them.
+
 ## 2026-09-30 — The app could wedge itself permanently
 **Sal / Claude** · `d59b8d7`
 
@@ -78,8 +98,11 @@ for the manual override. A test asserts they are identical. Change both.
 
 ## Rejected, so nobody re-proposes them
 
-- **"MidPnt"** as a name. Available, but search engines normalise it back to
-  "Midpoint" and hand your traffic to five other companies.
+- **"Midpoint"** as the brand name, as of 13 October — see the rename entry
+  above. The word is crowded (a fintech, two network companies, a conferencing
+  firm, an iOS app developer, and an existing App Store listing) and describes
+  the thing the product deliberately is *not*: the fair point, not the middle
+  one.
 - **Three branding directions** before the current one. The minimalist green
   mark and the quiet dark chrome are settled; see `docs/brand.md`.
 - **A web wrapper for the App Store.** Guideline 4.2 rejects thin wrappers;

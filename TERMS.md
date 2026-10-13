@@ -1,4 +1,4 @@
-# Terms of Use — Midpoint
+# Terms of Use — MidPnt
 
 > **DRAFT — NOT YET IN FORCE.** Not legal advice, and not written by a lawyer.
 > **Have one review this before the App Store or before relying on it.** The
@@ -7,7 +7,7 @@
 >
 > Last updated: DRAFT · Effective: NOT YET
 
-## What Midpoint is
+## What MidPnt is
 
 A tool that suggests places for a group to meet, ranked so that no one person
 absorbs the whole journey. It is provided free.
@@ -36,13 +36,13 @@ Do not share anyone else's location without their agreement.
 
 ## Acceptable use
 
-Do not use Midpoint to track, follow, stalk or harass anyone; to break any law;
+Do not use MidPnt to track, follow, stalk or harass anyone; to break any law;
 to attempt to reach data belonging to sessions you were not invited to; or to
 place automated load on it or on the free services it depends on.
 
 ## The services it depends on
 
-Midpoint relies on free public services — OpenStreetMap, Overpass, OSRM,
+MidPnt relies on free public services — OpenStreetMap, Overpass, OSRM,
 Supabase — which may be slow, rate-limited or unavailable, without notice. The
 app may therefore stop working at any time, and no availability is promised.
 

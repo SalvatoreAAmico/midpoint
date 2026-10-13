@@ -1,9 +1,9 @@
-# Working on Midpoint
+# Working on MidPnt
 
 Read this before changing anything. It is the house rules, and most of them
 exist because something broke once.
 
-Midpoint finds a place to meet that is fair to everyone — not the geographic
+MidPnt finds a place to meet that is fair to everyone — not the geographic
 middle, the *fair* middle. A café five minutes from you and forty from your
 friend has a reasonable average and is the wrong answer. That distinction is
 the entire product. Every competitor on the App Store computes the geographic
@@ -50,6 +50,12 @@ confirm the new assertion goes red.
 - **Costs are indexed by `state.people`, with `null` for anyone who has not
   shared a location.** Scoring works on the located subset, so a local search
   must re-map before rendering. Two index bases is a bug that already shipped.
+- **Never rename the `midpoint.*` localStorage keys, `MIDPOINT_CONFIG`, the
+  repo, or the `/midpoint/` URL.** The brand is MidPnt; these are not the
+  brand. `midpoint.session` backs `Sync.resume()` — rename it and refreshing
+  mid-session creates a second copy of you, a bug already fixed once.
+  `midpoint.groups` holds saved groups, `midpoint.name` the name people typed.
+  Changing any of them silently wipes real data on every device.
 - **Never add a LICENSE file.** The repo is deliberately all-rights-reserved.
   A licence cannot be revoked for commits already published.
 - **Never commit a Supabase `service_role` key.** The publishable key in

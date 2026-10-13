@@ -1,4 +1,4 @@
--- Midpoint — live session sync
+-- MidPnt — live session sync
 -- Paste this whole file into the Supabase SQL editor and run it once.
 --
 -- SECURITY MODEL

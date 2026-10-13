@@ -1,6 +1,6 @@
 # handoff
 
-Two people work on Midpoint, each with their own Claude Code session. This
+Two people work on MidPnt, each with their own Claude Code session. This
 folder is what neither git nor a chat window can tell you.
 
 Called `handoff` rather than `sync` because `sync.js` is already a thing — the

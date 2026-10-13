@@ -1,4 +1,4 @@
-# Privacy Policy — Midpoint
+# Privacy Policy — MidPnt
 
 > **DRAFT — NOT YET IN FORCE.**
 > Written by describing exactly what the code does, which makes it accurate but
@@ -9,7 +9,7 @@
 >
 > Last updated: DRAFT · Effective: NOT YET
 
-Midpoint helps a group find somewhere fair to meet. To do that it needs to know
+MidPnt helps a group find somewhere fair to meet. To do that it needs to know
 roughly where people are. This explains what happens to that, in plain terms.
 
 **The short version.** There are no accounts, no tracking, no advertising and
@@ -32,7 +32,7 @@ photos, no device identifiers, no advertising ID, no browsing history.
 
 ## Where it goes
 
-Midpoint works in two modes and they differ significantly.
+MidPnt works in two modes and they differ significantly.
 
 **Link mode (the default).** Everything lives in the web address itself. It is
 never sent to any server operated by us, because there isn't one. If you share

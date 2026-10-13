@@ -16,7 +16,7 @@ the design gets built from this rather than from my assumptions.
 Do this part first, and do it with screenshots rather than words. Five to ten
 apps or sites, each with one sentence.
 
-**Apps whose look you like** *(they do not need to be like Midpoint at all)*
+**Apps whose look you like** *(they do not need to be like MidPnt at all)*
 
 | App | What specifically you like about it |
 |---|---|
@@ -34,7 +34,7 @@ apps or sites, each with one sentence.
 | | |
 | | |
 
-**One app you would be happy for people to say Midpoint reminds them of:**
+**One app you would be happy for people to say MidPnt reminds them of:**
 
 >
 
@@ -58,7 +58,7 @@ instinct is the useful one.
 | Classic | | | | | | Modern |
 | Precise | | | | | | Loose |
 
-**Three adjectives Midpoint should be:**
+**Three adjectives MidPnt should be:**
 
 1.
 2.
@@ -102,7 +102,7 @@ Saving time? Being fair? Making a plan feel easy?)
 
 ## 5. Name and words
 
-**Is "Midpoint" the name?** If not, candidates:
+**Is "MidPnt" the name?** If not, candidates:
 
 >
 
@@ -150,7 +150,7 @@ settled unless you change them.
 
 | | Decision | How we know |
 |---|---|---|
-| **Name** | Midpoint | "I actually really like the green midpoint logo and name" |
+| **Name** | MidPnt | "I actually really like the green midpoint logo and name" |
 | **Mark** | Two converging routes, the gap as the meeting point | Same |
 | **Brand colour** | Green | Same |
 | **Interface** | The original's quiet dark chrome | "The original is still better", said twice |

@@ -1,4 +1,4 @@
-/* Live session sync for Midpoint.
+/* Live session sync for MidPnt.
 
    Talks only to the mp_* Postgres functions, never to tables directly — the
    anon key has no table access at all (see supabase/schema.sql).
