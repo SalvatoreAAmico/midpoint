@@ -10,7 +10,7 @@ struct CategorySection: View {
             Text("What are you up for?").microHeader()
             FlowLayout(spacing: 8) {
                 ForEach(shown, id: \.self) { id in
-                    if let c = Catalog.shared[id] { Chip(label: c.label, on: model.cats.contains(id)) { pick(id) } }
+                    if let c = Catalog.shared[id] { Chip(id: id, label: c.label, on: model.cats.contains(id)) { pick(id) } }
                 }
                 Button { Task { await model.rollLucky() } } label: {
                     Label("Feeling lucky", systemImage: "dice").font(Typo.label)
@@ -28,7 +28,7 @@ struct CategorySection: View {
                     Text("Nothing matches “\(query.trimmingCharacters(in: .whitespaces))”. Try a broader word — “drinks”, “food”, “outdoors”.")
                         .font(Typo.body).foregroundStyle(Palette.muted)
                 } else {
-                    FlowLayout(spacing: 8) { ForEach(hits, id: \.id) { c in Chip(label: c.label, on: model.cats.contains(c.id)) { pick(c.id); query = "" } } }
+                    FlowLayout(spacing: 8) { ForEach(hits, id: \.id) { c in Chip(id: c.id, label: c.label, on: model.cats.contains(c.id)) { pick(c.id); query = "" } } }
                 }
             }
         }
@@ -50,10 +50,16 @@ struct CategorySection: View {
 }
 
 struct Chip: View {
-    let label: String, on: Bool, action: () -> Void
+    let id: String, label: String, on: Bool, action: () -> Void
     var body: some View {
         Button(action: action) {
-            Text(label).font(Typo.label).padding(.horizontal, 12).frame(minHeight: 44)
+            // The catalogue label leads with an emoji ("☕ Coffee"), which is the web app's
+            // icon. Emoji depend on the system emoji font (missing in some simulator
+            // runtimes, drawn as a box), so the app draws an SF Symbol and drops the emoji.
+            Label { Text(CategoryIcon.name(label)).font(Typo.label) } icon: {
+                if let sym = CategoryIcon.symbol[id] { Image(systemName: sym).font(Typo.label) }
+            }
+            .padding(.horizontal, 12).frame(minHeight: 44)
                 .background(on ? Palette.accent : Palette.field, in: Capsule())
                 .foregroundStyle(on ? Palette.accentInk : Palette.ink)
         }
@@ -83,4 +89,27 @@ struct FlowLayout: Layout {
             x += sz.width + spacing; row = max(row, sz.height)
         }
     }
+}
+
+enum CategoryIcon {
+    /// The label without its leading emoji.
+    static func name(_ label: String) -> String {
+        guard let i = label.firstIndex(of: " "), label[..<i].unicodeScalars.contains(where: { $0.value > 0x2000 })
+        else { return label }
+        return String(label[label.index(after: i)...])
+    }
+
+    /// Absent id means no icon, never a wrong one.
+    static let symbol: [String: String] = [
+        "coffee": "cup.and.saucer.fill", "food": "fork.knife", "drinks": "wineglass", "outdoors": "tree.fill",
+        "culture": "paintpalette.fill", "screens": "film.fill", "games": "target", "quiet": "books.vertical.fill",
+        "active": "figure.run", "icecream": "snowflake", "nightlife": "moon.stars.fill", "playground": "figure.and.child.holdinghands",
+        "dogpark": "pawprint.fill", "beach": "beach.umbrella.fill", "nature": "mountain.2.fill", "swimming": "figure.pool.swim",
+        "golf": "flag.fill", "zoo": "tortoise.fill", "themepark": "ticket.fill", "shopping": "bag.fill",
+        "market": "basket.fill", "landmarks": "building.columns.fill", "arts": "theatermasks.fill", "deli": "takeoutbag.and.cup.and.straw.fill",
+        "breakfast": "sun.horizon.fill", "lunch": "fork.knife", "dinner": "fork.knife", "pizza": "fork.knife",
+        "sushi": "fork.knife", "mexican": "fork.knife", "italian": "fork.knife", "chinese": "fork.knife",
+        "thai": "fork.knife", "indian": "fork.knife", "korean": "fork.knife", "burger": "fork.knife",
+        "bbq": "flame.fill", "seafood": "fish.fill", "vegan": "leaf.fill", "mediterranean": "fork.knife",
+    ]
 }
