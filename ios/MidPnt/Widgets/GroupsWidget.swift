@@ -12,7 +12,7 @@ struct GroupsProvider: TimelineProvider {
         GroupStore.load(UserDefaultsStore(UserDefaults(suiteName: "group.com.salvatoreaamico.midpnt") ?? .standard))
     }
     func placeholder(in context: Context) -> GroupsEntry {
-        GroupsEntry(date: Date(), groups: [SavedGroup(id: "x", name: "The Tuesday crew", people: [])])
+        GroupsEntry(date: Date(), groups: [SavedGroup.from(name: "The Tuesday crew", people: [], id: "x")])
     }
     func getSnapshot(in context: Context, completion: @escaping (GroupsEntry) -> Void) { completion(GroupsEntry(date: Date(), groups: load())) }
     func getTimeline(in context: Context, completion: @escaping (Timeline<GroupsEntry>) -> Void) {
