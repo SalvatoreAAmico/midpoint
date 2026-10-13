@@ -28,6 +28,7 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 16).padding(.bottom, 32)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(Palette.bg)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -46,7 +47,18 @@ struct FindButton: View {
     @Bindable var model: AppModel
     var body: some View {
         Button {
-            Task { await model.search() }
+            Task {
+                // A tap on a Button does not end editing, so a place typed without pressing
+                // return is still in the field. Resigning commits it (PersonRow saves on blur);
+                // then wait for that geocode, or the search runs without the person.
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                try? await Task.sleep(for: .milliseconds(200))
+                var waited = 0
+                while model.people.contains(where: { $0.locating }), waited < 80 {
+                    try? await Task.sleep(for: .milliseconds(100)); waited += 1
+                }
+                await model.search()
+            }
         } label: {
             HStack {
                 if model.searching { ProgressView().tint(Palette.accentInk) }

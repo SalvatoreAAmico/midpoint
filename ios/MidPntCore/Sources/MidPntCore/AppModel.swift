@@ -195,7 +195,9 @@ public final class AppModel {
             resultsAt = clock().timeIntervalSince1970 * 1000
             if isLive { await share(located: travellers) }
         } catch {
-            note = "Search failed: \(error.localizedDescription). Try again in a moment."
+            // Foundation's messages already end in a full stop ("The request timed out.").
+            let why = error.localizedDescription.trimmingCharacters(in: CharacterSet(charactersIn: ". "))
+            note = "Search failed: \(why). Try again in a moment."
         }
     }
 

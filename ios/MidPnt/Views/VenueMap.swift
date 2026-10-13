@@ -32,6 +32,15 @@ struct VenueMap: View {
         }
         .background(Palette.mapBg)
         .onChange(of: model.results.first?.venue.key) { _, _ in position = .automatic }
+        // .automatic frames a lone annotation at maximum zoom: a crosswalk, no context.
+        // One person gets a neighbourhood; two or more fit themselves.
+        .onChange(of: model.people.compactMap(\.coordinate).map { "\($0.lat),\($0.lon)" }) { _, pts in
+            guard model.results.isEmpty else { return }
+            if pts.count == 1, let c = model.people.compactMap(\.coordinate).first {
+                position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: c.lat, longitude: c.lon),
+                                                      span: MKCoordinateSpan(latitudeDelta: 0.06, longitudeDelta: 0.06)))
+            } else { position = .automatic }
+        }
         .onChange(of: selected) { _, key in
             guard let key, let s = model.results.first(where: { $0.venue.key == key }) else { return }
             withAnimation(.easeInOut(duration: 0.15)) {

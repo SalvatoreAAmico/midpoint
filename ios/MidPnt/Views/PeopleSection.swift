@@ -26,6 +26,8 @@ struct PersonRow: View {
     let locator: LocationProvider
     @State private var name = ""
     @State private var place = ""
+    private enum Field { case name, place }
+    @FocusState private var focus: Field?
 
     private var isMe: Bool { person.id == model.me }
 
@@ -34,7 +36,7 @@ struct PersonRow: View {
             HStack(spacing: 10) {
                 Circle().fill(color).frame(width: 12, height: 12)
                     .overlay(Circle().stroke(Palette.pinRing, lineWidth: 2))
-                TextField("Name", text: $name).font(Typo.heading)
+                TextField("Name", text: $name).font(Typo.heading).focused($focus, equals: .name)
                     .onSubmit { Task { await model.setName(person.id, name) } }
                 if model.people.count > 1 {
                     Button { model.removePerson(person.id) } label: { Image(systemName: "xmark.circle") }
@@ -43,6 +45,7 @@ struct PersonRow: View {
             }
             HStack(spacing: 8) {
                 TextField("Where from? (a place or address)", text: $place).font(Typo.body)
+                    .focused($focus, equals: .place)
                     .textInputAutocapitalization(.words).submitLabel(.search)
                     .onSubmit { Task { await model.setPlace(person.id, typed: place) } }
                     .padding(10).background(Palette.field, in: RoundedRectangle(cornerRadius: 10))
@@ -58,6 +61,14 @@ struct PersonRow: View {
         }
         .padding(12).background(Palette.panel, in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.line, lineWidth: 1))
+        // Return is not the only way out of a field: tapping the next field or the search
+        // button must not drop what was typed. A name or place that is unchanged is not re-sent.
+        .onChange(of: focus) { old, _ in
+            if old == .name, name != person.name { Task { await model.setName(person.id, name) } }
+            if old == .place, place != person.label, !place.trimmingCharacters(in: .whitespaces).isEmpty {
+                Task { await model.setPlace(person.id, typed: place) }
+            }
+        }
         .onAppear { name = person.name; place = person.label }
         .onChange(of: person.name) { _, n in if n != name { name = n } }
         .onChange(of: person.label) { _, l in place = l }
