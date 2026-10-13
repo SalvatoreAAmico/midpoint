@@ -15,6 +15,23 @@ What changed, in a sentence or two. Why, if it is not obvious.
 
 ---
 
+## 2026-10-13 — iOS phases 2–4: sync, app model, SwiftUI shell, widgets
+**Claude** · this commit
+
+`MidPntCore` now holds the whole app's logic: `SessionClient` / `SessionPoller` (every
+spend guard from `sync.js`), voting and winner, lucky, maps links, invite parsing, and
+`AppModel`. 93 tests, including two phones in one session agreeing on roster, order,
+shortlist and winner, and `test/ios-interop.sh`, which runs the Swift client against the
+**real schema** as `anon` through `test/rpc-shim.mjs` (a PostgREST stand-in). `app.js`
+gained `tallyOf` / `pickWinner` (pure; `?v=38`). `test/golden.mjs` also generates the iOS
+colour assets, `Palette.swift` and `Config.swift`, so palette and endpoint cannot drift.
+
+`ios/MidPnt/` is the SwiftUI shell, a Home Screen widget and a Live Activity. **It has never
+been compiled** (no Xcode in a container); only syntax-parsed. The CI job `ios-app` is its
+first compile. Push notifications and background location were left unbuilt on purpose.
+
+**Watch out:** the plan's "two real devices" test is still owed. See `ios/README.md`.
+
 ## 2026-10-13 — iOS phase 1: MidPntCore and the golden vectors
 **Claude** · this commit
 

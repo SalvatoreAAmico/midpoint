@@ -27,3 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: cd ios/MidPntCore && swift test
+
+  ios-app:
+    # The only place the SwiftUI / MapKit / ActivityKit / WidgetKit layer is
+    # compiled. It was written without a Mac in reach, so the first run of this job
+    # is the first time that code meets a compiler: expect to fix what it finds.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: cd ios/MidPnt && xcodegen generate
+      - run: >
+          xcodebuild build -project ios/MidPnt/MidPnt.xcodeproj -scheme MidPnt
+          -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO

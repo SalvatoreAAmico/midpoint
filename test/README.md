@@ -41,6 +41,14 @@ same outputs. Timezone-independent: dates are `{day, h, m}`.
 Two ways to go red, on purpose: change `app.js` and forget to regenerate, and
 `golden.mjs` fails; regenerate and forget the Swift side, and `swift test` fails.
 
+## iOS interop — the Swift client against the real schema
+```
+bash test/pg-up.sh && bash test/ios-interop.sh
+```
+`test/rpc-shim.mjs` answers `POST /rest/v1/rpc/mp_*` like PostgREST does, running each call as
+`anon` against the throwaway Postgres, and checks the `apikey` header. The Swift `InteropTests`
+(skipped unless `MP_RPC_URL` is set) drive `SessionClient` and two `AppModel`s through it.
+
 ## Schema — the real database
 
 ```
@@ -65,4 +73,4 @@ order of magnitude before anyone noticed. Each suite prints its own total when
 it runs, and that is the number to trust.
 
 Current totals: **165 / 185 / 99 / 27 / 8** across unit, smoke, smoke-live,
-schema and migrations, plus 10 golden files and 44 Swift tests.
+schema and migrations, plus 49 generated files checked by golden.mjs and 93 Swift tests (4 of them interop).

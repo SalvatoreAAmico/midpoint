@@ -1,0 +1,83 @@
+[
+  {
+    "app": "apple",
+    "venue": {
+      "name": "Bow Truss & Co",
+      "lat": 41.9,
+      "lon": -87.7
+    },
+    "out": "https://maps.apple.com/?q=Bow%20Truss%20%26%20Co&ll=41.9,-87.7"
+  },
+  {
+    "app": "apple",
+    "venue": {
+      "name": "",
+      "lat": -33.5,
+      "lon": 151
+    },
+    "out": "https://maps.apple.com/?q=&ll=-33.5,151"
+  },
+  {
+    "app": "apple",
+    "venue": {
+      "name": "Café “Ünï”",
+      "lat": 0,
+      "lon": 0
+    },
+    "out": "https://maps.apple.com/?q=Caf%C3%A9%20%E2%80%9C%C3%9Cn%C3%AF%E2%80%9D&ll=0,0"
+  },
+  {
+    "app": "google",
+    "venue": {
+      "name": "Bow Truss & Co",
+      "lat": 41.9,
+      "lon": -87.7
+    },
+    "out": "https://www.google.com/maps/search/?api=1&query=41.9,-87.7&query_place_id=&query=Bow%20Truss%20%26%20Co%2041.9,-87.7"
+  },
+  {
+    "app": "google",
+    "venue": {
+      "name": "",
+      "lat": -33.5,
+      "lon": 151
+    },
+    "out": "https://www.google.com/maps/search/?api=1&query=-33.5,151&query_place_id=&query=%20-33.5,151"
+  },
+  {
+    "app": "google",
+    "venue": {
+      "name": "Café “Ünï”",
+      "lat": 0,
+      "lon": 0
+    },
+    "out": "https://www.google.com/maps/search/?api=1&query=0,0&query_place_id=&query=Caf%C3%A9%20%E2%80%9C%C3%9Cn%C3%AF%E2%80%9D%200,0"
+  },
+  {
+    "app": "osm",
+    "venue": {
+      "name": "Bow Truss & Co",
+      "lat": 41.9,
+      "lon": -87.7
+    },
+    "out": "https://www.openstreetmap.org/?mlat=41.9&mlon=-87.7#map=18/41.9/-87.7"
+  },
+  {
+    "app": "osm",
+    "venue": {
+      "name": "",
+      "lat": -33.5,
+      "lon": 151
+    },
+    "out": "https://www.openstreetmap.org/?mlat=-33.5&mlon=151#map=18/-33.5/151"
+  },
+  {
+    "app": "osm",
+    "venue": {
+      "name": "Café “Ünï”",
+      "lat": 0,
+      "lon": 0
+    },
+    "out": "https://www.openstreetmap.org/?mlat=0&mlon=0#map=18/0/0"
+  }
+]

@@ -37,6 +37,13 @@ rather than documents and are marked as such.
   not identify themselves: `MidPnt-iOS/<version> (<email>)`. `ios/MidPntCore`
   takes it as a parameter; the address is yours to choose.
 
+- [ ] **iOS setup that only you can do** (details: `ios/README.md`, `docs/ios-plan.md` §9):
+      Apple Developer Program and Team ID · the bundle ID (`com.salvatoreaamico.midpnt`
+      is permanent once published) · put `docs/apple-app-site-association.json` (with your
+      Team ID) at `salvatoreaamico.com/.well-known/apple-app-site-association`, which is the
+      portfolio repo, for Universal Links · stable privacy and terms URLs for the app's
+      Settings screen (`MP_PRIVACY_URL`, `MP_TERMS_URL` in `ios/MidPnt/project.yml`) ·
+      whether push notifications are in v1 (recommended: later).
 - [ ] **Read and approve `TERMS.md`** — draft written. **Needs review.** Apple
       requires either their standard EULA or your own terms.
 - [ ] **A working support URL.** Apple checks it. An email address on a page is

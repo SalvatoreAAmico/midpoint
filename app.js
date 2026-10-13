@@ -1747,12 +1747,15 @@ function rollLucky() {
   search();
 }
 
-function tally(key) {
-  const v = state.votes[key] || {};
+/* Pure so ios/MidPntCore can be held to it by test/golden.mjs: a winner
+   announced on one phone and not another is a disagreement in the room. */
+function tallyOf(votes, key) {
+  const v = votes[key] || {};
   let up = 0, down = 0;
   for (const val of Object.values(v)) val > 0 ? up++ : down++;
   return { up, down };
 }
+const tally = key => tallyOf(state.votes, key);
 
 /* A thumbs-down rules a place out only while nobody wants it. "Not there,
    it's terrible" is the commonest thing anyone says while choosing, and one
@@ -1767,16 +1770,17 @@ const isContested = key => tally(key).down > 0;
 
 /* Once everyone with a location has voted, the group has decided. Announcing
    it gives the session an ending, which it otherwise lacks. */
-function winner() {
+function pickWinner(votes, people, results) {
   const voters = new Set();
-  for (const v of Object.values(state.votes)) for (const id of Object.keys(v)) voters.add(id);
-  const present = state.people.filter(p => p.lat != null);
+  for (const v of Object.values(votes)) for (const id of Object.keys(v)) voters.add(id);
+  const present = people.filter(p => p.lat != null);
   if (present.length < 2 || !present.every(p => voters.has(p.id))) return null;
 
-  const live = state.results.filter(v => !isContested(v.key) && tally(v.key).up > 0);
+  const live = results.filter(v => tallyOf(votes, v.key).down === 0 && tallyOf(votes, v.key).up > 0);
   if (!live.length) return null;
-  return live.reduce((a, b) => (tally(b.key).up > tally(a.key).up ? b : a));
+  return live.reduce((a, b) => (tallyOf(votes, b.key).up > tallyOf(votes, a.key).up ? b : a));
 }
+const winner = () => pickWinner(state.votes, state.people, state.results);
 
 function renderResults(selectedKey) {
   const host = $('#results');

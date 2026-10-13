@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.salvatoreaamico.midpnt"],
+        "components": [
+          { "/": "/midpoint/*", "comment": "Invites: https://salvatoreaamico.com/midpoint/?s=<code>" }
+        ]
+      }
+    ]
+  }
+}

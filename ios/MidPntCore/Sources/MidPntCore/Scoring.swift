@@ -88,9 +88,15 @@ public struct SharedResults: Codable, Sendable {
     public var travel: String?
     public var venues: [SharedVenue]
 
+    public init(at: Double?, people: [String], together: Bool, estimated: Bool, travel: String?, venues: [SharedVenue]) {
+        self.at = at; self.people = people; self.together = together; self.estimated = estimated
+        self.travel = travel; self.venues = venues
+    }
+
     public struct SharedVenue: Codable, Sendable {
         public var venue: Venue
         public var costs: [Double?]
+        public init(venue: Venue, costs: [Double?]) { self.venue = venue; self.costs = costs }
         public init(from decoder: Decoder) throws {
             venue = try Venue(from: decoder)
             costs = try decoder.container(keyedBy: Keys.self).decodeIfPresent([Double?].self, forKey: .costs) ?? []

@@ -25,11 +25,15 @@ bash test/pg-up.sh && bash test/schema.sh             # real Postgres, <2s
 bash test/migrations.sh                               # schema/migration drift
 node test/golden.mjs                                  # app.js vs the iOS golden vectors, <1s
 cd ios/MidPntCore && swift test                       # the Swift port of the same logic, <10s
+bash test/pg-up.sh && bash test/ios-interop.sh        # the Swift sync client against the real schema, <20s
 ```
 
 `swift test` needs a Swift 6 toolchain (Linux is fine — `MidPntCore` imports no
-Apple-only framework). `golden.mjs` fails when `app.js` has changed behaviour and
-the committed vectors are stale: regenerate with `node test/golden.mjs --write`,
+Apple-only framework). `ios-interop.sh` puts a PostgREST stand-in (`test/rpc-shim.mjs`)
+in front of the throwaway Postgres and runs the Swift client against it as the `anon` role.
+`golden.mjs` also regenerates the iOS colour assets and `Config.swift` from `styles.css` and
+`config.js`; it fails when `app.js`, `styles.css` or `config.js` has changed and
+the committed copies are stale. Regenerate with `node test/golden.mjs --write`,
 then make `MidPntCore` agree, and commit all of it together.
 
 `CHROME_PATH` is only needed if Playwright's bundled browser is missing. In a

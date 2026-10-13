@@ -1,3 +1,6 @@
 test/node_modules/
 test/.tmp*.mjs
 *.png
+
+# The iOS app icon is a real asset, not a screenshot.
+!ios/MidPnt/Resources/Assets.xcassets/**/*.png

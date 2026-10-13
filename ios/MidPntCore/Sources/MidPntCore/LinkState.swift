@@ -7,8 +7,14 @@ public struct Person: Hashable, Sendable, Codable {
     public var lon: Double?
     public var label: String
     public var flex: Bool
-    public init(id: String, name: String = "", lat: Double? = nil, lon: Double? = nil, label: String = "", flex: Bool = false) {
+    /// Name was a placeholder (`Names.codename`), not something typed. Local only.
+    public var nameAuto: Bool = false
+    /// A location lookup is in flight. Local only.
+    public var locating: Bool = false
+    public init(id: String, name: String = "", lat: Double? = nil, lon: Double? = nil, label: String = "", flex: Bool = false,
+                nameAuto: Bool = false, locating: Bool = false) {
         self.id = id; self.name = name; self.lat = lat; self.lon = lon; self.label = label; self.flex = flex
+        self.nameAuto = nameAuto; self.locating = locating
     }
     public var coordinate: Coordinate? {
         guard let lat, let lon else { return nil }
