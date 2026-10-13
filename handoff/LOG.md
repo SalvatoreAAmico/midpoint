@@ -15,6 +15,19 @@ What changed, in a sentence or two. Why, if it is not obvious.
 
 ---
 
+## 2026-10-13 — A build plan for the iOS app
+**Sal / Claude** · this commit
+
+`docs/ios-plan.md`: Swift package `MidPntCore` for the pure logic (builds and
+tests on Linux, so no Mac until the UI), SwiftUI + MapKit app on top, same
+Supabase backend untouched. The scorers are kept honest by golden vectors
+generated from `app.js`, so a ranking never depends on which phone searched.
+Phase 1 can start now; the SwiftUI shell waits for one real meetup.
+
+**Watch out:** nothing is built yet. Section 9 lists the decisions only Sal
+can make (Mac, developer account, bundle ID, Universal Links file on the
+portfolio site).
+
 ## 2026-10-13 — Renamed to MidPnt
 **Sal / Claude** · this commit
 

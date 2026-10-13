@@ -1,5 +1,8 @@
 # If we build a native iOS app
 
+*The build plan — architecture, phases, keeping two clients in step — is
+`docs/ios-plan.md`. This file is the case for it.*
+
 A running list of what a Swift app would actually buy us — kept honest, because
 "we'll do it in the native version" is where wishful features go to hide.
 

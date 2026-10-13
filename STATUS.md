@@ -77,4 +77,5 @@ already tried and rejected so nobody re-proposes them.
 `README.md` how it works · `TODO.md` what only Sal can do ·
 `docs/brand.md` identity · `docs/design-system.md` interface ·
 `docs/brand-brief.md` what has actually been decided, and the evidence ·
-`docs/osm-categories.md` why those categories · `ROADMAP-NATIVE.md` the iOS case
+`docs/osm-categories.md` why those categories · `ROADMAP-NATIVE.md` the iOS case ·
+`docs/ios-plan.md` how the iOS app gets built
