@@ -25,6 +25,22 @@ Set `CHROME_PATH` if Playwright's bundled browser isn't installed.
 Overpass, and OSRM are only exercised for real when the app runs in a
 browser with network access.
 
+## Golden — app.js against the iOS port
+```
+node test/golden.mjs           # check: fails if the vectors on disk are stale
+node test/golden.mjs --write   # regenerate after an intended change to app.js
+cd ios/MidPntCore && swift test
+```
+Runs every pure function the two clients share (distance, scoring, opening
+hours, chains, category search, Overpass query building, venue parsing and
+filtering, search area, link parsing, codenames, place names, saved groups)
+over fixed inputs and writes the answers to `ios/MidPntCore/Tests/golden/`,
+plus `catalog.json`, which the Swift package loads. The Swift tests assert the
+same outputs. Timezone-independent: dates are `{day, h, m}`.
+
+Two ways to go red, on purpose: change `app.js` and forget to regenerate, and
+`golden.mjs` fails; regenerate and forget the Swift side, and `swift test` fails.
+
 ## Schema — the real database
 
 ```
@@ -48,5 +64,5 @@ The numbers above are a rough guide, not a contract — they were wrong by an
 order of magnitude before anyone noticed. Each suite prints its own total when
 it runs, and that is the number to trust.
 
-Current totals: **151 / 185 / 99 / 27 / 8** across unit, smoke, smoke-live,
-schema and migrations.
+Current totals: **165 / 185 / 99 / 27 / 8** across unit, smoke, smoke-live,
+schema and migrations, plus 10 golden files and 44 Swift tests.

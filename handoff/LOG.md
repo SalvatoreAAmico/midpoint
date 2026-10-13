@@ -15,6 +15,30 @@ What changed, in a sentence or two. Why, if it is not obvious.
 
 ---
 
+## 2026-10-13 — iOS phase 1: MidPntCore and the golden vectors
+**Claude** · this commit
+
+`ios/MidPntCore`, a Swift package with no Apple-only imports (tests on Linux):
+distance, centroid, outliers, scoring, opening hours, chains, categories,
+Overpass query and parsing, link parsing, codenames, saved groups, plus thin
+Nominatim / Overpass / OSRM clients and `Search.run`, whose test asserts a
+search is two HTTP calls at group sizes 1, 2, 4 and 8. `test/golden.mjs` runs
+`app.js` over fixed inputs and writes the answers to `ios/MidPntCore/Tests/golden/`;
+`swift test` reproduces them. `docs/session-contract.md` writes down the `mp_*`
+wire format. CI runs unit, golden and `swift test` (`.github/workflows/tests.yml`).
+
+`app.js` changed, behaviour-preservingly: `parseState`, `parseVenues`,
+`searchArea`, `filterVenues` and `remapResults` were extracted from
+`decodeState`, `fetchVenues`, `search` and `adoptResults` so there is something
+pure to compare against. `?v=37`.
+
+**Watch out:** `SPREAD_WEIGHT` and the other tuning constants are literals in
+`Limits.swift` on purpose. Retune one in `app.js` and `swift test` goes red until
+Swift is retuned in the same commit; categories and the chain list are generated
+and need no Swift change. The golden vectors caught one real disagreement while
+this was written: `codename()` hashes the *high surrogate only* of an emoji
+(`charCodeAt(0)` on a code point), not both UTF-16 units.
+
 ## 2026-10-13 — A build plan for the iOS app
 **Sal / Claude** · this commit
 

@@ -33,6 +33,10 @@ rather than documents and are marked as such.
 
 ## Before the App Store
 
+- [ ] **A support email for the iOS `User-Agent`.** Nominatim blocks clients that do
+  not identify themselves: `MidPnt-iOS/<version> (<email>)`. `ios/MidPntCore`
+  takes it as a parameter; the address is yours to choose.
+
 - [ ] **Read and approve `TERMS.md`** — draft written. **Needs review.** Apple
       requires either their standard EULA or your own terms.
 - [ ] **A working support URL.** Apple checks it. An email address on a page is

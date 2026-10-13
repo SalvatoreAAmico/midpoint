@@ -1,0 +1,144 @@
+{
+  "isChain": [
+    {
+      "tags": {
+        "brand": "Starbucks"
+      },
+      "name": "Starbucks",
+      "out": true
+    },
+    {
+      "tags": {
+        "brand:wikidata": "Q37158"
+      },
+      "name": "Coffee Place",
+      "out": true
+    },
+    {
+      "tags": {
+        "brand:wikipedia": "en:Foo"
+      },
+      "name": "Foo",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Starbucks Reserve",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Dunkin' Donuts",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Dunkin Donuts",
+      "out": true
+    },
+    {
+      "tags": {
+        "amenity": "cafe"
+      },
+      "name": "Bow Truss Coffee",
+      "out": false
+    },
+    {
+      "tags": {},
+      "name": "",
+      "out": false
+    },
+    {
+      "tags": {},
+      "name": "Subversive Records",
+      "out": false
+    },
+    {
+      "tags": {},
+      "name": "McDonald's",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "McDonalds",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Peet's Coffee",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Peets",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "AMC Loews",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Famous Amcor",
+      "out": false
+    },
+    {
+      "tags": {},
+      "name": "Barnes & Noble",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Barnes&Noble",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "CHIPOTLE",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Chick-fil-A",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Chickfila",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Domino Park",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Equinox Yoga",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Regal Cinema",
+      "out": true
+    },
+    {
+      "tags": {},
+      "name": "Regalia",
+      "out": false
+    },
+    {
+      "tags": {
+        "brand": ""
+      },
+      "name": "Ordinary Pub",
+      "out": false
+    },
+    {
+      "tags": {},
+      "name": null,
+      "out": false
+    }
+  ]
+}

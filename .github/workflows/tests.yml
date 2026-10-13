@@ -1,0 +1,29 @@
+name: tests
+
+# The two suites that need nothing but a runtime. The browser and Postgres
+# suites (smoke, smoke-live, schema, migrations) need a browser and a database
+# and are still run by hand before every commit; see CLAUDE.md.
+on:
+  push:
+  pull_request:
+
+jobs:
+  js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node test/unit.mjs
+      # Fails if app.js has drifted from the golden vectors and catalog.json
+      # that ios/MidPntCore is tested against. Fix: node test/golden.mjs --write
+      - run: node test/golden.mjs
+
+  swift:
+    # MidPntCore has no Apple-only imports, so it tests on Linux.
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd ios/MidPntCore && swift test

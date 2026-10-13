@@ -1,0 +1,2777 @@
+{
+  "searchCats": [
+    {
+      "q": "pizza",
+      "out": [
+        "pizza"
+      ]
+    },
+    {
+      "q": "beer",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "workout",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "tacos",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "books",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "kids",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "axe throwing",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "escape room",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "laser tag",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "level 99",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "bowling",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "things to do",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "arcade",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "karaoke",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "gym",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "mini golf",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "breakfast",
+      "out": [
+        "breakfast",
+        "coffee"
+      ]
+    },
+    {
+      "q": "lunch",
+      "out": [
+        "lunch",
+        "food",
+        "deli"
+      ]
+    },
+    {
+      "q": "dinner",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "brunch",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "supper",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "",
+      "out": []
+    },
+    {
+      "q": "   ",
+      "out": []
+    },
+    {
+      "q": "zzzqqq",
+      "out": []
+    },
+    {
+      "q": "a",
+      "out": [
+        "mexican",
+        "pizza",
+        "indian",
+        "thai",
+        "italian",
+        "icecream",
+        "korean",
+        "themepark"
+      ]
+    },
+    {
+      "q": "e",
+      "out": [
+        "coffee",
+        "mexican",
+        "burger",
+        "icecream",
+        "korean",
+        "dinner",
+        "themepark",
+        "culture"
+      ]
+    },
+    {
+      "q": "COFFEE",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "  Coffee  ",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "ice cream",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "dog park",
+      "out": [
+        "dogpark"
+      ]
+    },
+    {
+      "q": "park",
+      "out": [
+        "themepark",
+        "dogpark",
+        "outdoors",
+        "swimming",
+        "playground"
+      ]
+    },
+    {
+      "q": "theater",
+      "out": [
+        "culture",
+        "screens"
+      ]
+    },
+    {
+      "q": "museum",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "food",
+      "out": [
+        "food",
+        "seafood"
+      ]
+    },
+    {
+      "q": "drinks",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "ramen",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "bbq",
+      "out": [
+        "bbq",
+        "korean"
+      ]
+    },
+    {
+      "q": "☕",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "coffee",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "cafe",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "espresso",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "latte",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "cappuccino",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "tea",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "bakery",
+      "out": [
+        "coffee"
+      ]
+    },
+    {
+      "q": "pastry",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "croissant",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "brunch",
+      "out": [
+        "coffee",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "breakfast",
+      "out": [
+        "breakfast",
+        "coffee"
+      ]
+    },
+    {
+      "q": "🍽",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "food",
+      "out": [
+        "food",
+        "seafood"
+      ]
+    },
+    {
+      "q": "eat",
+      "out": [
+        "food",
+        "culture",
+        "screens"
+      ]
+    },
+    {
+      "q": "dinner",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "lunch",
+      "out": [
+        "lunch",
+        "food",
+        "deli"
+      ]
+    },
+    {
+      "q": "restaurant",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "meal",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "hungry",
+      "out": [
+        "food"
+      ]
+    },
+    {
+      "q": "supper",
+      "out": [
+        "dinner",
+        "food"
+      ]
+    },
+    {
+      "q": "bite",
+      "out": [
+        "food",
+        "lunch"
+      ]
+    },
+    {
+      "q": "🍺",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "drinks",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "beer",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "bar",
+      "out": [
+        "bbq",
+        "drinks",
+        "games"
+      ]
+    },
+    {
+      "q": "pub",
+      "out": [
+        "drinks",
+        "landmarks"
+      ]
+    },
+    {
+      "q": "cocktails",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "wine",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "happy",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "hour",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "pint",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "tavern",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "brewery",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "karaoke",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "trivia",
+      "out": [
+        "drinks"
+      ]
+    },
+    {
+      "q": "pool",
+      "out": [
+        "drinks",
+        "games",
+        "swimming"
+      ]
+    },
+    {
+      "q": "darts",
+      "out": [
+        "drinks",
+        "games"
+      ]
+    },
+    {
+      "q": "🌳",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "outdoors",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "park",
+      "out": [
+        "themepark",
+        "dogpark",
+        "outdoors",
+        "swimming",
+        "playground"
+      ]
+    },
+    {
+      "q": "outside",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "walk",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "stroll",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "nature",
+      "out": [
+        "nature",
+        "outdoors"
+      ]
+    },
+    {
+      "q": "green",
+      "out": [
+        "golf",
+        "outdoors"
+      ]
+    },
+    {
+      "q": "grass",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "picnic",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "view",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "viewpoint",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "sunset",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "fresh",
+      "out": [
+        "outdoors"
+      ]
+    },
+    {
+      "q": "air",
+      "out": [
+        "outdoors",
+        "themepark"
+      ]
+    },
+    {
+      "q": "🎨",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "culture",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "museum",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "art",
+      "out": [
+        "arts",
+        "drinks",
+        "culture",
+        "games",
+        "landmarks"
+      ]
+    },
+    {
+      "q": "gallery",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "exhibit",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "exhibition",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "theatre",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "theater",
+      "out": [
+        "culture",
+        "screens"
+      ]
+    },
+    {
+      "q": "play",
+      "out": [
+        "playground",
+        "culture"
+      ]
+    },
+    {
+      "q": "show",
+      "out": [
+        "culture"
+      ]
+    },
+    {
+      "q": "🎬",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "screens",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "movie",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "movies",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "cinema",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "film",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "screening",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "flick",
+      "out": [
+        "screens"
+      ]
+    },
+    {
+      "q": "🎯",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "games",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "gaming",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "fun",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "activity",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "activities",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "things",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "to",
+      "out": [
+        "mexican",
+        "italian",
+        "icecream",
+        "games",
+        "landmarks",
+        "quiet",
+        "shopping",
+        "playground"
+      ]
+    },
+    {
+      "q": "do",
+      "out": [
+        "outdoors",
+        "dogpark",
+        "indian",
+        "dinner",
+        "games",
+        "breakfast",
+        "shopping"
+      ]
+    },
+    {
+      "q": "bowling",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "bowl",
+      "out": [
+        "games",
+        "lunch"
+      ]
+    },
+    {
+      "q": "arcade",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "escape",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "room",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "rooms",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "axe",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "throwing",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "hatchet",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "laser",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "tag",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "paintball",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "mini",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "golf",
+      "out": [
+        "golf",
+        "games"
+      ]
+    },
+    {
+      "q": "minigolf",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "putt",
+      "out": [
+        "golf",
+        "games"
+      ]
+    },
+    {
+      "q": "trampoline",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "go",
+      "out": [
+        "golf",
+        "games"
+      ]
+    },
+    {
+      "q": "karts",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "karting",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "billiards",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "table",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "shuffleboard",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "vr",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "virtual",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "reality",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "level",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "99",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "level99",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "competitive",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "socializing",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "pinball",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "barcade",
+      "out": [
+        "games"
+      ]
+    },
+    {
+      "q": "📚",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "quiet",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "library",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "books",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "bookshop",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "bookstore",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "read",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "study",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "work",
+      "out": [
+        "arts",
+        "active",
+        "quiet"
+      ]
+    },
+    {
+      "q": "laptop",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "calm",
+      "out": [
+        "quiet"
+      ]
+    },
+    {
+      "q": "🏃",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "active",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "sport",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "sports",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "gym",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "workout",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "exercise",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "fitness",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "climbing",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "bouldering",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "yoga",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "pilates",
+      "out": [
+        "active"
+      ]
+    },
+    {
+      "q": "🍦",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "ice",
+      "out": [
+        "icecream",
+        "pizza"
+      ]
+    },
+    {
+      "q": "cream",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "gelato",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "dessert",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "sweets",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "candy",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "chocolate",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "sundae",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "frozen",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "yogurt",
+      "out": [
+        "icecream"
+      ]
+    },
+    {
+      "q": "🪩",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "nightlife",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "nightclub",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "club",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "clubbing",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "dancing",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "dance",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "night",
+      "out": [
+        "nightlife",
+        "dinner"
+      ]
+    },
+    {
+      "q": "dj",
+      "out": [
+        "nightlife"
+      ]
+    },
+    {
+      "q": "late",
+      "out": [
+        "icecream",
+        "active",
+        "nightlife"
+      ]
+    },
+    {
+      "q": "🛝",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "playground",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "kids",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "children",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "family",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "toddler",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "swings",
+      "out": [
+        "playground"
+      ]
+    },
+    {
+      "q": "for",
+      "out": [
+        "arts",
+        "nature",
+        "playground"
+      ]
+    },
+    {
+      "q": "🐕",
+      "out": [
+        "dogpark"
+      ]
+    },
+    {
+      "q": "dog",
+      "out": [
+        "dogpark"
+      ]
+    },
+    {
+      "q": "dogs",
+      "out": [
+        "dogpark"
+      ]
+    },
+    {
+      "q": "puppy",
+      "out": [
+        "dogpark"
+      ]
+    },
+    {
+      "q": "run",
+      "out": [
+        "coffee",
+        "dogpark",
+        "breakfast"
+      ]
+    },
+    {
+      "q": "🏖",
+      "out": [
+        "beach"
+      ]
+    },
+    {
+      "q": "beach",
+      "out": [
+        "beach"
+      ]
+    },
+    {
+      "q": "sand",
+      "out": [
+        "beach",
+        "lunch",
+        "deli"
+      ]
+    },
+    {
+      "q": "lake",
+      "out": [
+        "beach"
+      ]
+    },
+    {
+      "q": "shore",
+      "out": [
+        "beach"
+      ]
+    },
+    {
+      "q": "waterfront",
+      "out": [
+        "beach"
+      ]
+    },
+    {
+      "q": "lakefront",
+      "out": [
+        "beach"
+      ]
+    },
+    {
+      "q": "🏞",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "hike",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "hiking",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "trail",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "trails",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "reserve",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "woods",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "forest",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "wildlife",
+      "out": [
+        "nature"
+      ]
+    },
+    {
+      "q": "🏊",
+      "out": [
+        "swimming"
+      ]
+    },
+    {
+      "q": "swimming",
+      "out": [
+        "swimming"
+      ]
+    },
+    {
+      "q": "swim",
+      "out": [
+        "swimming"
+      ]
+    },
+    {
+      "q": "water",
+      "out": [
+        "swimming",
+        "beach"
+      ]
+    },
+    {
+      "q": "laps",
+      "out": [
+        "swimming"
+      ]
+    },
+    {
+      "q": "⛳",
+      "out": [
+        "golf"
+      ]
+    },
+    {
+      "q": "course",
+      "out": [
+        "golf"
+      ]
+    },
+    {
+      "q": "driving",
+      "out": [
+        "golf"
+      ]
+    },
+    {
+      "q": "range",
+      "out": [
+        "golf"
+      ]
+    },
+    {
+      "q": "putting",
+      "out": [
+        "golf"
+      ]
+    },
+    {
+      "q": "🦓",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "zoo",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "&",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "aquarium",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "animals",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "fish",
+      "out": [
+        "zoo",
+        "seafood"
+      ]
+    },
+    {
+      "q": "penguins",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "safari",
+      "out": [
+        "zoo"
+      ]
+    },
+    {
+      "q": "🎢",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "theme",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "amusement",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "rides",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "roller",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "coaster",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "fair",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "carnival",
+      "out": [
+        "themepark"
+      ]
+    },
+    {
+      "q": "🛍",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "shopping",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "shop",
+      "out": [
+        "shopping",
+        "arts",
+        "quiet"
+      ]
+    },
+    {
+      "q": "mall",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "stores",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "browse",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "retail",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "window",
+      "out": [
+        "shopping"
+      ]
+    },
+    {
+      "q": "🧺",
+      "out": [
+        "market"
+      ]
+    },
+    {
+      "q": "market",
+      "out": [
+        "market"
+      ]
+    },
+    {
+      "q": "farmers",
+      "out": [
+        "market"
+      ]
+    },
+    {
+      "q": "stalls",
+      "out": [
+        "market"
+      ]
+    },
+    {
+      "q": "bazaar",
+      "out": [
+        "market"
+      ]
+    },
+    {
+      "q": "flea",
+      "out": [
+        "market"
+      ]
+    },
+    {
+      "q": "🏛",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "landmarks",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "landmark",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "monument",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "historic",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "history",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "statue",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "mural",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "public",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "sightseeing",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "tourist",
+      "out": [
+        "landmarks"
+      ]
+    },
+    {
+      "q": "🎭",
+      "out": [
+        "arts"
+      ]
+    },
+    {
+      "q": "arts",
+      "out": [
+        "arts",
+        "drinks",
+        "games"
+      ]
+    },
+    {
+      "q": "centre",
+      "out": [
+        "arts"
+      ]
+    },
+    {
+      "q": "center",
+      "out": [
+        "arts"
+      ]
+    },
+    {
+      "q": "performance",
+      "out": [
+        "arts"
+      ]
+    },
+    {
+      "q": "community",
+      "out": [
+        "arts"
+      ]
+    },
+    {
+      "q": "workshop",
+      "out": [
+        "arts"
+      ]
+    },
+    {
+      "q": "🥪",
+      "out": [
+        "deli"
+      ]
+    },
+    {
+      "q": "deli",
+      "out": [
+        "deli",
+        "lunch"
+      ]
+    },
+    {
+      "q": "sandwich",
+      "out": [
+        "lunch",
+        "deli"
+      ]
+    },
+    {
+      "q": "sandwiches",
+      "out": [
+        "lunch",
+        "deli"
+      ]
+    },
+    {
+      "q": "sub",
+      "out": [
+        "deli"
+      ]
+    },
+    {
+      "q": "hoagie",
+      "out": [
+        "deli"
+      ]
+    },
+    {
+      "q": "counter",
+      "out": [
+        "lunch",
+        "deli"
+      ]
+    },
+    {
+      "q": "🥐",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "morning",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "early",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "bagel",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "bagels",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "donut",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "doughnut",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "pancakes",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "waffles",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "diner",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "eggs",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "omelette",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "omelet",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "crepe",
+      "out": [
+        "breakfast"
+      ]
+    },
+    {
+      "q": "🥙",
+      "out": [
+        "lunch",
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "midday",
+      "out": [
+        "lunch"
+      ]
+    },
+    {
+      "q": "noon",
+      "out": [
+        "lunch"
+      ]
+    },
+    {
+      "q": "salad",
+      "out": [
+        "vegan",
+        "lunch"
+      ]
+    },
+    {
+      "q": "soup",
+      "out": [
+        "lunch"
+      ]
+    },
+    {
+      "q": "wrap",
+      "out": [
+        "lunch"
+      ]
+    },
+    {
+      "q": "quick",
+      "out": [
+        "lunch"
+      ]
+    },
+    {
+      "q": "evening",
+      "out": [
+        "dinner"
+      ]
+    },
+    {
+      "q": "sit",
+      "out": [
+        "dinner"
+      ]
+    },
+    {
+      "q": "down",
+      "out": [
+        "dinner"
+      ]
+    },
+    {
+      "q": "sitdown",
+      "out": [
+        "dinner"
+      ]
+    },
+    {
+      "q": "out",
+      "out": [
+        "outdoors",
+        "dinner",
+        "active"
+      ]
+    },
+    {
+      "q": "date",
+      "out": [
+        "dinner"
+      ]
+    },
+    {
+      "q": "🍕",
+      "out": [
+        "pizza"
+      ]
+    },
+    {
+      "q": "pizza",
+      "out": [
+        "pizza"
+      ]
+    },
+    {
+      "q": "pizzeria",
+      "out": [
+        "pizza"
+      ]
+    },
+    {
+      "q": "slice",
+      "out": [
+        "pizza"
+      ]
+    },
+    {
+      "q": "🍣",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "sushi",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "japanese",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "sashimi",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "ramen",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "izakaya",
+      "out": [
+        "sushi"
+      ]
+    },
+    {
+      "q": "🌮",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "mexican",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "tacos",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "taco",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "burrito",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "taqueria",
+      "out": [
+        "mexican"
+      ]
+    },
+    {
+      "q": "🍝",
+      "out": [
+        "italian"
+      ]
+    },
+    {
+      "q": "italian",
+      "out": [
+        "italian"
+      ]
+    },
+    {
+      "q": "pasta",
+      "out": [
+        "italian"
+      ]
+    },
+    {
+      "q": "trattoria",
+      "out": [
+        "italian"
+      ]
+    },
+    {
+      "q": "🥡",
+      "out": [
+        "chinese"
+      ]
+    },
+    {
+      "q": "chinese",
+      "out": [
+        "chinese"
+      ]
+    },
+    {
+      "q": "dim",
+      "out": [
+        "chinese"
+      ]
+    },
+    {
+      "q": "sum",
+      "out": [
+        "chinese"
+      ]
+    },
+    {
+      "q": "dumplings",
+      "out": [
+        "chinese"
+      ]
+    },
+    {
+      "q": "szechuan",
+      "out": [
+        "chinese"
+      ]
+    },
+    {
+      "q": "🍜",
+      "out": [
+        "thai"
+      ]
+    },
+    {
+      "q": "thai",
+      "out": [
+        "thai"
+      ]
+    },
+    {
+      "q": "vietnamese",
+      "out": [
+        "thai"
+      ]
+    },
+    {
+      "q": "pho",
+      "out": [
+        "thai"
+      ]
+    },
+    {
+      "q": "noodles",
+      "out": [
+        "thai"
+      ]
+    },
+    {
+      "q": "curry",
+      "out": [
+        "indian",
+        "thai"
+      ]
+    },
+    {
+      "q": "🍛",
+      "out": [
+        "indian"
+      ]
+    },
+    {
+      "q": "indian",
+      "out": [
+        "indian"
+      ]
+    },
+    {
+      "q": "tandoori",
+      "out": [
+        "indian"
+      ]
+    },
+    {
+      "q": "🍲",
+      "out": [
+        "korean"
+      ]
+    },
+    {
+      "q": "korean",
+      "out": [
+        "korean"
+      ]
+    },
+    {
+      "q": "bbq",
+      "out": [
+        "bbq",
+        "korean"
+      ]
+    },
+    {
+      "q": "bibimbap",
+      "out": [
+        "korean"
+      ]
+    },
+    {
+      "q": "🍔",
+      "out": [
+        "burger"
+      ]
+    },
+    {
+      "q": "burgers",
+      "out": [
+        "burger"
+      ]
+    },
+    {
+      "q": "burger",
+      "out": [
+        "burger"
+      ]
+    },
+    {
+      "q": "hamburger",
+      "out": [
+        "burger"
+      ]
+    },
+    {
+      "q": "🍖",
+      "out": [
+        "bbq"
+      ]
+    },
+    {
+      "q": "barbecue",
+      "out": [
+        "bbq"
+      ]
+    },
+    {
+      "q": "barbeque",
+      "out": [
+        "bbq"
+      ]
+    },
+    {
+      "q": "ribs",
+      "out": [
+        "bbq"
+      ]
+    },
+    {
+      "q": "brisket",
+      "out": [
+        "bbq"
+      ]
+    },
+    {
+      "q": "smokehouse",
+      "out": [
+        "bbq"
+      ]
+    },
+    {
+      "q": "🦞",
+      "out": [
+        "seafood"
+      ]
+    },
+    {
+      "q": "seafood",
+      "out": [
+        "seafood"
+      ]
+    },
+    {
+      "q": "oysters",
+      "out": [
+        "seafood"
+      ]
+    },
+    {
+      "q": "lobster",
+      "out": [
+        "seafood"
+      ]
+    },
+    {
+      "q": "crab",
+      "out": [
+        "seafood"
+      ]
+    },
+    {
+      "q": "🥗",
+      "out": [
+        "vegan"
+      ]
+    },
+    {
+      "q": "vegan",
+      "out": [
+        "vegan"
+      ]
+    },
+    {
+      "q": "vegetarian",
+      "out": [
+        "vegan"
+      ]
+    },
+    {
+      "q": "plant",
+      "out": [
+        "vegan"
+      ]
+    },
+    {
+      "q": "based",
+      "out": [
+        "vegan"
+      ]
+    },
+    {
+      "q": "healthy",
+      "out": [
+        "vegan"
+      ]
+    },
+    {
+      "q": "mediterranean",
+      "out": [
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "greek",
+      "out": [
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "turkish",
+      "out": [
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "lebanese",
+      "out": [
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "falafel",
+      "out": [
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "kebab",
+      "out": [
+        "mediterranean"
+      ]
+    },
+    {
+      "q": "gyro",
+      "out": [
+        "mediterranean"
+      ]
+    }
+  ],
+  "tagFilter": [
+    {
+      "spec": "amenity=cafe",
+      "out": "[\"amenity\"=\"cafe\"]"
+    },
+    {
+      "spec": "shop=bakery",
+      "out": "[\"shop\"=\"bakery\"]"
+    },
+    {
+      "spec": "amenity=restaurant",
+      "out": "[\"amenity\"=\"restaurant\"]"
+    },
+    {
+      "spec": "amenity=fast_food",
+      "out": "[\"amenity\"=\"fast_food\"]"
+    },
+    {
+      "spec": "amenity=bar",
+      "out": "[\"amenity\"=\"bar\"]"
+    },
+    {
+      "spec": "amenity=pub",
+      "out": "[\"amenity\"=\"pub\"]"
+    },
+    {
+      "spec": "amenity=biergarten",
+      "out": "[\"amenity\"=\"biergarten\"]"
+    },
+    {
+      "spec": "leisure=park",
+      "out": "[\"leisure\"=\"park\"]"
+    },
+    {
+      "spec": "leisure=garden",
+      "out": "[\"leisure\"=\"garden\"]"
+    },
+    {
+      "spec": "tourism=viewpoint",
+      "out": "[\"tourism\"=\"viewpoint\"]"
+    },
+    {
+      "spec": "tourism=museum",
+      "out": "[\"tourism\"=\"museum\"]"
+    },
+    {
+      "spec": "tourism=gallery",
+      "out": "[\"tourism\"=\"gallery\"]"
+    },
+    {
+      "spec": "amenity=theatre",
+      "out": "[\"amenity\"=\"theatre\"]"
+    },
+    {
+      "spec": "amenity=cinema",
+      "out": "[\"amenity\"=\"cinema\"]"
+    },
+    {
+      "spec": "leisure=bowling_alley",
+      "out": "[\"leisure\"=\"bowling_alley\"]"
+    },
+    {
+      "spec": "leisure=amusement_arcade",
+      "out": "[\"leisure\"=\"amusement_arcade\"]"
+    },
+    {
+      "spec": "leisure=escape_game",
+      "out": "[\"leisure\"=\"escape_game\"]"
+    },
+    {
+      "spec": "leisure=miniature_golf",
+      "out": "[\"leisure\"=\"miniature_golf\"]"
+    },
+    {
+      "spec": "leisure=trampoline_park",
+      "out": "[\"leisure\"=\"trampoline_park\"]"
+    },
+    {
+      "spec": "leisure=adult_gaming_centre",
+      "out": "[\"leisure\"=\"adult_gaming_centre\"]"
+    },
+    {
+      "spec": "sport~laser_tag|paintball|axe_throwing|darts|billiards|bowling|karting|climbing",
+      "out": "[\"sport\"~\"laser_tag|paintball|axe_throwing|darts|billiards|bowling|karting|climbing\",i]"
+    },
+    {
+      "spec": "amenity=library",
+      "out": "[\"amenity\"=\"library\"]"
+    },
+    {
+      "spec": "shop=books",
+      "out": "[\"shop\"=\"books\"]"
+    },
+    {
+      "spec": "leisure=sports_centre",
+      "out": "[\"leisure\"=\"sports_centre\"]"
+    },
+    {
+      "spec": "leisure=fitness_centre",
+      "out": "[\"leisure\"=\"fitness_centre\"]"
+    },
+    {
+      "spec": "leisure=climbing",
+      "out": "[\"leisure\"=\"climbing\"]"
+    },
+    {
+      "spec": "sport~climbing|yoga",
+      "out": "[\"sport\"~\"climbing|yoga\",i]"
+    },
+    {
+      "spec": "amenity=ice_cream",
+      "out": "[\"amenity\"=\"ice_cream\"]"
+    },
+    {
+      "spec": "shop=confectionery",
+      "out": "[\"shop\"=\"confectionery\"]"
+    },
+    {
+      "spec": "shop=chocolate",
+      "out": "[\"shop\"=\"chocolate\"]"
+    },
+    {
+      "spec": "amenity=nightclub",
+      "out": "[\"amenity\"=\"nightclub\"]"
+    },
+    {
+      "spec": "leisure=playground",
+      "out": "[\"leisure\"=\"playground\"]"
+    },
+    {
+      "spec": "leisure=dog_park",
+      "out": "[\"leisure\"=\"dog_park\"]"
+    },
+    {
+      "spec": "natural=beach",
+      "out": "[\"natural\"=\"beach\"]"
+    },
+    {
+      "spec": "leisure=nature_reserve",
+      "out": "[\"leisure\"=\"nature_reserve\"]"
+    },
+    {
+      "spec": "leisure=swimming_pool",
+      "out": "[\"leisure\"=\"swimming_pool\"]"
+    },
+    {
+      "spec": "leisure=water_park",
+      "out": "[\"leisure\"=\"water_park\"]"
+    },
+    {
+      "spec": "leisure=golf_course",
+      "out": "[\"leisure\"=\"golf_course\"]"
+    },
+    {
+      "spec": "leisure=driving_range",
+      "out": "[\"leisure\"=\"driving_range\"]"
+    },
+    {
+      "spec": "tourism=zoo",
+      "out": "[\"tourism\"=\"zoo\"]"
+    },
+    {
+      "spec": "tourism=aquarium",
+      "out": "[\"tourism\"=\"aquarium\"]"
+    },
+    {
+      "spec": "tourism=theme_park",
+      "out": "[\"tourism\"=\"theme_park\"]"
+    },
+    {
+      "spec": "shop=mall",
+      "out": "[\"shop\"=\"mall\"]"
+    },
+    {
+      "spec": "shop=department_store",
+      "out": "[\"shop\"=\"department_store\"]"
+    },
+    {
+      "spec": "amenity=marketplace",
+      "out": "[\"amenity\"=\"marketplace\"]"
+    },
+    {
+      "spec": "historic=monument",
+      "out": "[\"historic\"=\"monument\"]"
+    },
+    {
+      "spec": "historic=memorial",
+      "out": "[\"historic\"=\"memorial\"]"
+    },
+    {
+      "spec": "tourism=artwork",
+      "out": "[\"tourism\"=\"artwork\"]"
+    },
+    {
+      "spec": "tourism=attraction",
+      "out": "[\"tourism\"=\"attraction\"]"
+    },
+    {
+      "spec": "amenity=arts_centre",
+      "out": "[\"amenity\"=\"arts_centre\"]"
+    },
+    {
+      "spec": "amenity=community_centre",
+      "out": "[\"amenity\"=\"community_centre\"]"
+    },
+    {
+      "spec": "shop=deli",
+      "out": "[\"shop\"=\"deli\"]"
+    },
+    {
+      "spec": "amenity=cafe&cuisine!~pizza|pasta|burger|kebab|sushi|chinese|thai|mexican|indian|korean|ramen|noodle|steak|seafood|wings|barbecue|bbq|pub&name!~pizza|pizzeria|steakhouse|sushi|taqueria",
+      "out": "[\"amenity\"=\"cafe\"][\"cuisine\"!~\"pizza|pasta|burger|kebab|sushi|chinese|thai|mexican|indian|korean|ramen|noodle|steak|seafood|wings|barbecue|bbq|pub\",i][\"name\"!~\"pizza|pizzeria|steakhouse|sushi|taqueria\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~breakfast|brunch|bagel|donut|pancake|waffle|diner|crepe",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"breakfast|brunch|bagel|donut|pancake|waffle|diner|crepe\",i]"
+    },
+    {
+      "spec": "amenity=fast_food&cuisine~breakfast|bagel|donut|coffee_shop",
+      "out": "[\"amenity\"=\"fast_food\"][\"cuisine\"~\"breakfast|bagel|donut|coffee_shop\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~sandwich|salad|soup|deli|bagel|noodle|poke|burrito",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"sandwich|salad|soup|deli|bagel|noodle|poke|burrito\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~pizza",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"pizza\",i]"
+    },
+    {
+      "spec": "amenity=fast_food&cuisine~pizza",
+      "out": "[\"amenity\"=\"fast_food\"][\"cuisine\"~\"pizza\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~sushi|japanese",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"sushi|japanese\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~mexican|taco",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"mexican|taco\",i]"
+    },
+    {
+      "spec": "amenity=fast_food&cuisine~mexican|taco",
+      "out": "[\"amenity\"=\"fast_food\"][\"cuisine\"~\"mexican|taco\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~italian",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"italian\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~chinese|dim_sum",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"chinese|dim_sum\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~thai|vietnamese",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"thai|vietnamese\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~indian",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"indian\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~korean",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"korean\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~burger",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"burger\",i]"
+    },
+    {
+      "spec": "amenity=fast_food&cuisine~burger",
+      "out": "[\"amenity\"=\"fast_food\"][\"cuisine\"~\"burger\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~barbecue|bbq",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"barbecue|bbq\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~seafood|fish",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"seafood|fish\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~vegan|vegetarian",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"vegan|vegetarian\",i]"
+    },
+    {
+      "spec": "amenity=restaurant&cuisine~mediterranean|greek|turkish|lebanese",
+      "out": "[\"amenity\"=\"restaurant\"][\"cuisine\"~\"mediterranean|greek|turkish|lebanese\",i]"
+    },
+    {
+      "spec": "brand!=Starbucks",
+      "out": "[\"brand\"!=\"Starbucks\"]"
+    },
+    {
+      "spec": "cuisine!~pizza",
+      "out": "[\"cuisine\"!~\"pizza\",i]"
+    },
+    {
+      "spec": "sport~laser_tag|paintball",
+      "out": "[\"sport\"~\"laser_tag|paintball\",i]"
+    },
+    {
+      "spec": "amenity=cafe&cuisine!~pizza&name!~pizzeria",
+      "out": "[\"amenity\"=\"cafe\"][\"cuisine\"!~\"pizza\",i][\"name\"!~\"pizzeria\",i]"
+    },
+    {
+      "spec": "garbage",
+      "out": ""
+    },
+    {
+      "spec": "",
+      "out": ""
+    }
+  ],
+  "overpassQuery": [
+    {
+      "center": {
+        "lat": 41.8781,
+        "lon": -87.6298
+      },
+      "radius": 1500,
+      "cats": [
+        "coffee"
+      ],
+      "out": "[out:json][timeout:25];(nwr[\"amenity\"=\"cafe\"](around:1500,41.87810,-87.62980);nwr[\"shop\"=\"bakery\"](around:1500,41.87810,-87.62980););out center 120;"
+    },
+    {
+      "center": {
+        "lat": 42.5,
+        "lon": -71.8
+      },
+      "radius": 4000.6,
+      "cats": [
+        "food",
+        "drinks",
+        "games"
+      ],
+      "out": "[out:json][timeout:25];(nwr[\"amenity\"=\"restaurant\"](around:4001,42.50000,-71.80000);nwr[\"amenity\"=\"fast_food\"](around:4001,42.50000,-71.80000);nwr[\"amenity\"=\"bar\"](around:4001,42.50000,-71.80000);nwr[\"amenity\"=\"pub\"](around:4001,42.50000,-71.80000);nwr[\"amenity\"=\"biergarten\"](around:4001,42.50000,-71.80000);nwr[\"leisure\"=\"bowling_alley\"](around:4001,42.50000,-71.80000);nwr[\"leisure\"=\"amusement_arcade\"](around:4001,42.50000,-71.80000);nwr[\"leisure\"=\"escape_game\"](around:4001,42.50000,-71.80000);nwr[\"leisure\"=\"miniature_golf\"](around:4001,42.50000,-71.80000);nwr[\"leisure\"=\"trampoline_park\"](around:4001,42.50000,-71.80000);nwr[\"leisure\"=\"adult_gaming_centre\"](around:4001,42.50000,-71.80000);nwr[\"sport\"~\"laser_tag|paintball|axe_throwing|darts|billiards|bowling|karting|climbing\",i](around:4001,42.50000,-71.80000););out center 120;"
+    },
+    {
+      "center": {
+        "lat": -33.123456789,
+        "lon": 151.987654321
+      },
+      "radius": 600,
+      "cats": [
+        "breakfast"
+      ],
+      "out": "[out:json][timeout:25];(nwr[\"amenity\"=\"cafe\"][\"cuisine\"!~\"pizza|pasta|burger|kebab|sushi|chinese|thai|mexican|indian|korean|ramen|noodle|steak|seafood|wings|barbecue|bbq|pub\",i][\"name\"!~\"pizza|pizzeria|steakhouse|sushi|taqueria\",i](around:600,-33.12346,151.98765);nwr[\"shop\"=\"bakery\"](around:600,-33.12346,151.98765);nwr[\"amenity\"=\"restaurant\"][\"cuisine\"~\"breakfast|brunch|bagel|donut|pancake|waffle|diner|crepe\",i](around:600,-33.12346,151.98765);nwr[\"amenity\"=\"fast_food\"][\"cuisine\"~\"breakfast|bagel|donut|coffee_shop\",i](around:600,-33.12346,151.98765););out center 120;"
+    },
+    {
+      "center": {
+        "lat": 41.8781,
+        "lon": -87.6298
+      },
+      "radius": 20000,
+      "cats": [
+        "no-such-category",
+        "pizza"
+      ],
+      "out": "[out:json][timeout:25];(nwr[\"amenity\"=\"restaurant\"][\"cuisine\"~\"pizza\",i](around:20000,41.87810,-87.62980);nwr[\"amenity\"=\"fast_food\"][\"cuisine\"~\"pizza\",i](around:20000,41.87810,-87.62980););out center 120;"
+    },
+    {
+      "center": {
+        "lat": 41.8781,
+        "lon": -87.6298
+      },
+      "radius": 1500,
+      "cats": [],
+      "out": "[out:json][timeout:25];();out center 120;"
+    }
+  ]
+}
