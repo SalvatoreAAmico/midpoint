@@ -21,6 +21,11 @@ Format: `**Who** — files or area — what, and roughly until when.`
 From `STATUS.md` and the last few sessions. Claim one here before starting so
 the other person does not pick it up at the same time.
 
+- **iOS phase 1 — `MidPntCore`.** The Swift package for the pure logic,
+  golden vectors generated from `app.js`, the generated catalog, and
+  `docs/session-contract.md`. Linux-only, no Mac needed. Everything it needs is
+  in `docs/ios-plan.md` §2, §4 and §7. Do not start phase 2 (the SwiftUI app)
+  until the real-meetup box in `ROADMAP-NATIVE.md` is ticked.
 - **Decision log.** Roughly fifteen architectural decisions live only in commit
   messages — the 0.9 spread weight in the fairness score, polling instead of
   Realtime, why no web wrapper. Needs no review, just writing.
