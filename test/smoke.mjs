@@ -41,6 +41,13 @@ const stubFonts = async c => {
     r.fulfill({status:200, contentType:'text/css', body:''}));
   await c.route('**/fonts.gstatic.com/**', r =>
     r.fulfill({status:200, contentType:'font/woff2', body:''}));
+  /* This suite never goes live, so nothing used to reach Supabase and the real
+     config.js was harmless. Counters changed that: a solo search now counts,
+     which means one request to the real backend from a suite that is supposed
+     to run offline and deterministically. Swallow it here, where every context
+     already passes through. Counting itself is asserted in smoke-live.mjs,
+     against a mock that records the payload. */
+  await c.route('**/rest/v1/rpc/**', r => r.fulfill({status:204, body:''}));
 };
 const ctx = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
 await stubFonts(ctx);

@@ -92,6 +92,12 @@ anyone an identifier to fix it.
 The list of countable things is fixed inside the database, so the app cannot
 invent a new one. Whatever it sends that is not on the list is discarded.
 
+One consequence worth stating plainly: a counter is a request to our database,
+so it happens even when you are not in a live session, and your IP address
+reaches our host the way it does with any web request. It is not stored
+alongside the counter — the counter is a word and a number — but we would rather
+say so than let you assume solo use never touches a server.
+
 ## What is never done
 
 No cookies for tracking. No third-party analytics or telemetry — nothing is sent
