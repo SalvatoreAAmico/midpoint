@@ -1,0 +1,94 @@
+name: tests
+
+# All six suites. The browser and Postgres ones were left out at first and run
+# by hand, which is exactly how this merge nearly lost fourteen assertions
+# without anything going red: a branch cut before the counters silently removed
+# them, and no job here would have noticed. If a suite is worth having, CI runs
+# it.
+on:
+  push:
+  pull_request:
+
+jobs:
+  js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node test/unit.mjs
+      # Fails if app.js has drifted from the golden vectors and catalog.json
+      # that ios/MidPntCore is tested against. Fix: node test/golden.mjs --write
+      - run: node test/golden.mjs
+
+  browser:
+    # smoke and smoke-live drive the real app with every OpenStreetMap and
+    # Supabase call mocked, so they are deterministic and need no network.
+    # Both also fail on any uncaught JS error, so check the exit code rather
+    # than the printed total.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cd test && npm install
+      - run: cd test && npx playwright install --with-deps chromium
+      - run: node test/smoke.mjs
+      - run: node test/smoke-live.mjs
+
+  database:
+    # The schema as anon against a real Postgres, and a check that the
+    # fix-*.sql migrations and schema.sql have not drifted apart.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      # test/pg-up.sh builds its own cluster on a socket; against the service
+      # container we only need the roles, the database and the schema.
+      - name: Load the schema
+        env: { PGPASSWORD: postgres }
+        run: |
+          psql -h localhost -p 5433 -U postgres -c "create role anon nologin; create role authenticated nologin; create role service_role nologin;"
+          psql -h localhost -p 5433 -U postgres -c "create database mp;"
+          psql -h localhost -p 5433 -U postgres -d mp -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - run: bash test/schema.sh
+        env: { PGHOST: localhost, PGPASSWORD: postgres }
+      - run: bash test/migrations.sh
+        env: { PGHOST: localhost, PGPASSWORD: postgres }
+
+  swift:
+    # MidPntCore has no Apple-only imports, so it tests on Linux.
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd ios/MidPntCore && swift test
+
+  ios-app:
+    # The only place the SwiftUI / MapKit / ActivityKit / WidgetKit layer is
+    # compiled. It was written without a Mac in reach, so the first run of this job
+    # is the first time that code meets a compiler: expect to fix what it finds.
+    #
+    # Non-blocking until it has compiled once. It is known-red by its author's
+    # own account, and a job that is always red teaches everyone to ignore the
+    # whole workflow -- including the web suites above, which are not red.
+    # Remove continue-on-error the day it passes.
+    continue-on-error: true
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: cd ios/MidPnt && xcodegen generate
+      - run: >
+          xcodebuild build -project ios/MidPnt/MidPnt.xcodeproj -scheme MidPnt
+          -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO

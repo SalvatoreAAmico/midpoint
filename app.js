@@ -613,27 +613,38 @@ function encodeState() {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function decodeState(hash) {
+/* The defaults for every field live here, not in decodeState, so the iOS app
+   (ios/MidPntCore, which must read the same links) has one function to be
+   checked against. test/golden.mjs pins its output. */
+function parseState(hash) {
   try {
     const b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
     const d = JSON.parse(decodeURIComponent(escape(atob(b64))));
-    state.people = (d.p || []).slice(0, MAX_PEOPLE).map(a => ({
-      id: a[0], name: a[1] || '', lat: a[2], lon: a[3], label: a[4] || '',
-      flex: !!a[5], status: ''
-    }));
-    state.cats    = Array.isArray(d.c) && d.c.length ? d.c : ['coffee'];
-    // `o` is the old open-now boolean from links made before this control.
-    state.when     = d.w !== undefined ? String(d.w) : (d.o ? 'now' : '');
-    state.whenTime = d.wt || '19:00';
-    state.travel = d.tv === 'walk' ? 'walk' : 'drive';
-    state.maxPrice = d.r || '';
-    state.lucky   = !!d.l;
-    // Absent in links made before this filter existed; default it on.
-    state.noChains = d.n === undefined ? true : !!d.n;
-    state.votes   = d.v && typeof d.v === 'object' ? d.v : {};
-    state.hashMe  = typeof d.m === 'string' ? d.m : null;
-    return true;
-  } catch { return false; }
+    return {
+      people: (d.p || []).slice(0, MAX_PEOPLE).map(a => ({
+        id: a[0], name: a[1] || '', lat: a[2], lon: a[3], label: a[4] || '',
+        flex: !!a[5], status: ''
+      })),
+      cats: Array.isArray(d.c) && d.c.length ? d.c : ['coffee'],
+      // `o` is the old open-now boolean from links made before this control.
+      when: d.w !== undefined ? String(d.w) : (d.o ? 'now' : ''),
+      whenTime: d.wt || '19:00',
+      travel: d.tv === 'walk' ? 'walk' : 'drive',
+      maxPrice: d.r || '',
+      lucky: !!d.l,
+      // Absent in links made before this filter existed; default it on.
+      noChains: d.n === undefined ? true : !!d.n,
+      votes: d.v && typeof d.v === 'object' ? d.v : {},
+      hashMe: typeof d.m === 'string' ? d.m : null
+    };
+  } catch { return null; }
+}
+
+function decodeState(hash) {
+  const d = parseState(hash);
+  if (!d) return false;
+  Object.assign(state, d);
+  return true;
 }
 
 /* The session code lives in the query string and local state in the hash.
@@ -727,15 +738,45 @@ function tagFilter(spec) {
   }).join('');
 }
 
-function overpassQuery(center, radiusM) {
+function overpassQuery(center, radiusM, cats = state.cats) {
   const sel = [];
   const at = `(around:${Math.round(radiusM)},${center.lat.toFixed(5)},${center.lon.toFixed(5)});`;
-  for (const c of state.cats) {
+  for (const c of cats) {
     for (const t of (CATS[c]?.tags || [])) {
       sel.push('nwr' + tagFilter(t) + at);
     }
   }
   return `[out:json][timeout:25];(${sel.join('')});out center 120;`;
+}
+
+/* Overpass elements -> venues. Pure, so ios/MidPntCore can be held to the same
+   output by test/golden.mjs. */
+function parseVenues(elements) {
+  return (elements || []).map(el => {
+    const lat = el.lat ?? el.center?.lat, lon = el.lon ?? el.center?.lon;
+    if (lat == null || lon == null) return null;
+    const tags = el.tags || {};
+    if (!tags.name) return null;                    // unnamed nodes are noise
+    return {
+      key: el.type + '/' + el.id,
+      name: tags.name,
+      kind: tags.amenity || tags.leisure || tags.tourism || tags.shop || '',
+      lat, lon,
+      /* "Pizza House" tells you nothing about whether it is near you.
+         OSM's addr:* keys carry the town where a mapper filled them in,
+         which is free -- it arrives with the venue in the same request.
+         Coverage is partial and there is no honest fallback: reverse
+         geocoding every result would mean one Nominatim call per venue,
+         which their usage policy forbids and our rate limit could not
+         take. So the town is shown where it is known and simply absent
+         where it is not, rather than guessed. */
+      town: tags['addr:city'] || tags['addr:town'] || tags['addr:village']
+         || tags['addr:hamlet'] || tags['addr:suburb'] || '',
+      hours: tags.opening_hours || '',
+      price: priceLevel(tags),
+      chain: isChain(tags, tags.name)
+    };
+  }).filter(Boolean);
 }
 
 async function fetchVenues(center, radiusM) {
@@ -750,31 +791,7 @@ async function fetchVenues(center, radiusM) {
       });
       if (!res.ok) throw new Error('Overpass ' + res.status);
       const data = await res.json();
-      return (data.elements || []).map(el => {
-        const lat = el.lat ?? el.center?.lat, lon = el.lon ?? el.center?.lon;
-        if (lat == null || lon == null) return null;
-        const tags = el.tags || {};
-        if (!tags.name) return null;                    // unnamed nodes are noise
-        return {
-          key: el.type + '/' + el.id,
-          name: tags.name,
-          kind: tags.amenity || tags.leisure || tags.tourism || tags.shop || '',
-          lat, lon,
-          /* "Pizza House" tells you nothing about whether it is near you.
-             OSM's addr:* keys carry the town where a mapper filled them in,
-             which is free -- it arrives with the venue in the same request.
-             Coverage is partial and there is no honest fallback: reverse
-             geocoding every result would mean one Nominatim call per venue,
-             which their usage policy forbids and our rate limit could not
-             take. So the town is shown where it is known and simply absent
-             where it is not, rather than guessed. */
-          town: tags['addr:city'] || tags['addr:town'] || tags['addr:village']
-             || tags['addr:hamlet'] || tags['addr:suburb'] || '',
-          hours: tags.opening_hours || '',
-          price: priceLevel(tags),
-          chain: isChain(tags, tags.name)
-        };
-      }).filter(Boolean);
+      return parseVenues(data.elements);
     } catch (e) { lastErr = e; }
   }
   throw lastErr || new Error('Overpass unreachable');
@@ -800,6 +817,40 @@ async function driveTimes(people, venues, profile = 'driving') {
     if (data.code !== 'Ok' || !data.durations) throw new Error('OSRM ' + data.code);
     return data.durations;                              // [person][venue] seconds
   } finally { clearTimeout(timer); }
+}
+
+/* Where to look, and how far. Pure, and shared with ios/MidPntCore through
+   test/golden.mjs: an iPhone and a laptop holding the same people must pick
+   the same circle, or "whoever tapped Find" decides the list. */
+function searchArea(located, travel) {
+  const center = centroid(located);
+  const walking = travel === 'walk';
+  const maxFromCenter = Math.max(...located.map(p => haversine(p, center)), 0);
+  // Already together: search wider, because the question is no longer who
+  // travels but what is worth walking out to.
+  const together = located.length > 1 && maxFromCenter < TOGETHER_M;
+  const floor = together ? TOGETHER_RADIUS[travel] : (walking ? 600 : 1500);
+  const radius = Math.min(MAX_RADIUS[travel], Math.max(floor, maxFromCenter * 0.45));
+  return { center, together, radius };
+}
+
+/* Chains, opening hours and price, in that order. Unknown hours and unknown
+   price are never dropped; most of OSM has neither. chainsHidden is -1 when the
+   area is chains and nothing else, so the caller can say so and show them. */
+function filterVenues(venues, { noChains, at, maxPrice }) {
+  let chainsHidden = 0;
+  if (noChains) {
+    const indie = venues.filter(v => !v.chain);
+    chainsHidden = venues.length - indie.length;
+    // Somewhere that is *only* chains should still get an answer, with a
+    // note, rather than an empty list that looks like a broken search.
+    if (indie.length) venues = indie;
+    else if (venues.length) chainsHidden = -1;
+  }
+  for (const v of venues) v.open = isOpenNow(v.hours, at || new Date());
+  if (at) venues = venues.filter(v => v.open !== false);
+  if (maxPrice) venues = venues.filter(v => v.price == null || v.price <= +maxPrice);
+  return { venues, chainsHidden };
 }
 
 /* ------------------------------------------------------------- scoring */
@@ -1604,6 +1655,29 @@ function shareResults(located) {
   });
 }
 
+/* A shared result list, re-indexed to the people this device is showing. Pure
+   so ios/MidPntCore can be held to it: the payload is indexed by whoever was
+   located when the searcher tapped Find, and every other phone has to map it
+   onto its own roster the same way. */
+function remapResults(r, people) {
+  const idx = new Map((r.people || []).map((id, i) => [id, i]));
+  const out = r.venues.map(v => ({
+    ...v,
+    costs: people.map(p => {
+      const i = idx.get(p.id);
+      return i == null ? null : v.costs[i];
+    })
+  })).filter(v => v.costs.some(c => c != null));
+
+  // Someone who joined after the search has no time of their own yet.
+  for (const v of out) {
+    const known = v.costs.filter(c => c != null);
+    v.mean = known.reduce((a, b) => a + b, 0) / (known.length || 1);
+    v.spread = known.length ? Math.max(...known) - Math.min(...known) : 0;
+  }
+  return out;
+}
+
 /* Adopt someone else's search. Costs are stored against the ids they were
    computed for, so they are re-mapped onto the current roster rather than
    trusted by position. */
@@ -1611,21 +1685,7 @@ function adoptResults(r) {
   if (!r || !Array.isArray(r.venues) || !r.venues.length) return false;
   if (r.at && state.resultsAt && r.at <= state.resultsAt) return false;
 
-  const idx = new Map((r.people || []).map((id, i) => [id, i]));
-  state.results = r.venues.map(v => ({
-    ...v,
-    costs: state.people.map(p => {
-      const i = idx.get(p.id);
-      return i == null ? null : v.costs[i];
-    })
-  })).filter(v => v.costs.some(c => c != null));
-
-  // Someone who joined after the search has no time of their own yet.
-  for (const v of state.results) {
-    const known = v.costs.filter(c => c != null);
-    v.mean = known.reduce((a, b) => a + b, 0) / (known.length || 1);
-    v.spread = known.length ? Math.max(...known) - Math.min(...known) : 0;
-  }
+  state.results = remapResults(r, state.people);
   state.together = !!r.together;
   state.estimated = !!r.estimated;
   state.resultsAt = r.at || Date.now();
@@ -1696,12 +1756,15 @@ function rollLucky() {
   search();
 }
 
-function tally(key) {
-  const v = state.votes[key] || {};
+/* Pure so ios/MidPntCore can be held to it by test/golden.mjs: a winner
+   announced on one phone and not another is a disagreement in the room. */
+function tallyOf(votes, key) {
+  const v = votes[key] || {};
   let up = 0, down = 0;
   for (const val of Object.values(v)) val > 0 ? up++ : down++;
   return { up, down };
 }
+const tally = key => tallyOf(state.votes, key);
 
 /* A thumbs-down rules a place out only while nobody wants it. "Not there,
    it's terrible" is the commonest thing anyone says while choosing, and one
@@ -1716,16 +1779,17 @@ const isContested = key => tally(key).down > 0;
 
 /* Once everyone with a location has voted, the group has decided. Announcing
    it gives the session an ending, which it otherwise lacks. */
-function winner() {
+function pickWinner(votes, people, results) {
   const voters = new Set();
-  for (const v of Object.values(state.votes)) for (const id of Object.keys(v)) voters.add(id);
-  const present = state.people.filter(p => p.lat != null);
+  for (const v of Object.values(votes)) for (const id of Object.keys(v)) voters.add(id);
+  const present = people.filter(p => p.lat != null);
   if (present.length < 2 || !present.every(p => voters.has(p.id))) return null;
 
-  const live = state.results.filter(v => !isContested(v.key) && tally(v.key).up > 0);
+  const live = results.filter(v => tallyOf(votes, v.key).down === 0 && tallyOf(votes, v.key).up > 0);
   if (!live.length) return null;
-  return live.reduce((a, b) => (tally(b.key).up > tally(a.key).up ? b : a));
+  return live.reduce((a, b) => (tallyOf(votes, b.key).up > tallyOf(votes, a.key).up ? b : a));
 }
+const winner = () => pickWinner(state.votes, state.people, state.results);
 
 function renderResults(selectedKey) {
   const host = $('#results');
@@ -1904,36 +1968,20 @@ async function search() {
   renderResults();
 
   try {
-    const center = centroid(located);
+    const { center, together, radius } = searchArea(located, state.travel);
     state.center = center;
-
-    const walking = state.travel === 'walk';
-    const maxFromCenter = Math.max(...located.map(p => haversine(p, center)), 0);
-    // Already together: search wider, because the question is no longer who
-    // travels but what is worth walking out to.
-    const together = located.length > 1 && maxFromCenter < TOGETHER_M;
     state.together = together;
-    const floor = together ? TOGETHER_RADIUS[state.travel] : (walking ? 600 : 1500);
-    const radius = Math.min(MAX_RADIUS[state.travel], Math.max(floor, maxFromCenter * 0.45));
+    const walking = state.travel === 'walk';
 
     log('Searching OpenStreetMap near the midpoint…', true);
     let venues = await fetchVenues(center, radius);
 
     // Open-now filter never drops venues with unknown hours; that would hide
     // most of the map, since opening_hours coverage in OSM is partial.
-    let chainsHidden = 0;
-    if (state.noChains) {
-      const indie = venues.filter(v => !v.chain);
-      chainsHidden = venues.length - indie.length;
-      // Somewhere that is *only* chains should still get an answer, with a
-      // note, rather than an empty list that looks like a broken search.
-      if (indie.length) venues = indie;
-      else if (venues.length) chainsHidden = -1;
-    }
-    const at = whenDate();
-    for (const v of venues) v.open = isOpenNow(v.hours, at || new Date());
-    if (at) venues = venues.filter(v => v.open !== false);
-    if (state.maxPrice) venues = venues.filter(v => v.price == null || v.price <= +state.maxPrice);
+    const filtered = filterVenues(venues, {
+      noChains: state.noChains, at: whenDate(), maxPrice: state.maxPrice });
+    venues = filtered.venues;
+    const chainsHidden = filtered.chainsHidden;
 
     if (!venues.length) {
       log('No matching spots nearby. Try more activity types or a wider group.');

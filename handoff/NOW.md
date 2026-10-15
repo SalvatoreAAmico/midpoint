@@ -11,6 +11,10 @@ Format: `**Who** — files or area — what, and roughly until when.`
 
 ## Recently cleared
 
+- **Claude** — `ios/`, `test/golden.mjs`, `docs/session-contract.md`, and a
+  behaviour-preserving extraction in `app.js` — iOS phase 1. Done, 13 October.
+- **Claude** — `ios/`, `test/rpc-shim.mjs`, `test/ios-interop.sh`, votes extraction in `app.js` (`?v=38`) — iOS phases 2–4 as far as a Linux container can verify. Done, 13 October.
+
 - **Sal / Claude** — `app.js`, `styles.css`, `test/smoke.mjs` — the "app gets
   hung up" report. Done, shipped in `d59b8d7`.
 
@@ -21,6 +25,10 @@ Format: `**Who** — files or area — what, and roughly until when.`
 From `STATUS.md` and the last few sessions. Claim one here before starting so
 the other person does not pick it up at the same time.
 
+- **iOS: first compile on a Mac.** `ios/MidPnt` (SwiftUI, widgets, Live Activity) was written
+  without Xcode and has only been syntax-parsed. Run `xcodegen generate`, fix what the compiler
+  finds, then the two-real-devices test. See `ios/README.md`. Also still open: push notifications
+  (own review) and background location (after approval).
 - **Decision log.** Roughly fifteen architectural decisions live only in commit
   messages — the 0.9 spread weight in the fairness score, polling instead of
   Realtime, why no web wrapper. Needs no review, just writing.
@@ -33,6 +41,11 @@ the other person does not pick it up at the same time.
   about a place we know nothing about.
 - **Parking**, **transit times** (needs a self-hosted router), **recurring
   hangouts**.
+
+- **iOS does not count.** `mp_tally` is in the session contract and the web
+  client calls it, but `ios/MidPntCore/Sync/SessionClient.swift` has no
+  equivalent, so nothing an iPhone does reaches `public.stats`. Small job: one
+  method plus the call sites that mirror `countEvent` in `app.js`.
 
 ## Known-but-unfixed
 

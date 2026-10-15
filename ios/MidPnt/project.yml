@@ -1,0 +1,95 @@
+# XcodeGen spec. `brew install xcodegen && cd ios/MidPnt && xcodegen generate`
+# produces MidPnt.xcodeproj. The project file is generated rather than checked in:
+# a hand-merged .pbxproj is the kind of diff nobody can review, and two people
+# (and two agents) edit this repo.
+name: MidPnt
+options:
+  bundleIdPrefix: com.salvatoreaamico        # permanent once published — Sal's call, see docs/ios-plan.md §9
+  deploymentTarget: { iOS: "17.0" }          # MapKit-for-SwiftUI and @Observable without fallbacks
+  createIntermediateGroups: true
+settings:
+  base:
+    # UI targets build in Swift 5 language mode: the strict-concurrency checking of
+    # mode 6 is applied to MidPntCore (which is tested) but this layer has not been
+    # compiled yet. Raise it once a Mac has built it clean.
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"             # CFBundleVersion — shown in Settings → About
+    DEVELOPMENT_TEAM: ""                     # Sal's Apple Developer team
+    # Set before shipping (TODO.md): Nominatim needs a contact address; the policy URLs need a stable home.
+    MP_SUPPORT_EMAIL: ""
+    MP_PRIVACY_URL: ""
+    MP_TERMS_URL: ""
+packages:
+  MidPntCore:
+    path: ../MidPntCore
+targets:
+  MidPnt:
+    type: application
+    platform: iOS
+    sources:
+      - App
+      - Views
+      - Shared
+      - Generated
+      - Resources
+    dependencies:
+      - package: MidPntCore
+      - target: MidPntWidgets
+    entitlements:
+      path: App/MidPnt.entitlements
+      properties:
+        # Universal Links need /.well-known/apple-app-site-association at the DOMAIN ROOT
+        # of salvatoreaamico.com — a file in the portfolio repo, tied to Sal's Team ID.
+        # Template: docs/apple-app-site-association.json
+        com.apple.developer.associated-domains: ["applinks:salvatoreaamico.com"]
+        com.apple.security.application-groups: ["group.com.salvatoreaamico.midpnt"]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: MidPnt
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIAppFonts: [Fraunces.ttf, JetBrainsMono.ttf]
+        NSLocationWhenInUseUsageDescription: "MidPnt uses your location once, to put you on the map and find somewhere fair to meet. It's only shared if you start or join a live session."
+        NSSupportsLiveActivities: true
+        ITSAppUsesNonExemptEncryption: false          # HTTPS only
+        CFBundleURLTypes:
+          - CFBundleURLName: com.salvatoreaamico.midpnt
+            CFBundleURLSchemes: [midpnt]              # widget → app deep links
+        MPSupportEmail: $(MP_SUPPORT_EMAIL)
+        MPPrivacyURL: $(MP_PRIVACY_URL)
+        MPTermsURL: $(MP_TERMS_URL)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.salvatoreaamico.midpnt
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  MidPntWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Widgets
+      - Shared/MeetupActivity.swift
+      - Generated/Palette.swift
+      - Resources
+    dependencies:
+      - package: MidPntCore
+    entitlements:
+      path: Widgets/MidPntWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: ["group.com.salvatoreaamico.midpnt"]
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: MidPnt
+        UIAppFonts: [Fraunces.ttf, JetBrainsMono.ttf]
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.salvatoreaamico.midpnt.widgets
+schemes:
+  MidPnt:
+    build:
+      targets: { MidPnt: all }
+    run: { config: Debug }

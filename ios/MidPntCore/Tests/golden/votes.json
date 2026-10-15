@@ -1,0 +1,380 @@
+{
+  "tally": [
+    {
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": -1,
+          "c": 1
+        }
+      },
+      "key": "x",
+      "out": {
+        "up": 2,
+        "down": 1
+      }
+    },
+    {
+      "votes": {},
+      "key": "x",
+      "out": {
+        "up": 0,
+        "down": 0
+      }
+    },
+    {
+      "votes": {
+        "x": {
+          "a": 0
+        }
+      },
+      "key": "x",
+      "out": {
+        "up": 0,
+        "down": 1
+      }
+    },
+    {
+      "votes": {
+        "x": {
+          "a": 5,
+          "b": -3
+        }
+      },
+      "key": "x",
+      "out": {
+        "up": 1,
+        "down": 1
+      }
+    }
+  ],
+  "winner": [
+    {
+      "name": "nobody voted",
+      "votes": {},
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        },
+        {
+          "key": "y"
+        }
+      ],
+      "out": null
+    },
+    {
+      "name": "one up",
+      "votes": {
+        "x": {
+          "a": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        },
+        {
+          "key": "y"
+        }
+      ],
+      "out": null
+    },
+    {
+      "name": "everyone located has voted, one yes",
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        },
+        {
+          "key": "y"
+        }
+      ],
+      "out": "x"
+    },
+    {
+      "name": "a no stops the winner",
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": -1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        },
+        {
+          "key": "y"
+        }
+      ],
+      "out": null
+    },
+    {
+      "name": "two places, most yes wins",
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": 1
+        },
+        "y": {
+          "a": 1,
+          "b": 1,
+          "c": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "c",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        },
+        {
+          "key": "y"
+        }
+      ],
+      "out": "y"
+    },
+    {
+      "name": "tie goes to the earlier result",
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": 1
+        },
+        "y": {
+          "a": 1,
+          "b": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        },
+        {
+          "key": "y"
+        }
+      ],
+      "out": "x"
+    },
+    {
+      "name": "an unlocated person need not vote",
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "c",
+          "lat": null,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        }
+      ],
+      "out": "x"
+    },
+    {
+      "name": "a located person who has not voted blocks it",
+      "votes": {
+        "x": {
+          "a": 1,
+          "b": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "c",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        }
+      ],
+      "out": null
+    },
+    {
+      "name": "one person alone cannot decide",
+      "votes": {
+        "x": {
+          "a": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        }
+      ],
+      "out": null
+    },
+    {
+      "name": "votes only for places not in the results",
+      "votes": {
+        "z": {
+          "a": 1,
+          "b": 1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        }
+      ],
+      "out": null
+    },
+    {
+      "name": "only down votes",
+      "votes": {
+        "x": {
+          "a": -1,
+          "b": -1
+        }
+      },
+      "people": [
+        {
+          "id": "a",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "b",
+          "lat": 1,
+          "lon": 1
+        }
+      ],
+      "results": [
+        {
+          "key": "x"
+        }
+      ],
+      "out": null
+    }
+  ]
+}

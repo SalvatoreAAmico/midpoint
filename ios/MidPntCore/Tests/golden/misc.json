@@ -1,0 +1,885 @@
+{
+  "codename": [
+    {
+      "id": "abc123",
+      "out": "Brisk Tapir"
+    },
+    {
+      "id": "xyz",
+      "out": "Curious Albatross"
+    },
+    {
+      "id": "aaa",
+      "out": "Bright Pelican"
+    },
+    {
+      "id": "bbb",
+      "out": "Sunny Narwhal"
+    },
+    {
+      "id": "",
+      "out": "Brisk Otter"
+    },
+    {
+      "id": "0",
+      "out": "Brisk Otter"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "out": "Sunny Weasel"
+    },
+    {
+      "id": "zoë",
+      "out": "Eager Falcon"
+    },
+    {
+      "id": "🐙",
+      "out": "Distant Pelican"
+    },
+    {
+      "id": "Ünïcode-ID",
+      "out": "Nimble Kestrel"
+    },
+    {
+      "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "out": "Crisp Walrus"
+    },
+    {
+      "id": "id0",
+      "out": "Scruffy Walrus"
+    },
+    {
+      "id": "id7919",
+      "out": "Late Axolotl"
+    },
+    {
+      "id": "id15838",
+      "out": "Amiable Marmot"
+    },
+    {
+      "id": "id23757",
+      "out": "Zesty Kestrel"
+    },
+    {
+      "id": "id31676",
+      "out": "Fussy Stoat"
+    },
+    {
+      "id": "id39595",
+      "out": "Cheerful Toucan"
+    },
+    {
+      "id": "id47514",
+      "out": "Spry Gibbon"
+    },
+    {
+      "id": "id55433",
+      "out": "Drowsy Okapi"
+    },
+    {
+      "id": "id63352",
+      "out": "Chipper Bison"
+    },
+    {
+      "id": "id71271",
+      "out": "Modest Badger"
+    },
+    {
+      "id": "id79190",
+      "out": "Rowdy Lemur"
+    },
+    {
+      "id": "id87109",
+      "out": "Cheerful Capybara"
+    },
+    {
+      "id": "id95028",
+      "out": "Sturdy Toucan"
+    },
+    {
+      "id": "id102947",
+      "out": "Tidy Stoat"
+    },
+    {
+      "id": "id110866",
+      "out": "Breezy Manatee"
+    },
+    {
+      "id": "id118785",
+      "out": "Patient Ferret"
+    },
+    {
+      "id": "id126704",
+      "out": "Bright Quokka"
+    },
+    {
+      "id": "id134623",
+      "out": "Crisp Moose"
+    },
+    {
+      "id": "id142542",
+      "out": "Jolly Badger"
+    },
+    {
+      "id": "id150461",
+      "out": "Keen Raccoon"
+    },
+    {
+      "id": "id158380",
+      "out": "Punctual Narwhal"
+    },
+    {
+      "id": "id166299",
+      "out": "Swift Osprey"
+    },
+    {
+      "id": "id174218",
+      "out": "Eager Ferret"
+    },
+    {
+      "id": "id182137",
+      "out": "Casual Pelican"
+    },
+    {
+      "id": "id190056",
+      "out": "Lost Vole"
+    },
+    {
+      "id": "id197975",
+      "out": "Hungry Axolotl"
+    },
+    {
+      "id": "id205894",
+      "out": "Wandering Ferret"
+    },
+    {
+      "id": "id213813",
+      "out": "Sleepy Okapi"
+    },
+    {
+      "id": "id221732",
+      "out": "Brisk Moose"
+    },
+    {
+      "id": "id229651",
+      "out": "Lucky Manatee"
+    },
+    {
+      "id": "id237570",
+      "out": "Foggy Lemur"
+    },
+    {
+      "id": "id245489",
+      "out": "Zesty Quokka"
+    },
+    {
+      "id": "id253408",
+      "out": "Wandering Toucan"
+    },
+    {
+      "id": "id261327",
+      "out": "Early Ferret"
+    },
+    {
+      "id": "id269246",
+      "out": "Spry Raccoon"
+    },
+    {
+      "id": "id277165",
+      "out": "Drowsy Hedgehog"
+    },
+    {
+      "id": "id285084",
+      "out": "Chipper Iguana"
+    },
+    {
+      "id": "id293003",
+      "out": "Sunny Lemur"
+    },
+    {
+      "id": "id300922",
+      "out": "Grumpy Okapi"
+    },
+    {
+      "id": "id308841",
+      "out": "Scruffy Stoat"
+    },
+    {
+      "id": "id316760",
+      "out": "Tidy Manatee"
+    },
+    {
+      "id": "id324679",
+      "out": "Nimble Lemur"
+    },
+    {
+      "id": "id332598",
+      "out": "Distant Quokka"
+    },
+    {
+      "id": "id340517",
+      "out": "Modest Toucan"
+    },
+    {
+      "id": "id348436",
+      "out": "Rowdy Badger"
+    },
+    {
+      "id": "id356355",
+      "out": "Mellow Raccoon"
+    },
+    {
+      "id": "id364274",
+      "out": "Curious Hedgehog"
+    },
+    {
+      "id": "id372193",
+      "out": "Restless Iguana"
+    },
+    {
+      "id": "id380112",
+      "out": "Solemn Lemur"
+    },
+    {
+      "id": "id388031",
+      "out": "Eager Pelican"
+    },
+    {
+      "id": "id395950",
+      "out": "Crisp Weasel"
+    },
+    {
+      "id": "id403869",
+      "out": "Jolly Manatee"
+    },
+    {
+      "id": "id411788",
+      "out": "Keen Lemur"
+    },
+    {
+      "id": "id419707",
+      "out": "Idle Okapi"
+    },
+    {
+      "id": "id427626",
+      "out": "Swift Bison"
+    },
+    {
+      "id": "id435545",
+      "out": "Quiet Otter"
+    },
+    {
+      "id": "id443464",
+      "out": "Bold Raccoon"
+    },
+    {
+      "id": "id451383",
+      "out": "Humble Hedgehog"
+    },
+    {
+      "id": "id459302",
+      "out": "Dapper Toucan"
+    },
+    {
+      "id": "id467221",
+      "out": "Wandering Puffin"
+    }
+  ],
+  "placeName": [
+    {
+      "addr": {
+        "neighbourhood": "Wicker Park",
+        "city": "Chicago",
+        "state": "Illinois"
+      },
+      "display": "",
+      "out": "Wicker Park, Chicago"
+    },
+    {
+      "addr": {
+        "city": "Leominster",
+        "county": "Worcester County",
+        "state": "Massachusetts"
+      },
+      "display": "",
+      "out": "Leominster, Massachusetts"
+    },
+    {
+      "addr": {
+        "town": "Gardner",
+        "county": "Worcester County",
+        "state": "Massachusetts"
+      },
+      "display": "",
+      "out": "Gardner, Massachusetts"
+    },
+    {
+      "addr": {
+        "village": "Stow",
+        "state": "Massachusetts"
+      },
+      "display": "",
+      "out": "Stow, Massachusetts"
+    },
+    {
+      "addr": {},
+      "display": "Somewhere, Someplace, Somecountry",
+      "out": "Somewhere, Someplace"
+    },
+    {
+      "addr": {},
+      "display": "",
+      "out": ""
+    },
+    {
+      "addr": null,
+      "display": "One, Two, Three",
+      "out": "One, Two"
+    },
+    {
+      "addr": {
+        "city": "Paris"
+      },
+      "display": "",
+      "out": "Paris"
+    },
+    {
+      "addr": {
+        "suburb": "PARIS",
+        "city": "paris",
+        "state": "Île-de-France"
+      },
+      "display": "",
+      "out": "PARIS, Île-de-France"
+    },
+    {
+      "addr": {
+        "city_district": "Mitte",
+        "city": "Berlin"
+      },
+      "display": "",
+      "out": "Mitte, Berlin"
+    },
+    {
+      "addr": {
+        "municipality": "Kyoto",
+        "state": "Kyoto Prefecture"
+      },
+      "display": "",
+      "out": "Kyoto, Kyoto Prefecture"
+    },
+    {
+      "addr": {
+        "quarter": "Old Town",
+        "town": "Stow"
+      },
+      "display": "",
+      "out": "Old Town, Stow"
+    }
+  ],
+  "suggestGroupName": [
+    {
+      "people": [
+        {
+          "id": "a",
+          "name": "Sal",
+          "label": "Wicker Park",
+          "lat": 41.9,
+          "lon": -87.68,
+          "flex": false,
+          "status": "x"
+        },
+        {
+          "id": "b",
+          "name": "Ravi",
+          "label": "Hyde Park",
+          "lat": 41.79,
+          "lon": -87.59,
+          "flex": true,
+          "status": "y"
+        },
+        {
+          "id": "c",
+          "name": "",
+          "label": "",
+          "lat": null,
+          "lon": null,
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "d",
+          "name": "Auto",
+          "nameAuto": true,
+          "label": "Pilsen",
+          "lat": 41.85,
+          "lon": -87.66
+        },
+        {
+          "id": "e",
+          "name": "  ",
+          "label": "",
+          "lat": 1,
+          "lon": 2
+        }
+      ],
+      "out": "Sal, Ravi, Auto"
+    },
+    {
+      "people": [
+        {
+          "name": "A"
+        },
+        {
+          "name": "B"
+        },
+        {
+          "name": "C"
+        },
+        {
+          "name": "D"
+        }
+      ],
+      "out": "A, B +2"
+    },
+    {
+      "people": [
+        {
+          "name": ""
+        },
+        {
+          "name": "  "
+        }
+      ],
+      "out": ""
+    },
+    {
+      "people": [],
+      "out": ""
+    },
+    {
+      "people": [
+        {
+          "name": "Solo"
+        }
+      ],
+      "out": "Solo"
+    },
+    {
+      "people": [
+        {
+          "name": "A"
+        },
+        {
+          "name": "B"
+        },
+        {
+          "name": "C"
+        }
+      ],
+      "out": "A, B, C"
+    }
+  ],
+  "groupFromPeople": [
+    {
+      "name": "Tuesday crew",
+      "people": [
+        {
+          "id": "a",
+          "name": "Sal",
+          "label": "Wicker Park",
+          "lat": 41.9,
+          "lon": -87.68,
+          "flex": false,
+          "status": "x"
+        },
+        {
+          "id": "b",
+          "name": "Ravi",
+          "label": "Hyde Park",
+          "lat": 41.79,
+          "lon": -87.59,
+          "flex": true,
+          "status": "y"
+        },
+        {
+          "id": "c",
+          "name": "",
+          "label": "",
+          "lat": null,
+          "lon": null,
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "d",
+          "name": "Auto",
+          "nameAuto": true,
+          "label": "Pilsen",
+          "lat": 41.85,
+          "lon": -87.66
+        },
+        {
+          "id": "e",
+          "name": "  ",
+          "label": "",
+          "lat": 1,
+          "lon": 2
+        }
+      ],
+      "out": {
+        "name": "Tuesday crew",
+        "people": [
+          {
+            "name": "Sal",
+            "label": "Wicker Park",
+            "lat": 41.9,
+            "lon": -87.68,
+            "flex": false
+          },
+          {
+            "name": "Ravi",
+            "label": "Hyde Park",
+            "lat": 41.79,
+            "lon": -87.59,
+            "flex": true
+          },
+          {
+            "name": "",
+            "label": "Pilsen",
+            "lat": 41.85,
+            "lon": -87.66,
+            "flex": false
+          },
+          {
+            "name": "  ",
+            "label": "",
+            "lat": 1,
+            "lon": 2,
+            "flex": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "people": [
+        {
+          "id": "a",
+          "name": "Sal",
+          "label": "Wicker Park",
+          "lat": 41.9,
+          "lon": -87.68,
+          "flex": false,
+          "status": "x"
+        },
+        {
+          "id": "b",
+          "name": "Ravi",
+          "label": "Hyde Park",
+          "lat": 41.79,
+          "lon": -87.59,
+          "flex": true,
+          "status": "y"
+        },
+        {
+          "id": "c",
+          "name": "",
+          "label": "",
+          "lat": null,
+          "lon": null,
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "d",
+          "name": "Auto",
+          "nameAuto": true,
+          "label": "Pilsen",
+          "lat": 41.85,
+          "lon": -87.66
+        },
+        {
+          "id": "e",
+          "name": "  ",
+          "label": "",
+          "lat": 1,
+          "lon": 2
+        }
+      ],
+      "out": {
+        "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "people": [
+          {
+            "name": "Sal",
+            "label": "Wicker Park",
+            "lat": 41.9,
+            "lon": -87.68,
+            "flex": false
+          },
+          {
+            "name": "Ravi",
+            "label": "Hyde Park",
+            "lat": 41.79,
+            "lon": -87.59,
+            "flex": true
+          },
+          {
+            "name": "",
+            "label": "Pilsen",
+            "lat": 41.85,
+            "lon": -87.66,
+            "flex": false
+          },
+          {
+            "name": "  ",
+            "label": "",
+            "lat": 1,
+            "lon": 2,
+            "flex": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "  padded  ",
+      "people": [
+        {
+          "id": "a",
+          "name": "Sal",
+          "label": "Wicker Park",
+          "lat": 41.9,
+          "lon": -87.68,
+          "flex": false,
+          "status": "x"
+        },
+        {
+          "id": "b",
+          "name": "Ravi",
+          "label": "Hyde Park",
+          "lat": 41.79,
+          "lon": -87.59,
+          "flex": true,
+          "status": "y"
+        },
+        {
+          "id": "c",
+          "name": "",
+          "label": "",
+          "lat": null,
+          "lon": null,
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "d",
+          "name": "Auto",
+          "nameAuto": true,
+          "label": "Pilsen",
+          "lat": 41.85,
+          "lon": -87.66
+        },
+        {
+          "id": "e",
+          "name": "  ",
+          "label": "",
+          "lat": 1,
+          "lon": 2
+        }
+      ],
+      "out": {
+        "name": "padded",
+        "people": [
+          {
+            "name": "Sal",
+            "label": "Wicker Park",
+            "lat": 41.9,
+            "lon": -87.68,
+            "flex": false
+          },
+          {
+            "name": "Ravi",
+            "label": "Hyde Park",
+            "lat": 41.79,
+            "lon": -87.59,
+            "flex": true
+          },
+          {
+            "name": "",
+            "label": "Pilsen",
+            "lat": 41.85,
+            "lon": -87.66,
+            "flex": false
+          },
+          {
+            "name": "  ",
+            "label": "",
+            "lat": 1,
+            "lon": 2,
+            "flex": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "nine",
+      "people": [
+        {
+          "id": "n0",
+          "name": "N0",
+          "lat": 0,
+          "lon": 0
+        },
+        {
+          "id": "n1",
+          "name": "N1",
+          "lat": 1,
+          "lon": 1
+        },
+        {
+          "id": "n2",
+          "name": "N2",
+          "lat": 2,
+          "lon": 2
+        },
+        {
+          "id": "n3",
+          "name": "N3",
+          "lat": 3,
+          "lon": 3
+        },
+        {
+          "id": "n4",
+          "name": "N4",
+          "lat": 4,
+          "lon": 4
+        },
+        {
+          "id": "n5",
+          "name": "N5",
+          "lat": 5,
+          "lon": 5
+        },
+        {
+          "id": "n6",
+          "name": "N6",
+          "lat": 6,
+          "lon": 6
+        },
+        {
+          "id": "n7",
+          "name": "N7",
+          "lat": 7,
+          "lon": 7
+        },
+        {
+          "id": "n8",
+          "name": "N8",
+          "lat": 8,
+          "lon": 8
+        },
+        {
+          "id": "n9",
+          "name": "N9",
+          "lat": 9,
+          "lon": 9
+        }
+      ],
+      "out": {
+        "name": "nine",
+        "people": [
+          {
+            "name": "N0",
+            "label": "",
+            "lat": 0,
+            "lon": 0,
+            "flex": false
+          },
+          {
+            "name": "N1",
+            "label": "",
+            "lat": 1,
+            "lon": 1,
+            "flex": false
+          },
+          {
+            "name": "N2",
+            "label": "",
+            "lat": 2,
+            "lon": 2,
+            "flex": false
+          },
+          {
+            "name": "N3",
+            "label": "",
+            "lat": 3,
+            "lon": 3,
+            "flex": false
+          },
+          {
+            "name": "N4",
+            "label": "",
+            "lat": 4,
+            "lon": 4,
+            "flex": false
+          },
+          {
+            "name": "N5",
+            "label": "",
+            "lat": 5,
+            "lon": 5,
+            "flex": false
+          },
+          {
+            "name": "N6",
+            "label": "",
+            "lat": 6,
+            "lon": 6,
+            "flex": false
+          },
+          {
+            "name": "N7",
+            "label": "",
+            "lat": 7,
+            "lon": 7,
+            "flex": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "unnamed but located",
+      "people": [
+        {
+          "name": "",
+          "lat": 1,
+          "lon": 2
+        }
+      ],
+      "out": {
+        "name": "unnamed but located",
+        "people": [
+          {
+            "name": "",
+            "label": "",
+            "lat": 1,
+            "lon": 2,
+            "flex": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "nobody",
+      "people": [
+        {
+          "name": ""
+        }
+      ],
+      "out": {
+        "name": "nobody",
+        "people": []
+      }
+    }
+  ]
+}

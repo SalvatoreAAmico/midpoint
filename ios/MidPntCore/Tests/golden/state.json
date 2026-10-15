@@ -1,0 +1,417 @@
+[
+  {
+    "name": "everything set",
+    "hash": "eyJwIjpbWyJhMSIsIlNhbCIsNDEuOSwtODcuNjcsIldpY2tlciBQYXJrLCBDaGljYWdvIiwwXSxbImIyIiwiUmF2aSIsNDEuNzksLTg3LjU5LCIiLDFdLFsiYzMiLCJab8OrIPCfkJkiLG51bGwsbnVsbCwiIiwwXV0sImMiOlsiY29mZmVlIiwiZm9vZCJdLCJ0diI6IndhbGsiLCJ3IjoiMyIsInd0IjoiMTg6MzAiLCJyIjoiMiIsInYiOnsibm9kZS8xIjp7ImExIjoxLCJiMiI6LTF9fSwibCI6MSwibiI6MCwibSI6ImExIn0",
+    "out": {
+      "people": [
+        {
+          "id": "a1",
+          "name": "Sal",
+          "lat": 41.9,
+          "lon": -87.67,
+          "label": "Wicker Park, Chicago",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "b2",
+          "name": "Ravi",
+          "lat": 41.79,
+          "lon": -87.59,
+          "label": "",
+          "flex": true,
+          "status": ""
+        },
+        {
+          "id": "c3",
+          "name": "Zoë 🐙",
+          "lat": null,
+          "lon": null,
+          "label": "",
+          "flex": false,
+          "status": ""
+        }
+      ],
+      "cats": [
+        "coffee",
+        "food"
+      ],
+      "when": "3",
+      "whenTime": "18:30",
+      "travel": "walk",
+      "maxPrice": "2",
+      "lucky": true,
+      "noChains": false,
+      "votes": {
+        "node/1": {
+          "a1": 1,
+          "b2": -1
+        }
+      },
+      "hashMe": "a1"
+    }
+  },
+  {
+    "name": "old open-now flag",
+    "hash": "eyJwIjpbXSwibyI6MX0",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "now",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "old open-now flag is overridden by w",
+    "hash": "eyJwIjpbXSwibyI6MSwidyI6IiJ9",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "n absent defaults on",
+    "hash": "eyJwIjpbWyJhIiwiQSIsMSwyLCIiLDBdXX0",
+    "out": {
+      "people": [
+        {
+          "id": "a",
+          "name": "A",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        }
+      ],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "n explicitly off",
+    "hash": "eyJwIjpbXSwibiI6MH0",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": false,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "empty categories fall back to coffee",
+    "hash": "eyJwIjpbXSwiYyI6W119",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "categories not an array",
+    "hash": "eyJwIjpbXSwiYyI6ImNvZmZlZSJ9",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "unknown travel mode",
+    "hash": "eyJwIjpbXSwidHYiOiJmbHkifQ",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "votes not an object",
+    "hash": "eyJwIjpbXSwidiI6IngifQ",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "m not a string",
+    "hash": "eyJwIjpbXSwibSI6N30",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "w numeric",
+    "hash": "eyJwIjpbXSwidyI6MH0",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "0",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "nine people are capped at eight",
+    "hash": "eyJwIjpbWyJpZDAiLCJQMCIsMSwyLCIiLDBdLFsiaWQxIiwiUDEiLDEsMiwiIiwwXSxbImlkMiIsIlAyIiwxLDIsIiIsMF0sWyJpZDMiLCJQMyIsMSwyLCIiLDBdLFsiaWQ0IiwiUDQiLDEsMiwiIiwwXSxbImlkNSIsIlA1IiwxLDIsIiIsMF0sWyJpZDYiLCJQNiIsMSwyLCIiLDBdLFsiaWQ3IiwiUDciLDEsMiwiIiwwXSxbImlkOCIsIlA4IiwxLDIsIiIsMF1dfQ",
+    "out": {
+      "people": [
+        {
+          "id": "id0",
+          "name": "P0",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id1",
+          "name": "P1",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id2",
+          "name": "P2",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id3",
+          "name": "P3",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id4",
+          "name": "P4",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id5",
+          "name": "P5",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id6",
+          "name": "P6",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        },
+        {
+          "id": "id7",
+          "name": "P7",
+          "lat": 1,
+          "lon": 2,
+          "label": "",
+          "flex": false,
+          "status": ""
+        }
+      ],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "person with missing fields",
+    "hash": "eyJwIjpbWyJvbmx5LWlkIl1dfQ",
+    "out": {
+      "people": [
+        {
+          "id": "only-id",
+          "name": "",
+          "label": "",
+          "flex": false,
+          "status": ""
+        }
+      ],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "no people key",
+    "hash": "e30",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  },
+  {
+    "name": "not base64",
+    "hash": "!!!not base64!!!",
+    "out": null
+  },
+  {
+    "name": "base64 of not json",
+    "hash": "aGVsbG8=",
+    "out": null
+  },
+  {
+    "name": "empty",
+    "hash": "",
+    "out": null
+  },
+  {
+    "name": "json null",
+    "hash": "bnVsbA",
+    "out": null
+  },
+  {
+    "name": "json array is valid json with no fields",
+    "hash": "WzEsMl0",
+    "out": {
+      "people": [],
+      "cats": [
+        "coffee"
+      ],
+      "when": "",
+      "whenTime": "19:00",
+      "travel": "drive",
+      "maxPrice": "",
+      "lucky": false,
+      "noChains": true,
+      "votes": {},
+      "hashMe": null
+    }
+  }
+]

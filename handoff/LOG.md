@@ -45,6 +45,60 @@ declaring both is a syntax error.
 Needs `supabase/fix-004-counters.sql` run on the live project before any of it
 records anything.
 
+## 2026-10-13 — iOS phases 2–4: sync, app model, SwiftUI shell, widgets
+**Claude** · this commit
+
+`MidPntCore` now holds the whole app's logic: `SessionClient` / `SessionPoller` (every
+spend guard from `sync.js`), voting and winner, lucky, maps links, invite parsing, and
+`AppModel`. 93 tests, including two phones in one session agreeing on roster, order,
+shortlist and winner, and `test/ios-interop.sh`, which runs the Swift client against the
+**real schema** as `anon` through `test/rpc-shim.mjs` (a PostgREST stand-in). `app.js`
+gained `tallyOf` / `pickWinner` (pure; `?v=38`). `test/golden.mjs` also generates the iOS
+colour assets, `Palette.swift` and `Config.swift`, so palette and endpoint cannot drift.
+
+`ios/MidPnt/` is the SwiftUI shell, a Home Screen widget and a Live Activity. **It has never
+been compiled** (no Xcode in a container); only syntax-parsed. The CI job `ios-app` is its
+first compile. Push notifications and background location were left unbuilt on purpose.
+
+**Watch out:** the plan's "two real devices" test is still owed. See `ios/README.md`.
+
+## 2026-10-13 — iOS phase 1: MidPntCore and the golden vectors
+**Claude** · this commit
+
+`ios/MidPntCore`, a Swift package with no Apple-only imports (tests on Linux):
+distance, centroid, outliers, scoring, opening hours, chains, categories,
+Overpass query and parsing, link parsing, codenames, saved groups, plus thin
+Nominatim / Overpass / OSRM clients and `Search.run`, whose test asserts a
+search is two HTTP calls at group sizes 1, 2, 4 and 8. `test/golden.mjs` runs
+`app.js` over fixed inputs and writes the answers to `ios/MidPntCore/Tests/golden/`;
+`swift test` reproduces them. `docs/session-contract.md` writes down the `mp_*`
+wire format. CI runs unit, golden and `swift test` (`.github/workflows/tests.yml`).
+
+`app.js` changed, behaviour-preservingly: `parseState`, `parseVenues`,
+`searchArea`, `filterVenues` and `remapResults` were extracted from
+`decodeState`, `fetchVenues`, `search` and `adoptResults` so there is something
+pure to compare against. `?v=37`.
+
+**Watch out:** `SPREAD_WEIGHT` and the other tuning constants are literals in
+`Limits.swift` on purpose. Retune one in `app.js` and `swift test` goes red until
+Swift is retuned in the same commit; categories and the chain list are generated
+and need no Swift change. The golden vectors caught one real disagreement while
+this was written: `codename()` hashes the *high surrogate only* of an emoji
+(`charCodeAt(0)` on a code point), not both UTF-16 units.
+
+## 2026-10-13 — A build plan for the iOS app
+**Sal / Claude** · this commit
+
+`docs/ios-plan.md`: Swift package `MidPntCore` for the pure logic (builds and
+tests on Linux, so no Mac until the UI), SwiftUI + MapKit app on top, same
+Supabase backend untouched. The scorers are kept honest by golden vectors
+generated from `app.js`, so a ranking never depends on which phone searched.
+Phase 1 can start now; the SwiftUI shell waits for one real meetup.
+
+**Watch out:** nothing is built yet. Section 9 lists the decisions only Sal
+can make (Mac, developer account, bundle ID, Universal Links file on the
+portfolio site).
+
 ## 2026-10-13 — Renamed to MidPnt
 **Sal / Claude** · this commit
 

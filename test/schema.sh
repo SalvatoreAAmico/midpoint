@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Verifies supabase/schema.sql against a real Postgres, as the anon role.
 #   bash test/pg-up.sh && bash test/schema.sh
-# The host/port are fixed at /tmp:5433 to match pg-up.sh; MPDB picks the database.
+# Defaults to /tmp:5433 to match pg-up.sh, so local use needs no env at all.
+# PGHOST/PGPORT override it, which is how CI points at a service container.
+# MPDB picks the database.
 set -u
-P="psql -h /tmp -p 5433 -U postgres -d ${MPDB:-mp} -qAt"
+P="psql -h ${PGHOST:-/tmp} -p ${PGPORT:-5433} -U postgres -d ${MPDB:-mp} -qAt"
 pass=0; fail=0
 ok(){ if [ "$2" = "1" ]; then pass=$((pass+1)); echo "  ok   $1"; else fail=$((fail+1)); echo "  FAIL $1 | $3"; fi; }
 
