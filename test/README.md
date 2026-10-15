@@ -74,3 +74,15 @@ it runs, and that is the number to trust.
 
 Current totals: **165 / 185 / 99 / 27 / 8** across unit, smoke, smoke-live,
 schema and migrations, plus 49 generated files checked by golden.mjs and 93 Swift tests (4 of them interop).
+
+## In CI
+
+`.github/workflows/tests.yml` runs all six on every push and pull request:
+`unit` and `golden` on a bare runner, `smoke` and `smoke-live` with a
+Playwright Chromium, and `schema` and `migrations` against a Postgres 16
+service container (`PGHOST`/`PGPORT` override the local `/tmp:5433` default).
+The `ios-app` job is `continue-on-error` until the SwiftUI layer compiles on a
+Mac for the first time — a permanently red job trains everyone to ignore the
+whole workflow.
+
+Current totals: **165 / 185 / 106 / 34 / 10**, plus 49 golden files.

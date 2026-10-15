@@ -39,6 +39,10 @@ then make `MidPntCore` agree, and commit all of it together.
 `CHROME_PATH` is only needed if Playwright's bundled browser is missing. In a
 cloud container try `/opt/pw-browsers/chromium-*/chrome-linux/chrome`.
 
+CI (`.github/workflows/tests.yml`) now runs all six on every push and PR. It
+used to run only the two that need no browser or database, which is how a merge
+nearly dropped fourteen counter assertions without anything going red.
+
 `test/pg-up.sh` builds a throwaway Postgres on `/tmp:5433` and loads
 `supabase/schema.sql`. Containers are ephemeral: if all 27 schema assertions
 fail at once, the server is stopped, not the code broken. Re-run `pg-up.sh`.

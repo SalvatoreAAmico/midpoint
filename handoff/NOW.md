@@ -42,9 +42,17 @@ the other person does not pick it up at the same time.
 - **Parking**, **transit times** (needs a self-hosted router), **recurring
   hangouts**.
 
+- **iOS does not count.** `mp_tally` is in the session contract and the web
+  client calls it, but `ios/MidPntCore/Sync/SessionClient.swift` has no
+  equivalent, so nothing an iPhone does reaches `public.stats`. Small job: one
+  method plus the call sites that mirror `countEvent` in `app.js`.
+
 ## Known-but-unfixed
 
-*(nothing right now)*
+- **`supabase/fix-004-counters.sql` has not been run on the live project.**
+  Until Sal runs it in the Supabase SQL editor, every counter call fails
+  silently — which is by design, counting must never break a search, but it
+  also means nothing is being recorded yet.
 
 ## Recently killed
 

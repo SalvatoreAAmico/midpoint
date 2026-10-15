@@ -145,6 +145,18 @@ const Sync = {
      });
   },
 
+  /* Count something. Deliberately the least important call in the app: it is
+     fire-and-forget, it never blocks anything, and every failure is swallowed.
+     A counter that can break a search is worse than no counter. It also sends
+     nothing but a whitelisted word -- no code, no participant, no coordinates
+     -- and the whitelist is enforced in the database, not here. */
+  tally(metric) {
+    if (!this.configured) return;
+    try {
+      this.rpc('mp_tally', { p_metric: metric }).catch(() => {});
+    } catch { /* never let counting surface to the user */ }
+  },
+
   prefs(cats, filters) {
     if (!this.live) return Promise.resolve();
     return this.rpc('mp_prefs',

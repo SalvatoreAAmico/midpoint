@@ -65,6 +65,14 @@ All arguments are named; `p_participant` is the UUID string.
 | `mp_vote` | `p_code`, `p_participant`, `p_venue`, `p_dir` (`-1`, `0`, `1`) | — |
 | `mp_state` | `p_code` | the state object below |
 | `mp_leave` | `p_code`, `p_participant` | — |
+| `mp_tally` | `p_metric` (one word) | — |
+
+`mp_tally` is the one call that takes **no session code**: a search by one
+person with no live session still counts, so anything that gates these calls on
+a code must let it past. It accepts a single word from a list fixed inside the
+database, carries nothing else — no id, no code, no coordinates, no time finer
+than the day — and silently ignores a word that is not on the list. The web
+client calls it; **MidPntCore does not yet**, so the iOS app records nothing.
 
 `mp_update` writes `lat`/`lon` verbatim, so `null` clears a location; `name` and
 `label` keep their old value if `null` is passed. `mp_vote` with `p_dir = 0`

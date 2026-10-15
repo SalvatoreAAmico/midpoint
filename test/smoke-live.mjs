@@ -79,6 +79,7 @@ await ctx.route('**/router.project-osrm.org/**', r => { calls.osrm++;
 const db = { sessions: new Map() };
 let rpcCalls = 0, leaveCalls = 0;
 const pushedLabels = [];      // every label any device has ever written
+const tallies = [];           // every counter payload, to prove what is in one
 let noResultsFn = false;      // simulate a server missing supabase/fix-003
 
 const rpcHandler = async r => {
@@ -96,6 +97,11 @@ const rpcHandler = async r => {
     db.sessions.get(code).people.push({id:pid, name:a.p_name||'', label:a.p_label||'', lat:a.p_lat, lon:a.p_lon});
     return send({code, participant_id:pid});
   }
+  /* Above the session guard on purpose: mp_tally takes no session code, so a
+     search by one person with no live session still counts. Below it, every
+     counter 400s -- which is exactly what happened first time. */
+  if (fn === 'mp_tally') { tallies.push(a); return send(null, 204); }
+
   if (!S()) return send({message:'session_not_found'}, 400);
   if (fn === 'mp_join') {
     if (S().people.length >= 8) return send({message:'session_full'}, 400);
@@ -724,6 +730,27 @@ ok('leaving clears the code from the URL', !p2.url().includes('?s='));
   ok('tapping it started the session, so there is something to join',
      await ph.locator('#endLive').isVisible());
   await host.close();
+}
+
+/* ---- the counters must carry nothing about anybody ----------------------
+   The entire privacy claim is that a counter is a word and nothing else. That
+   is a property of the payload, so it is asserted on the payload rather than
+   trusted. */
+{
+  ok('counting happened at all', tallies.length > 0, String(tallies.length));
+  const keys = [...new Set(tallies.flatMap(t => Object.keys(t)))];
+  ok('a counter sends exactly one field', keys.length === 1 && keys[0] === 'p_metric',
+     keys.join());
+  const allowed = ['session_created','session_joined','search_solo','search_group',
+                   'vote','winner','group_saved'];
+  const odd = [...new Set(tallies.map(t => t.p_metric))].filter(m => !allowed.includes(m));
+  ok('and only ever a word from the fixed list', odd.length === 0, odd.join());
+
+  const blob = JSON.stringify(tallies);
+  ok('no coordinates ride along', !/\d+\.\d{3,}/.test(blob), blob.slice(0, 120));
+  ok('no session code rides along', !blob.includes('abc1234567'), blob.slice(0, 120));
+  ok('no participant id rides along', !/\bp-\d/.test(blob), blob.slice(0, 120));
+  ok('no name rides along', !/sal|dana/i.test(blob), blob.slice(0, 120));
 }
 
 // ---- tap the code to copy it -------------------------------------------

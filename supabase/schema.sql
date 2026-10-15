@@ -234,3 +234,49 @@ grant execute on function public.mp_prefs(text, jsonb, jsonb)       to anon, aut
 grant execute on function public.mp_vote(text, uuid, text, int)     to anon, authenticated;
 grant execute on function public.mp_leave(text, uuid)               to anon, authenticated;
 grant execute on function public.mp_results(text, uuid, jsonb)      to anon, authenticated;
+
+-- ----------------------------------------------------------- counters
+-- Aggregate only: no participant id, no session code, no coordinates, no
+-- device, no IP, no time finer than the day. There is no row here that belongs
+-- to anybody. Mirrors supabase/fix-004-counters.sql.
+
+create table if not exists public.stats (
+  day     date not null default (now() at time zone 'utc')::date,
+  metric  text not null,
+  n       bigint not null default 0,
+  primary key (day, metric)
+);
+
+alter table public.stats enable row level security;   -- no policies: deny all
+
+-- The whitelist lives in the database, not the client. Two reasons: a caller
+-- cannot invent a metric name, so nothing free-text (and therefore nothing
+-- personal) can ever be written through this; and the table is bounded by
+-- days x metrics, so a million junk calls still produce the same handful of
+-- rows. Inflated numbers would be annoying; an unbounded table would be a bill.
+create or replace function public.mp_tally(p_metric text)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if p_metric not in (
+    'session_created',   -- someone tapped Go live
+    'session_joined',    -- someone opened an invite link and joined
+    'search_solo',       -- a search with one located person
+    'search_group',      -- a search with two or more: the group actually formed
+    'vote',              -- a thumbs up or down
+    'winner',            -- everyone voted and a spot was declared
+    'group_saved'        -- saved a set of people to reuse
+  ) then
+    return;              -- unknown metric: ignore, never error, never store
+  end if;
+
+  insert into public.stats (day, metric, n)
+  values ((now() at time zone 'utc')::date, p_metric, 1)
+  on conflict (day, metric) do update set n = public.stats.n + 1;
+end $$;
+
+-- Anyone may count; nobody may read. Reading is for the project owner in the
+-- Supabase SQL editor:
+--   select day, metric, n from public.stats order by day desc, metric;
+grant execute on function public.mp_tally(text) to anon, authenticated;
+revoke all on public.stats from public, anon, authenticated;

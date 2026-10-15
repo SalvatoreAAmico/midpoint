@@ -12,6 +12,10 @@ rather than documents and are marked as such.
 - [x] ~~Run `supabase/fix-003-shared-results.sql`.~~ Done. Verified afterwards
       that applying it to a pre-003 database gives a database identical to a
       fresh install, and that all 27 schema assertions pass against it.
+- [ ] **Run `supabase/fix-004-counters.sql`.** Seven aggregate counters, so we
+      can finally tell whether anyone uses this. Nothing personal in them —
+      see `PRIVACY.md`. Read them with
+      `select day, metric, n from public.stats order by day desc, metric;`
 - [ ] **Use it for one real meetup.** The only open question that matters. Every
       bug worth fixing in the last few rounds came from you and a friend holding
       two phones, not from building.
