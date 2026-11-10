@@ -1,0 +1,1998 @@
+{
+  "isOpenNow": [
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "24/7 ",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Sa 09:00-22:00; Su 10:00-16:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Su 17:00-02:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "by appointment",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Sa-Su 10:00-14:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Fr-Mo 12:00-20:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo,We,Fr 09:00-17:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 09:00-12:00,13:00-17:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "08:00-20:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Sa,Su off",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; Su closed",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Tu 24:00-02:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 8:00-6:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "mo-fr 08:00-18:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr 08:00-18:00; PH off",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "Mo-Fr sunrise-sunset",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": null
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": true
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "We 00:00-00:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 3,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 3,
+        "h": 23,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 0,
+        "h": 12,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 4,
+        "h": 1,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 1,
+        "h": 3,
+        "m": 30
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 6,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 5,
+        "h": 8,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 5,
+        "h": 18,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 2,
+        "h": 0,
+        "m": 0
+      },
+      "out": false
+    },
+    {
+      "spec": "Su 22:00-04:00",
+      "at": {
+        "day": 1,
+        "h": 2,
+        "m": 0
+      },
+      "out": false
+    }
+  ],
+  "priceLevel": [
+    {
+      "tags": {},
+      "out": null
+    },
+    {
+      "tags": {
+        "price:range": "$"
+      },
+      "out": 1
+    },
+    {
+      "tags": {
+        "price:range": "$$"
+      },
+      "out": 2
+    },
+    {
+      "tags": {
+        "price_range": "$$$"
+      },
+      "out": 3
+    },
+    {
+      "tags": {
+        "price": "$$$$"
+      },
+      "out": 4
+    },
+    {
+      "tags": {
+        "price:range": "$$$$$"
+      },
+      "out": 4
+    },
+    {
+      "tags": {
+        "price:range": "2"
+      },
+      "out": 2
+    },
+    {
+      "tags": {
+        "price:range": "7"
+      },
+      "out": null
+    },
+    {
+      "tags": {
+        "price": "cheap"
+      },
+      "out": null
+    },
+    {
+      "tags": {
+        "price:range": "10-20 USD"
+      },
+      "out": null
+    },
+    {
+      "tags": {
+        "price:range": "0"
+      },
+      "out": null
+    }
+  ],
+  "fmtMin": [
+    {
+      "s": null,
+      "out": "—"
+    },
+    {
+      "s": 0,
+      "out": "<1 min"
+    },
+    {
+      "s": 30,
+      "out": "<1 min"
+    },
+    {
+      "s": 59,
+      "out": "<1 min"
+    },
+    {
+      "s": 60,
+      "out": "1 min"
+    },
+    {
+      "s": 89,
+      "out": "1 min"
+    },
+    {
+      "s": 90,
+      "out": "2 min"
+    },
+    {
+      "s": 3600,
+      "out": "60 min"
+    },
+    {
+      "s": 5400,
+      "out": "90 min"
+    }
+  ]
+}

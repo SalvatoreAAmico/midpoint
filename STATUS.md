@@ -60,6 +60,7 @@ brings up the Postgres the last two need.
 | Backend | Supabase, live sessions optional | Works without it |
 | Platform | Web for now | See `ROADMAP-NATIVE.md` |
 | Wrappers | Rejected | Guideline 4.2; passing it means building native anyway |
+| iOS | `ios/MidPntCore` done; the SwiftUI app waits for one real meetup | `docs/ios-plan.md` §0 |
 
 ## Working with someone else
 
@@ -77,4 +78,5 @@ already tried and rejected so nobody re-proposes them.
 `README.md` how it works · `TODO.md` what only Sal can do ·
 `docs/brand.md` identity · `docs/design-system.md` interface ·
 `docs/brand-brief.md` what has actually been decided, and the evidence ·
-`docs/osm-categories.md` why those categories · `ROADMAP-NATIVE.md` the iOS case
+`docs/osm-categories.md` why those categories · `ROADMAP-NATIVE.md` the iOS case ·
+`docs/ios-plan.md` how the iOS app gets built

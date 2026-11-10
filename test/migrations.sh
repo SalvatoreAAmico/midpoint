@@ -8,7 +8,7 @@
 # would say so. Replaying every fix onto a fresh schema must be a no-op.
 #   bash test/pg-up.sh && bash test/migrations.sh
 set -u
-P="psql -h /tmp -p 5433 -U postgres -qAt"
+P="psql -h ${PGHOST:-/tmp} -p ${PGPORT:-5433} -U postgres -qAt"
 pass=0; fail=0
 ok(){ if [ "$2" = "1" ]; then pass=$((pass+1)); echo "  ok   $1"; else fail=$((fail+1)); echo "  FAIL $1 | $3"; fi; }
 

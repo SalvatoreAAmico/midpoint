@@ -1,0 +1,811 @@
+{
+  "parseVenues": {
+    "elements": [
+      {
+        "type": "node",
+        "id": 1,
+        "tags": {
+          "name": "Bow Truss",
+          "amenity": "cafe",
+          "addr:city": "Chicago",
+          "opening_hours": "Mo-Su 07:00-17:00"
+        },
+        "lat": 41.9,
+        "lon": -87.7
+      },
+      {
+        "type": "way",
+        "id": 2,
+        "tags": {
+          "name": "Millennium Park",
+          "leisure": "park"
+        },
+        "center": {
+          "lat": 41.882,
+          "lon": -87.622
+        }
+      },
+      {
+        "type": "node",
+        "id": 3,
+        "tags": {
+          "amenity": "cafe"
+        },
+        "lat": 41.9,
+        "lon": -87.7
+      },
+      {
+        "type": "relation",
+        "id": 4,
+        "tags": {
+          "name": "Ghost"
+        }
+      },
+      {
+        "type": "node",
+        "id": 5,
+        "tags": {
+          "name": "Starbucks",
+          "amenity": "cafe",
+          "brand": "Starbucks"
+        },
+        "lat": 41.91,
+        "lon": -87.71
+      },
+      {
+        "type": "node",
+        "id": 6,
+        "tags": {
+          "name": "Taqueria Uno",
+          "amenity": "restaurant",
+          "price:range": "$$",
+          "addr:suburb": "Pilsen"
+        },
+        "lat": 41.85,
+        "lon": -87.66
+      },
+      {
+        "type": "node",
+        "id": 7,
+        "tags": {
+          "name": "Town Beats Hamlet",
+          "shop": "bakery",
+          "addr:town": "Gardner",
+          "addr:hamlet": "Nope"
+        },
+        "lat": 42.57,
+        "lon": -71.99
+      },
+      {
+        "type": "node",
+        "id": 8,
+        "tags": {
+          "name": "Zero Island",
+          "leisure": "park"
+        },
+        "lat": 0,
+        "lon": 0
+      },
+      {
+        "type": "node",
+        "id": 9,
+        "tags": {
+          "name": "Tourist Trap",
+          "tourism": "attraction",
+          "amenity": ""
+        },
+        "lat": 41.89,
+        "lon": -87.63
+      },
+      {
+        "type": "node",
+        "id": 10,
+        "tags": {
+          "name": "Kind Order",
+          "amenity": "bar",
+          "leisure": "x",
+          "tourism": "y",
+          "shop": "z"
+        },
+        "lat": 41.8,
+        "lon": -87.6
+      }
+    ],
+    "out": [
+      {
+        "key": "node/1",
+        "name": "Bow Truss",
+        "kind": "cafe",
+        "lat": 41.9,
+        "lon": -87.7,
+        "town": "Chicago",
+        "hours": "Mo-Su 07:00-17:00",
+        "price": null,
+        "chain": false
+      },
+      {
+        "key": "way/2",
+        "name": "Millennium Park",
+        "kind": "park",
+        "lat": 41.882,
+        "lon": -87.622,
+        "town": "",
+        "hours": "",
+        "price": null,
+        "chain": false
+      },
+      {
+        "key": "node/5",
+        "name": "Starbucks",
+        "kind": "cafe",
+        "lat": 41.91,
+        "lon": -87.71,
+        "town": "",
+        "hours": "",
+        "price": null,
+        "chain": true
+      },
+      {
+        "key": "node/6",
+        "name": "Taqueria Uno",
+        "kind": "restaurant",
+        "lat": 41.85,
+        "lon": -87.66,
+        "town": "Pilsen",
+        "hours": "",
+        "price": 2,
+        "chain": false
+      },
+      {
+        "key": "node/7",
+        "name": "Town Beats Hamlet",
+        "kind": "bakery",
+        "lat": 42.57,
+        "lon": -71.99,
+        "town": "Gardner",
+        "hours": "",
+        "price": null,
+        "chain": false
+      },
+      {
+        "key": "node/8",
+        "name": "Zero Island",
+        "kind": "park",
+        "lat": 0,
+        "lon": 0,
+        "town": "",
+        "hours": "",
+        "price": null,
+        "chain": false
+      },
+      {
+        "key": "node/9",
+        "name": "Tourist Trap",
+        "kind": "attraction",
+        "lat": 41.89,
+        "lon": -87.63,
+        "town": "",
+        "hours": "",
+        "price": null,
+        "chain": false
+      },
+      {
+        "key": "node/10",
+        "name": "Kind Order",
+        "kind": "bar",
+        "lat": 41.8,
+        "lon": -87.6,
+        "town": "",
+        "hours": "",
+        "price": null,
+        "chain": false
+      }
+    ]
+  },
+  "parseVenuesEmpty": [
+    0,
+    0,
+    0
+  ],
+  "filterVenues": [
+    {
+      "name": "nothing filtered",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": false,
+        "at": null,
+        "maxPrice": ""
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/2",
+          "n/3",
+          "n/4",
+          "n/5",
+          "n/6"
+        ],
+        "flags": [
+          {
+            "key": "n/1"
+          },
+          {
+            "key": "n/2"
+          },
+          {
+            "key": "n/3"
+          },
+          {
+            "key": "n/4"
+          },
+          {
+            "key": "n/5"
+          },
+          {
+            "key": "n/6"
+          }
+        ],
+        "chainsHidden": 0
+      }
+    },
+    {
+      "name": "chains off",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": true,
+        "at": null,
+        "maxPrice": ""
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/2",
+          "n/3",
+          "n/5",
+          "n/6"
+        ],
+        "flags": [
+          {
+            "key": "n/1"
+          },
+          {
+            "key": "n/2"
+          },
+          {
+            "key": "n/3"
+          },
+          {
+            "key": "n/5"
+          },
+          {
+            "key": "n/6"
+          }
+        ],
+        "chainsHidden": 1
+      }
+    },
+    {
+      "name": "only chains in the area",
+      "venues": [
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        }
+      ],
+      "opts": {
+        "noChains": true,
+        "at": null,
+        "maxPrice": ""
+      },
+      "out": {
+        "keys": [
+          "n/4"
+        ],
+        "flags": [
+          {
+            "key": "n/4"
+          }
+        ],
+        "chainsHidden": -1
+      }
+    },
+    {
+      "name": "empty area",
+      "venues": [],
+      "opts": {
+        "noChains": true,
+        "at": null,
+        "maxPrice": ""
+      },
+      "out": {
+        "keys": [],
+        "flags": [],
+        "chainsHidden": 0
+      }
+    },
+    {
+      "name": "sunday noon",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": false,
+        "at": {
+          "day": 0,
+          "h": 12,
+          "m": 0
+        },
+        "maxPrice": ""
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/3",
+          "n/4",
+          "n/5",
+          "n/6"
+        ],
+        "flags": [
+          {
+            "key": "n/1",
+            "open": true
+          },
+          {
+            "key": "n/3",
+            "open": null
+          },
+          {
+            "key": "n/4",
+            "open": true
+          },
+          {
+            "key": "n/5",
+            "open": true
+          },
+          {
+            "key": "n/6",
+            "open": null
+          }
+        ],
+        "chainsHidden": 0
+      }
+    },
+    {
+      "name": "wednesday late",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": true,
+        "at": {
+          "day": 3,
+          "h": 23,
+          "m": 0
+        },
+        "maxPrice": ""
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/3",
+          "n/5",
+          "n/6"
+        ],
+        "flags": [
+          {
+            "key": "n/1",
+            "open": true
+          },
+          {
+            "key": "n/3",
+            "open": null
+          },
+          {
+            "key": "n/5",
+            "open": true
+          },
+          {
+            "key": "n/6",
+            "open": null
+          }
+        ],
+        "chainsHidden": 1
+      }
+    },
+    {
+      "name": "price cap 2 keeps unknown price",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": false,
+        "at": null,
+        "maxPrice": "2"
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/2",
+          "n/3",
+          "n/4"
+        ],
+        "flags": [
+          {
+            "key": "n/1"
+          },
+          {
+            "key": "n/2"
+          },
+          {
+            "key": "n/3"
+          },
+          {
+            "key": "n/4"
+          }
+        ],
+        "chainsHidden": 0
+      }
+    },
+    {
+      "name": "price cap 1",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": false,
+        "at": null,
+        "maxPrice": "1"
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/3",
+          "n/4"
+        ],
+        "flags": [
+          {
+            "key": "n/1"
+          },
+          {
+            "key": "n/3"
+          },
+          {
+            "key": "n/4"
+          }
+        ],
+        "chainsHidden": 0
+      }
+    },
+    {
+      "name": "everything at once",
+      "venues": [
+        {
+          "key": "n/1",
+          "name": "Open Indie",
+          "hours": "24/7",
+          "price": 1,
+          "chain": false
+        },
+        {
+          "key": "n/2",
+          "name": "Shut Indie",
+          "hours": "Mo-Fr 08:00-18:00",
+          "price": 2,
+          "chain": false
+        },
+        {
+          "key": "n/3",
+          "name": "Unknown Hours",
+          "hours": "",
+          "price": null,
+          "chain": false
+        },
+        {
+          "key": "n/4",
+          "name": "Open Chain",
+          "hours": "24/7",
+          "price": 1,
+          "chain": true
+        },
+        {
+          "key": "n/5",
+          "name": "Pricey",
+          "hours": "24/7",
+          "price": 4,
+          "chain": false
+        },
+        {
+          "key": "n/6",
+          "name": "Unparseable",
+          "hours": "by appointment",
+          "price": 3,
+          "chain": false
+        }
+      ],
+      "opts": {
+        "noChains": true,
+        "at": {
+          "day": 0,
+          "h": 12,
+          "m": 0
+        },
+        "maxPrice": "3"
+      },
+      "out": {
+        "keys": [
+          "n/1",
+          "n/3",
+          "n/6"
+        ],
+        "flags": [
+          {
+            "key": "n/1",
+            "open": true
+          },
+          {
+            "key": "n/3",
+            "open": null
+          },
+          {
+            "key": "n/6",
+            "open": null
+          }
+        ],
+        "chainsHidden": 1
+      }
+    }
+  ]
+}

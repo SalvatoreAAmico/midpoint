@@ -1,0 +1,315 @@
+[
+  {
+    "name": "joiner at position 1 has no time of their own",
+    "r": {
+      "people": [
+        "p1",
+        "p3",
+        "p4"
+      ],
+      "venues": [
+        {
+          "key": "node/1",
+          "name": "One",
+          "lat": 1,
+          "lon": 2,
+          "costs": [
+            60,
+            120,
+            240
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/2",
+          "name": "Two",
+          "lat": 3,
+          "lon": 4,
+          "costs": [
+            null,
+            90,
+            30
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/3",
+          "name": "Three",
+          "lat": 5,
+          "lon": 6,
+          "costs": [
+            null,
+            null,
+            null
+          ],
+          "mean": 0,
+          "spread": 0
+        }
+      ],
+      "at": 5
+    },
+    "roster": [
+      {
+        "id": "p1"
+      },
+      {
+        "id": "p2"
+      },
+      {
+        "id": "p3"
+      },
+      {
+        "id": "p4"
+      }
+    ],
+    "out": [
+      {
+        "key": "node/1",
+        "costs": [
+          60,
+          null,
+          120,
+          240
+        ],
+        "mean": 140,
+        "spread": 180
+      },
+      {
+        "key": "node/2",
+        "costs": [
+          null,
+          null,
+          90,
+          30
+        ],
+        "mean": 60,
+        "spread": 60
+      }
+    ]
+  },
+  {
+    "name": "roster in a different order",
+    "r": {
+      "people": [
+        "p4",
+        "p3",
+        "p1"
+      ],
+      "venues": [
+        {
+          "key": "node/1",
+          "name": "One",
+          "lat": 1,
+          "lon": 2,
+          "costs": [
+            60,
+            120,
+            240
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/2",
+          "name": "Two",
+          "lat": 3,
+          "lon": 4,
+          "costs": [
+            null,
+            90,
+            30
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/3",
+          "name": "Three",
+          "lat": 5,
+          "lon": 6,
+          "costs": [
+            null,
+            null,
+            null
+          ],
+          "mean": 0,
+          "spread": 0
+        }
+      ],
+      "at": 5
+    },
+    "roster": [
+      {
+        "id": "p1"
+      },
+      {
+        "id": "p3"
+      },
+      {
+        "id": "p4"
+      }
+    ],
+    "out": [
+      {
+        "key": "node/1",
+        "costs": [
+          240,
+          120,
+          60
+        ],
+        "mean": 140,
+        "spread": 180
+      },
+      {
+        "key": "node/2",
+        "costs": [
+          30,
+          90,
+          null
+        ],
+        "mean": 60,
+        "spread": 60
+      }
+    ]
+  },
+  {
+    "name": "someone left since the search",
+    "r": {
+      "people": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "venues": [
+        {
+          "key": "node/1",
+          "name": "One",
+          "lat": 1,
+          "lon": 2,
+          "costs": [
+            60,
+            120,
+            240
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/2",
+          "name": "Two",
+          "lat": 3,
+          "lon": 4,
+          "costs": [
+            null,
+            90,
+            30
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/3",
+          "name": "Three",
+          "lat": 5,
+          "lon": 6,
+          "costs": [
+            null,
+            null,
+            null
+          ],
+          "mean": 0,
+          "spread": 0
+        }
+      ],
+      "at": 5
+    },
+    "roster": [
+      {
+        "id": "p1"
+      },
+      {
+        "id": "p3"
+      }
+    ],
+    "out": [
+      {
+        "key": "node/1",
+        "costs": [
+          60,
+          240
+        ],
+        "mean": 150,
+        "spread": 180
+      },
+      {
+        "key": "node/2",
+        "costs": [
+          null,
+          30
+        ],
+        "mean": 30,
+        "spread": 0
+      }
+    ]
+  },
+  {
+    "name": "nobody on the roster was in the search",
+    "r": {
+      "people": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "venues": [
+        {
+          "key": "node/1",
+          "name": "One",
+          "lat": 1,
+          "lon": 2,
+          "costs": [
+            60,
+            120,
+            240
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/2",
+          "name": "Two",
+          "lat": 3,
+          "lon": 4,
+          "costs": [
+            null,
+            90,
+            30
+          ],
+          "mean": 0,
+          "spread": 0
+        },
+        {
+          "key": "node/3",
+          "name": "Three",
+          "lat": 5,
+          "lon": 6,
+          "costs": [
+            null,
+            null,
+            null
+          ],
+          "mean": 0,
+          "spread": 0
+        }
+      ],
+      "at": 5
+    },
+    "roster": [
+      {
+        "id": "z"
+      }
+    ],
+    "out": []
+  }
+]
