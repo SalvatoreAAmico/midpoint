@@ -55,10 +55,17 @@ function codename(id) {
 const LUCKY_CATS = 3;    // how many activity types a roll picks
 const LUCKY_POOL = 12;   // shuffle within this many of the fairest spots
 
+/* Capacity is per-instance, so the only real defence is more instances.
+   Tried in a shuffled order rather than always hammering the first: the big
+   one is the busiest precisely because everybody lists it first. */
 const OVERPASS = [
   'https://overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter'
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.osm.jp/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
 ];
+const OVERPASS_TIMEOUT_MS = 8000;   // 5 hosts x 8s is the worst case
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const OSRM = 'https://router.project-osrm.org/table/v1/';
 
@@ -738,17 +745,26 @@ function overpassQuery(center, radiusM) {
   return `[out:json][timeout:25];(${sel.join('')});out center 120;`;
 }
 
+/* An Overpass instance that is at capacity answers WITHOUT the CORS header, so
+   the browser blocks the response and fetch rejects with a TypeError -- Safari
+   words it "Load failed". From JavaScript that is indistinguishable from the
+   host being unreachable, which is why the message below has to cover both and
+   why a status code is a luxury we often don't get. Sal hit exactly this: the
+   server was up, and said "currently at capacity" when opened directly. */
 async function fetchVenues(center, radiusM) {
   const body = 'data=' + encodeURIComponent(overpassQuery(center, radiusM));
-  let lastErr;
-  for (const host of OVERPASS) {
+  let lastErr, lastStatus = 0;
+  for (const host of shuffle([...OVERPASS])) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), OVERPASS_TIMEOUT_MS);
     try {
       const res = await fetch(host, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
+        body,
+        signal: ctrl.signal
       });
-      if (!res.ok) throw new Error('Overpass ' + res.status);
+      if (!res.ok) { lastStatus = res.status; throw new Error('Overpass ' + res.status); }
       const data = await res.json();
       return (data.elements || []).map(el => {
         const lat = el.lat ?? el.center?.lat, lon = el.lon ?? el.center?.lon;
@@ -775,9 +791,23 @@ async function fetchVenues(center, radiusM) {
           chain: isChain(tags, tags.name)
         };
       }).filter(Boolean);
-    } catch (e) { lastErr = e; }
+    } catch (e) {
+      lastErr = e;
+      console.warn('Overpass failed:', host, e?.name, e?.message);
+    } finally { clearTimeout(timer); }
   }
-  throw lastErr || new Error('Overpass unreachable');
+  /* Say what the user can do, not what the stack trace says. "Search failed:
+     Load failed" was the whole message before this, which told a tester
+     nothing and told us nothing either. The detail lives in console.warn
+     above, so the next report arrives with it. */
+  const err = new Error(lastStatus === 429 || lastStatus === 504
+    ? 'OpenStreetMap is busy right now — try again in a moment.'
+    : `Couldn't reach OpenStreetMap — tried ${OVERPASS.length} servers. `
+      + 'They may all be busy, or something on this network is blocking them. '
+      + 'Try again in a moment.');
+  err.userFacing = true;              // search() prints it without a prefix
+  err.overpassStatus = lastStatus;
+  throw err;
 }
 
 /* ----------------------------------------------------------------- OSRM */
@@ -2001,7 +2031,8 @@ async function search() {
     renderResults(state.results[0]?.key);
     syncURL();
   } catch (e) {
-    log('Search failed: ' + e.message);
+    console.warn('Search failed:', e);
+    log(e.userFacing ? e.message : 'Search failed: ' + e.message);
   } finally {
     state.searching = false;
     $('#find').disabled = false;

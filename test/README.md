@@ -50,3 +50,20 @@ it runs, and that is the number to trust.
 
 Current totals: **151 / 185 / 99 / 27 / 8** across unit, smoke, smoke-live,
 schema and migrations.
+
+## Live APIs — the one that is not mocked
+
+```
+node test/live-apis.mjs
+```
+
+Hits the real Nominatim, Overpass and OSRM and prints which mirrors answered.
+**Not one of the six and not in CI**: it needs network, and these are free
+public services that go busy without warning, so in CI it would be flaky and
+teach people to ignore a red build.
+
+Run it when somebody says search is broken. Everything else here mocks every
+OpenStreetMap call, which is exactly why a live Overpass outage was invisible
+to all six suites while search was failing on a real phone. Exits 1 only when
+no Overpass mirror answers, because that is the one failure that breaks a
+search outright.

@@ -32,6 +32,11 @@ cloud container try `/opt/pw-browsers/chromium-*/chrome-linux/chrome`.
 `supabase/schema.sql`. Containers are ephemeral: if all 27 schema assertions
 fail at once, the server is stopped, not the code broken. Re-run `pg-up.sh`.
 
+`node test/live-apis.mjs` is the seventh, deliberately outside that set: it
+hits the real OpenStreetMap services. The six mock every one of those calls, so
+a live outage is invisible to them — which is how search failed on a phone with
+every suite green. Run it when someone reports search broken.
+
 **Never commit with a failing test.** Not "it's unrelated", not "I'll fix it
 next". That habit is how three real bugs reached a user's phone here.
 

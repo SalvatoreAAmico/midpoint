@@ -312,6 +312,55 @@ ok('elements hidden by attribute are actually hidden', await page.evaluate(() =>
   await c.close();
 }
 
+/* ---- every Overpass mirror busy -----------------------------------------
+   Sal's live failure. An instance at capacity answers WITHOUT the CORS header,
+   so the browser blocks the response and fetch rejects with a TypeError that
+   Safari words as "Load failed" -- indistinguishable from unreachable. The app
+   said "Search failed: Load failed", which told him nothing and told us
+   nothing. route.abort('failed') reproduces exactly that shape. */
+{
+  const c = await browser.newContext({viewport:{width:390,height:844}, isMobile:true, hasTouch:true});
+  await stubFonts(c);
+  await c.route('**/unpkg.com/leaflet**', r => { const u=r.request().url();
+    r.fulfill({status:200,contentType:u.endsWith('.css')?'text/css':'text/javascript',
+      body:fs.readFileSync(path.join(LEAFLET,u.endsWith('.css')?'leaflet.css':'leaflet.js'),'utf8')});});
+  await c.route('**/tile.openstreetmap.org/**', r=>r.fulfill({status:200,contentType:'image/png',
+    body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}));
+  await c.route('**/nominatim.openstreetmap.org/**', r => {
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get('q')||'').toLowerCase().trim();
+    const hit = PLACES[q];
+    r.fulfill({status:200, contentType:'application/json',
+      body: JSON.stringify(hit ? [{lat:String(hit.lat), lon:String(hit.lon), display_name:hit.display_name}] : [])});
+  });
+  const tried = new Set();
+  await c.route('**/api/interpreter', r => {
+    tried.add(new URL(r.request().url()).host);
+    r.abort('failed');
+  });
+
+  const pb = await c.newPage();
+  await pb.goto('http://localhost:8099/', {waitUntil:'networkidle'});
+  await pb.locator('.person').nth(0).locator('.lc').fill('Wicker Park, Chicago');
+  await pb.locator('.person').nth(0).locator('.lc').dispatchEvent('change');
+  await pb.locator('.person').nth(1).locator('.lc').fill('Hyde Park, Chicago');
+  await pb.locator('.person').nth(1).locator('.lc').dispatchEvent('change');
+  await pb.waitForTimeout(800);
+  await pb.locator('#find').click();
+  await pb.waitForTimeout(3500);
+
+  const msg = await pb.locator('#log').textContent();
+  ok('every mirror is tried before giving up', tried.size === 5, [...tried].join(' '));
+  ok('the message names the service, not the exception',
+     /openstreetmap/i.test(msg) && !/load failed|typeerror|failed to fetch/i.test(msg), msg);
+  ok('it says how many were tried, so "busy" is credible', /5 servers/.test(msg), msg);
+  ok('and tells the user what to do next', /try again/i.test(msg), msg);
+  ok('no "Search failed:" bolted onto a sentence written for a human',
+     !/search failed/i.test(msg), msg);
+  ok('the app is not wedged — Find works again afterwards',
+     !(await pb.locator('#find').isDisabled()));
+  await c.close();
+}
+
 /* ---- searching with nobody located must not wedge the app ---------------
    Reported as "the app gets hung up". The guard that returns early sat AFTER
    state.searching was set, and the finally that clears it is inside the try
